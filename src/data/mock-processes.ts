@@ -1,15 +1,147 @@
-import { Process } from '@/types/process';
+import { Process, SystemTool, OrganizationEntity } from '@/types/process';
+
+export const SYSTEM_TOOLS: SystemTool[] = [
+  {
+    slug: 'figma',
+    name: 'فیگما (Figma)',
+    category: 'software',
+    icon: 'Figma',
+    description: 'ابزار طراحی رابط کاربری و پروتوتایپینگ ابری؛ فرایندهای خروجی SVG، استخراج کد و توکن‌های طراحی.',
+    websiteUrl: 'https://figma.com',
+    processCount: 2,
+  },
+  {
+    slug: 'git',
+    name: 'گیت و گیت‌لب (Git & GitLab)',
+    category: 'devtools',
+    icon: 'GitBranch',
+    description: 'مدیریت نسخه‌بندی سورس‌کد، ساخت پول ریکوئست، کانفیگ کلید SSH و حل تعارضات مرج (Merge Conflicts).',
+    websiteUrl: 'https://git-scm.com',
+    processCount: 2,
+  },
+  {
+    slug: 'excel',
+    name: 'مایکروسافت اکسل (Microsoft Excel)',
+    category: 'software',
+    icon: 'Table',
+    description: 'کاربردهای پیشرفته مالی، مغایرت‌گیری بانکی با XLOOKUP، ساخت جداول محوری (Pivot Table) و ماکروها.',
+    websiteUrl: 'https://office.com/excel',
+    processCount: 1,
+  },
+  {
+    slug: 'docker',
+    name: 'داکر (Docker & Containers)',
+    category: 'devtools',
+    icon: 'Container',
+    description: 'ساخت ایمیج‌های بهینه کانتینری، تنظیم نگاشت پورت‌ها، اتصال به شبکه‌های داخلی و دیپلوی چندلایه‌ای.',
+    websiteUrl: 'https://docker.com',
+    processCount: 1,
+  },
+  {
+    slug: 'sepidar',
+    name: 'نرم‌افزار حسابداری سپیدار',
+    category: 'erp',
+    icon: 'Calculator',
+    description: 'سیستم یکپارچه مالی و بازرگانی؛ صدور فاکتورهای رسمی، انبارداری و ثبت اظهارنامه ارزش افزوده.',
+    websiteUrl: 'https://sepidarsystem.com',
+    processCount: 1,
+  },
+  {
+    slug: 'hrms',
+    name: 'سامانه جامع منابع انسانی (HRMS)',
+    category: 'portal',
+    icon: 'Users',
+    description: 'پرتال جامع ثبت احکام، کارگزینی، ثبت قراردادهای آزمایشی و مدیریت پرونده پرسنلی سازمان.',
+    websiteUrl: 'https://hrms.fanavari.org',
+    processCount: 2,
+  },
+  {
+    slug: 'moadian',
+    name: 'کارپوشه سامانه مودیان مالیاتی',
+    category: 'portal',
+    icon: 'Landmark',
+    description: 'درگاه رسمی سازمان امور مالیاتی کشور جهت ارسال صورتحساب‌های الکترونیکی و اظهارنامه فصلی.',
+    websiteUrl: 'https://my.tax.gov.ir',
+    processCount: 2,
+  },
+  {
+    slug: 'tamin',
+    name: 'خدمات غیرحضوری تأمین اجتماعی',
+    category: 'portal',
+    icon: 'Shield',
+    description: 'درگاه استعلام سوابق بیمه، ارسال لیست حق بیمه ماهانه و ثبت پرونده‌های استعلاجی پزشکی.',
+    websiteUrl: 'https://eservices.tamin.ir',
+    processCount: 1,
+  },
+  {
+    slug: 'gica',
+    name: 'مرکز صدور گواهی الکترونیکی (GICA)',
+    category: 'portal',
+    icon: 'Key',
+    description: 'سامانه رسمی صدور نماد الکترونیک، توکن‌های سخت‌افزاری امضای دیجیتال و احراز هویت ویدئویی.',
+    websiteUrl: 'https://gica.ir',
+    processCount: 1,
+  }
+];
+
+export const ORGANIZATIONS: OrganizationEntity[] = [
+  {
+    slug: 'org-tax',
+    name: 'سازمان امور مالیاتی کشور',
+    category: 'gov',
+    description: 'مرجع رسمی صدور صورتحساب الکترونیکی، دریافت مالیات بر ارزش افزوده و نظارت بر کارپوشه مودیان.',
+    processCount: 2,
+  },
+  {
+    slug: 'org-tamin',
+    name: 'سازمان تأمین اجتماعی',
+    category: 'gov',
+    description: 'پوشش‌های بیمه کارگری و کارمندی، استعلام کدهای کارگاهی و رسیدگی به غرامت ایام استعلاجی.',
+    processCount: 2,
+  },
+  {
+    slug: 'org-fanavari-hr',
+    name: 'مدیریت سرمایه انسانی و اداری',
+    category: 'enterprise',
+    description: 'بخش داخلی پذیرش، احکام شغلی، ثبت قراردادهای پرسنلی، بیمه تکمیلی و آموزش نیروهای جدید.',
+    processCount: 2,
+  },
+  {
+    slug: 'org-fanavari-it',
+    name: 'مرکز فناوری اطلاعات و زیرساخت (IT / DevOps)',
+    category: 'tech',
+    description: 'مدیریت کلاسترهای سرور، اعطای دسترسی‌های امنیتی، ایمیل سازمانی و پشتیبانی سخت‌افزاری.',
+    processCount: 3,
+  },
+  {
+    slug: 'org-fanavari-finance',
+    name: 'مدیریت مالی و حسابداری',
+    category: 'enterprise',
+    description: 'تسویه تنخواه‌ها، حسابداری اسناد، حواله‌های پایا و ساتنا و ممیزی دفاتر قانونی شرکت.',
+    processCount: 2,
+  },
+  {
+    slug: 'org-customer-ops',
+    name: 'امور مشتریان و خدمات پس از فروش',
+    category: 'enterprise',
+    description: 'رسیدگی به تیکت‌های مرجوعی، بازرسی کیفی انبار و استرداد وجه به کیف پول مشتریان.',
+    processCount: 1,
+  },
+];
 
 export const MOCK_PROCESSES: Process[] = [
+  // 1. HR Administrative Workflow
   {
     id: 'proc-hr-01',
     slug: 'hr-new-employee-registration',
     title: 'ثبت و پذیرش پرسنل جدید در سامانه منابع انسانی (HRMS)',
     description: 'فرایند کامل ثبت نام، ایجاد پرونده الکترونیک، ثبت قرارداد آزمایشی و دریافت کدهای پرسنلی و بیمه در سامانه یکپارچه پرسنلی سازمان.',
+    scope: 'organization',
     category: 'hr',
     departmentName: 'مدیریت منابع انسانی',
     estimatedMinutes: 20,
     targetSystem: 'سامانه جامع منابع انسانی (HRMS)',
+    targetSystemSlug: 'hrms',
     targetUrl: 'https://hrms.fanavari.org/admin/onboarding',
     isPopular: true,
     totalSteps: 4,
@@ -117,15 +249,218 @@ export const MOCK_PROCESSES: Process[] = [
       }
     ]
   },
+
+  // 2. SOFTWARE WORKFLOW: Figma SVG Export & Optimization
+  {
+    id: 'proc-sw-figma-01',
+    slug: 'figma-svg-export-optimization',
+    title: 'فرایند استخراج و بهینه‌سازی آیکون‌های وکتوری (SVG) در نرم‌افزار فیگما',
+    description: 'دستورالعمل استاندارد آماده‌سازی آیکون‌ها، Flatten کردن خطوط، تبدیل Stroke به Outline و خروجی SVG فوق فشرده برای وب و فرانت‌اند.',
+    scope: 'software',
+    category: 'design',
+    departmentName: 'تیم طراحی محصول (Product Design)',
+    estimatedMinutes: 8,
+    targetSystem: 'نرم‌افزار فیگما (Figma Desktop / Web)',
+    targetSystemSlug: 'figma',
+    targetUrl: 'https://figma.com',
+    isPopular: true,
+    totalSteps: 3,
+    tags: ['فیگما', 'Figma', 'طراحی', 'SVG', 'آیکون', 'Outline Stroke', 'وکتور', 'فرانت‌اند'],
+    updatedAt: '۱۴۰۳/۰۷/۱۱',
+    steps: [
+      {
+        id: 'step-fig-01',
+        orderIndex: 1,
+        stepKey: 'vector-cleanup',
+        title: 'یکپارچه‌سازی وکتور و تبدیل Stroke به Fill (Outline Stroke)',
+        stepType: 'action',
+        targetMenuPath: 'فریم فیگما > لایه‌های آیکون > کلید میانبر Ctrl+Shift+O',
+        contentMarkdown: 'همه لایه‌های آیکون را داخل یک فریم با ابعاد استاندارد ۲۴x۲۴ پیکسل قرار دهید. تمام خطوط دارای Stroke را با زدن میانبر `Ctrl+Shift+O` به شکل Outline تبدیل کنید تا در تغییر اندازه ضخامت خط تغییر نکند.',
+        copyableFields: [
+          { label: 'میانبر تبدیل Stroke به Outline در ویندوز', value: 'Ctrl + Shift + O' },
+          { label: 'ابعاد استاندارد فریم آیکون', value: '24 x 24 px' }
+        ],
+        tips: [
+          'از ترکیب رنگ‌های مختلف در یک آیکون مونوکروم خودداری کرده و مقدار Fill را روی currentColor تنظیم کنید.'
+        ],
+        errorGuides: [
+          {
+            id: 'err-fig-01',
+            errorCode: 'FIG-STROKE-SCALING',
+            errorTitle: 'خطای به هم ریختن ضخامت آیکون در سایزهای مختلف',
+            cause: 'لایه‌ها قبل از خروجی به شکل Outline تبدیل نشده‌اند و با Scale تغییر ضخامت می‌دهند.',
+            solution: 'کلید ترکیبی Ctrl+E (Flatten) را روی لایه‌ها بزنید تا به یک لایه یکپارچه تبدیل شوند.',
+          }
+        ]
+      },
+      {
+        id: 'step-fig-02',
+        orderIndex: 2,
+        stepKey: 'export-settings-check',
+        title: 'تنظیمات بخش Export و غیرفعال‌سازی آیدی‌های اضافه',
+        stepType: 'decision',
+        targetMenuPath: 'پنل سمت راست > تب Export > فرمت SVG > دکمه سه نقطه (...) تنظیمات',
+        contentMarkdown: 'آیا آیکون برای وب‌سایت استفاده می‌شود یا اپ موبایل؟ در بخش تنظیمات SVG، تیک گزینه `Include "id" attribute` را بردارید تا تداخل آیدی در کد HTML رخ ندهد.',
+        tips: [
+          'تیک Outline Text را در صورت وجود متن حتماً فعال کنید.'
+        ]
+      },
+      {
+        id: 'step-fig-03',
+        orderIndex: 3,
+        stepKey: 'svgo-compression',
+        title: 'فشرده‌سازی با SVGO و کپی کد JSX',
+        stepType: 'end',
+        targetMenuPath: 'پلاگین فیگما > SVGO Compressor یا کلیک‌راست > Copy as SVG',
+        contentMarkdown: 'با پلاگین SVGO حجم فایل را تا ۶۰ درصد بدون افت کیفیت کاهش دهید و مستقیماً در ریپازیتوری کامپوننت‌های فرانت‌اند قرار دهید.',
+        copyableFields: [
+          { label: 'دستور ترمینال فشرده‌سازی خودکار SVG', value: 'npx svgo -f ./public/icons -o ./public/icons-optimized' }
+        ]
+      }
+    ]
+  },
+
+  // 3. SOFTWARE WORKFLOW: Git Merge Conflict Resolution
+  {
+    id: 'proc-sw-git-02',
+    slug: 'git-merge-conflict-resolution',
+    title: 'فرایند حل تعارضات ادغام (Merge Conflicts) با ابزار گیت و VSCode',
+    description: 'راهنمای مرحله‌به‌مرحله همگام‌سازی برنچ با main، شناسایی کدهای متناقض با Git Rebase، حل تعارضات در ادیتور و پوش ایمن به مخزن.',
+    scope: 'software',
+    category: 'it',
+    departmentName: 'تیم مهندسی نرم‌افزار',
+    estimatedMinutes: 10,
+    targetSystem: 'ترمینال گیت و ویژوال استودیو کد (VSCode)',
+    targetSystemSlug: 'git',
+    targetUrl: 'https://git-scm.com',
+    isPopular: true,
+    totalSteps: 3,
+    tags: ['گیت', 'Git', 'Merge Conflict', 'Rebase', 'VSCode', 'ترمینال', 'برنامه‌نویسی'],
+    updatedAt: '۱۴۰۳/۰۷/۱۰',
+    steps: [
+      {
+        id: 'step-git-01',
+        orderIndex: 1,
+        stepKey: 'fetch-and-rebase',
+        title: 'دریافت آخرین تغییرات برنچ مرجع و شروع Rebase',
+        stepType: 'action',
+        targetMenuPath: 'ترمینال پروژه > برنچ فیچر',
+        contentMarkdown: 'قبل از حل تعارض، برنچ محلی خود را با سرور همگام کنید: `git fetch origin` و سپس دستور `git rebase origin/main` را اجرا فرمایید.',
+        copyableFields: [
+          { label: 'دستور شروع ریبیس روی شاخه اصلی', value: 'git fetch origin && git rebase origin/main' }
+        ],
+        errorGuides: [
+          {
+            id: 'err-git-01',
+            errorCode: 'GIT-DIRTY-WORKTREE',
+            errorTitle: 'خطای وجود تغییرات ذخیره‌نشده (Dirty Working Tree)',
+            cause: 'فایل‌هایی در دایرکتوری جاری بدون کامیت تغییر یافته‌اند و گیت اجازه جابجایی نمی‌دهد.',
+            solution: 'ابتدا دستور `git stash` را برای نگهداری موقت اجرا کرده و بعد ریبیس را آغاز کنید.',
+          }
+        ]
+      },
+      {
+        id: 'step-git-02',
+        orderIndex: 2,
+        stepKey: 'resolve-in-editor',
+        title: 'بررسی نشانگرهای تعارض (<<<<<<< HEAD) و انتخاب کد صحیح',
+        stepType: 'decision',
+        targetMenuPath: 'ادیتور کد > فایل‌های علامت‌گذاری شده با پسوند !C',
+        contentMarkdown: 'در VSCode یکی از گزینه‌های `Accept Current Change` یا `Accept Incoming Change` یا ترکیب دستی هر دو را انتخاب کنید. پس از رفع، فایل را سیو کنید.',
+        tips: [
+          'هرگز نشانگرهای گیت (مثل ======= و >>>>>>>) را در کد باقی نگذارید.'
+        ]
+      },
+      {
+        id: 'step-git-03',
+        orderIndex: 3,
+        stepKey: 'continue-and-force-push',
+        title: 'افزودن به استیج و ادامه Rebase و پوش با اجاره امن',
+        stepType: 'end',
+        targetMenuPath: 'ترمینال > دستورات نهایی',
+        contentMarkdown: 'دستور `git add .` و سپس `git rebase --continue` را بزنید. در پایان با `git push --force-with-lease` تغییرات را به مخزن ارسال کنید.',
+        copyableFields: [
+          { label: 'دستور پوش ایمن به گیت‌هاب/گیت‌لب', value: 'git push --force-with-lease origin HEAD' }
+        ]
+      }
+    ]
+  },
+
+  // 4. SOFTWARE WORKFLOW: Microsoft Excel Bank Reconciliation
+  {
+    id: 'proc-sw-excel-03',
+    slug: 'excel-bank-reconciliation-xlookup',
+    title: 'مغایرت‌گیری صورتحساب‌های بانکی و اسناد مالی با تابع XLOOKUP در اکسل',
+    description: 'فرایند استاندارد تطبیق تراکنش‌های پرینت بانکی با دفاتر حسابداری، حذف فاصله‌های اضافی و شناسایی اسناد مفقود با توابع پیشرفته اکسل.',
+    scope: 'software',
+    category: 'finance',
+    departmentName: 'امور مالی و حسابداری',
+    estimatedMinutes: 14,
+    targetSystem: 'نرم‌افزار مایکروسافت اکسل (Excel 2021+ / Office 365)',
+    targetSystemSlug: 'excel',
+    targetUrl: 'https://office.com',
+    isPopular: true,
+    totalSteps: 3,
+    tags: ['اکسل', 'Excel', 'مغایرت‌گیری', 'XLOOKUP', 'فرمول‌نویسی', 'حسابداری بانکی', 'شبا'],
+    updatedAt: '۱۴۰۳/۰۷/۰۸',
+    steps: [
+      {
+        id: 'step-xl-01',
+        orderIndex: 1,
+        stepKey: 'clean-data',
+        title: 'یکپارچه‌سازی و حذف فاصله‌های مخفی با تابع TRIM و CLEAN',
+        stepType: 'action',
+        targetMenuPath: 'شیت اکسل > ستون شناسه تراکنش یا شماره پیگیری',
+        contentMarkdown: 'شناسه‌های خروجی اینترنت‌بانک اغلب حاوی کاراکترهای نامرئی هستند. با ستون کمکی فرمول `=TRIM(CLEAN(A2))` را اعمال کنید تا متن کاملاً تمیز شود.',
+        copyableFields: [
+          { label: 'فرمول تمیزکاری داده در اکسل', value: '=TRIM(CLEAN(SUBSTITUTE(A2, UNICHAR(160), " ")))' }
+        ]
+      },
+      {
+        id: 'step-xl-02',
+        orderIndex: 2,
+        stepKey: 'xlookup-matching',
+        title: 'تطبیق ارقام با تابع XLOOKUP و مدیریت موارد یافت‌نشده (#N/A)',
+        stepType: 'decision',
+        targetMenuPath: 'شیت دفاتر > فرمول‌نویسی ستون وضعیت تطابق',
+        contentMarkdown: 'آیا ستون شناسه پیگیری در هر دو فایل موجود است؟ از فرمول `=XLOOKUP(A2, BankSheet!A:A, BankSheet!B:B, "عدم تطابق")` برای واکشی مبالغ استفاده فرمایید.',
+        copyableFields: [
+          { label: 'فرمول XLOOKUP پیشرفته', value: '=XLOOKUP(A2, BankSheet!$A$2:$A$5000, BankSheet!$C$2:$C$5000, "سند یافت نشد", 0)' }
+        ],
+        errorGuides: [
+          {
+            id: 'err-xl-01',
+            errorCode: 'EXCEL-#N/A',
+            errorTitle: 'خطای نمایش ارور #N/A به جای مغایرت',
+            cause: 'یکی از سلول‌ها به صورت Text و دیگری به صورت Number فرمت‌بندی شده است.',
+            solution: 'ستون مربوطه را با میانبر Alt+A+E (Text to Columns) روی فرمت یکسان تنظیم کنید.',
+          }
+        ]
+      },
+      {
+        id: 'step-xl-03',
+        orderIndex: 3,
+        stepKey: 'pivot-summary',
+        title: 'ساخت جدول محوری (Pivot Table) و صدور برگه مغایرت نهایی',
+        stepType: 'end',
+        targetMenuPath: 'منوی Insert > PivotTable > گروه‌بندی بر اساس نوع واریز/برداشت',
+        contentMarkdown: 'خلاصه اقلام باز بانکی و چک‌های در راه را در یک پیوت‌تیبل گزارش کرده و به امضای کارشناس حسابداری برسانید.',
+      }
+    ]
+  },
+
+  // 5. Finance Tax / Gov Portal Workflow
   {
     id: 'proc-fin-02',
     slug: 'finance-petty-cash-and-tax-invoice',
-    title: 'ثبت، بررسی و تسویه تنخواه و صورتحساب‌های مالیاتی',
+    title: 'ثبت، بررسی و تسویه تنخواه و صورتحساب‌های مالیاتی در سامانه مودیان',
     description: 'دستورالعمل بارگذاری فاکتورهای رسمی با شناسه یکتای صورتحساب مالیاتی، دریافت تأییدیه مدیر مالی و صدور سند حسابداری تسویه.',
+    scope: 'portal',
     category: 'finance',
     departmentName: 'امور مالی و حسابداری',
     estimatedMinutes: 15,
     targetSystem: 'کارپوشه سامانه مودیان و نرم‌افزار سپیدار',
+    targetSystemSlug: 'moadian',
     targetUrl: 'https://tax.fanavari.org/invoices/new',
     isPopular: true,
     totalSteps: 3,
@@ -191,15 +526,19 @@ export const MOCK_PROCESSES: Process[] = [
       }
     ]
   },
+
+  // 6. IT Infrastructure Workflow
   {
     id: 'proc-it-03',
     slug: 'it-devops-cloud-and-git-access',
     title: 'تعریف دسترسی و حساب کاربری در کلاستر کوبرنتیز و ریپازیتوری‌های گیت',
     description: 'فرایند امن تعریف دسترسی برای برنامه‌نویسان و مهندسان دواپس شامل دریافت کلید عمومی SSH، ایجاد کاربر IAM و تنظیم کانفیگ Kubeconfig.',
+    scope: 'organization',
     category: 'it',
     departmentName: 'فناوری اطلاعات و زیرساخت',
     estimatedMinutes: 25,
     targetSystem: 'کنسول مدیریت ابری و گیت‌لب سازمانی',
+    targetSystemSlug: 'git',
     targetUrl: 'https://git.fanavari.org/admin/users',
     isPopular: true,
     totalSteps: 4,
@@ -276,15 +615,19 @@ export const MOCK_PROCESSES: Process[] = [
       }
     ]
   },
+
+  // 7. Legal Digital Token Workflow
   {
     id: 'proc-leg-04',
     slug: 'legal-digital-token-and-seal',
-    title: 'صدور، تمدید و فعال‌سازی توکن دیجیتال و مهر سازمانی',
+    title: 'صدور، تمدید و فعال‌سازی توکن دیجیتال و مهر سازمانی در مرکز ریشه GICA',
     description: 'مراحل احراز هویت در مرکز صدور گواهی الکترونیکی، دریافت توکن سخت‌افزاری PKI و نصب درایورهای امضای دیجیتال.',
+    scope: 'portal',
     category: 'legal',
     departmentName: 'امور حقوقی و امنیت اسناد',
     estimatedMinutes: 30,
     targetSystem: 'مرکز ریشه صدور گواهی الکترونیکی کشور (GICA)',
+    targetSystemSlug: 'gica',
     targetUrl: 'https://gica.ir/portal',
     isPopular: false,
     totalSteps: 3,
@@ -340,15 +683,19 @@ export const MOCK_PROCESSES: Process[] = [
       }
     ]
   },
+
+  // 8. Support E-commerce Return Workflow
   {
     id: 'proc-sup-05',
     slug: 'support-product-return-and-wallet-refund',
     title: 'فرایند مرجوعی کالا، بازرسی انبار و استرداد وجه سفارش',
     description: 'دستورالعمل رسیدگی به تیکت‌های مرجوعی، بررسی ضوابط ضمانت ۷ روزه، ثبت بارنامه تحویل کالا به انبار و واریز اعتبار به حساب مشتری.',
+    scope: 'organization',
     category: 'support',
     departmentName: 'امور مشتریان و لجستیک',
     estimatedMinutes: 15,
     targetSystem: 'سامانه CRM ارتباط با مشتری و انبارداری',
+    targetSystemSlug: 'hrms',
     targetUrl: 'https://crm.fanavari.org/returns/new',
     isPopular: true,
     totalSteps: 3,
@@ -402,198 +749,16 @@ export const MOCK_PROCESSES: Process[] = [
         ]
       }
     ]
-  },
-  {
-    id: 'proc-hr-06',
-    slug: 'hr-medical-leave-social-security',
-    title: 'ثبت استعلاجی پرسنل و ارسال پرونده به کمیسیون پزشکی تأمین اجتماعی',
-    description: 'فرایند ثبت گواهی پزشکی بالای ۳ روز، استعلام تاییدیه پزشک معتمد و ثبت الکترونیکی در درگاه خدمات غیرحضوری تأمین اجتماعی.',
-    category: 'hr',
-    departmentName: 'مدیریت منابع انسانی',
-    estimatedMinutes: 18,
-    targetSystem: 'درگاه خدمات غیرحضوری تأمین اجتماعی (eservices.tamin.ir)',
-    targetUrl: 'https://eservices.tamin.ir/view/#/leaves',
-    isPopular: false,
-    totalSteps: 3,
-    tags: ['مرخصی استعلاجی', 'تأمین اجتماعی', 'کمیسیون پزشکی', 'غرامت دستمزد', 'پزشک معتمد', 'بیمه'],
-    updatedAt: '۱۴۰۳/۰۶/۱۵',
-    steps: [
-      {
-        id: 'step-med-01',
-        orderIndex: 1,
-        stepKey: 'doctor-note-upload',
-        title: 'بارگذاری گواهی پزشک و درج کد نظام پزشکی',
-        stepType: 'action',
-        targetMenuPath: 'پرتال پرسنلی > درخواست‌ها > مرخصی استعلاجی > ثبت جدید',
-        contentMarkdown: 'تصویر نسخه الکترونیک با شناسه نسخه و مهر پزشک بارگذاری گردد.',
-        copyableFields: [
-          { label: 'سقف استعلاجی بدون نیاز به تایید کمیسیون', value: '۷ روز در سال' }
-        ],
-        errorGuides: [
-          {
-            id: 'err-med-01',
-            errorCode: 'ERR-TAMIN-NO-PRESC',
-            errorTitle: 'نسخه الکترونیک در سامانه نسخه تامین اجتماعی یافت نشد',
-            cause: 'پزشک نسخه را روی سرورهای بیمه ثبت نکرده یا گواهی دستی صادر نموده است.',
-            solution: 'گواهی دستی باید به شعبه بیمه کارگزاری مربوطه به صورت حضوری ارائه شود.',
-          }
-        ]
-      },
-      {
-        id: 'step-med-02',
-        orderIndex: 2,
-        stepKey: 'medical-commission-check',
-        title: 'بررسی مدت زمان استراحت و نیاز به کمیسیون پزشکی',
-        stepType: 'decision',
-        targetMenuPath: 'امور بیمه > پرونده‌های در جریان > بررسی طول دوره درمان',
-        contentMarkdown: 'اگر مدت استراحت بیش از ۱۵ روز است، ارجاع پرونده به کمیسیون پزشکی بدوی شعبه الزامی است.',
-        tips: [
-          'برای مرخصی زایمان بارگذاری تصویر شناسنامه نوزاد الزامی است.'
-        ]
-      },
-      {
-        id: 'step-med-03',
-        orderIndex: 3,
-        stepKey: 'salary-compensation-claim',
-        title: 'تأیید کارکرد ماهانه و ارجاع جهت دریافت غرامت ایام بیماری',
-        stepType: 'end',
-        targetMenuPath: 'حقوق و دستمزد > اعلام کارکرد به شعبه بیمه',
-        contentMarkdown: 'ایام استعلاجی به عنوان کارکرد موقت از لیست حقوق سازمان کسر و توسط تامین اجتماعی پرداخت می‌گردد.',
-      }
-    ]
-  },
-  {
-    id: 'proc-it-07',
-    slug: 'it-network-printer-scanner-setup',
-    title: 'پیکربندی و اتصال پرینترهای تحت شبکه و اسکنرهای اداری',
-    description: 'راهنمای گام‌به‌گام اتصال چاپگر سازمانی، اختصاص IP استاتیک در سوییچ شبکه، تعریف درایور PCL6 و احراز هویت کاربری با کارت هوشمند.',
-    category: 'it',
-    departmentName: 'فناوری اطلاعات و زیرساخت',
-    estimatedMinutes: 12,
-    targetSystem: 'کنسول مدیریت پرینت‌سرور ویندوز و CUPS لینوکس',
-    targetUrl: 'http://print.internal.fanavari.org:631',
-    isPopular: false,
-    totalSteps: 3,
-    tags: ['پرینتر تحت شبکه', 'اسکنر اداری', 'IP استاتیک', 'درایور پرینت', 'پشتیبانی سخت‌افزار', 'کارتخوان'],
-    updatedAt: '۱۴۰۳/۰۶/۲۰',
-    steps: [
-      {
-        id: 'step-prn-01',
-        orderIndex: 1,
-        stepKey: 'ip-assignment',
-        title: 'تنظیم آدرس IP استاتیک در رنج VLAN تجهیزات دفتری',
-        stepType: 'action',
-        targetMenuPath: 'پنل لمسی پرینتر > Network Settings > TCP/IP Manual',
-        contentMarkdown: 'آدرس IP مشخص شده برای پرینتر طبقه را به همراه ساب‌نت ماسک و گیت‌وی اداری تنظیم کنید.',
-        copyableFields: [
-          { label: 'رنج پیش‌فرض IP پرینترهای اداری', value: '192.168.40.100 - 192.168.40.150' },
-          { label: 'ساب‌نت ماسک شبکه', value: '255.255.255.0' },
-          { label: 'گیت‌وی سازمانی', value: '192.168.40.1' }
-        ],
-        errorGuides: [
-          {
-            id: 'err-prn-01',
-            errorCode: 'NET-IP-CONFLICT',
-            errorTitle: 'تداخل آدرس IP با تجهیز دیگر در شبکه (IP Conflict)',
-            cause: 'آدرس اختصاص‌یافته قبلاً روی دستگاه دیگری در شبکه رزرو شده است.',
-            solution: 'در سرور DHCP مک‌ادرس پرینتر را رزرو کنید یا با دستور ping آزاد بودن IP را بررسی فرمایید.',
-            escalationContact: 'کارشناس شبکه، داخلی ۲۰۵'
-          }
-        ]
-      },
-      {
-        id: 'step-prn-02',
-        orderIndex: 2,
-        stepKey: 'driver-deploy',
-        title: 'نصب درایور یونیورسال از طریق گروپ پالیسی ویندوز (GPO)',
-        stepType: 'action',
-        targetMenuPath: 'Active Directory > Group Policy > Deploy Printer Drivers',
-        contentMarkdown: 'پکیج درایور HP/Canon Universal Print Driver به صورت خاموش روی تمامی کلاینت‌های واحد نصب می‌شود.',
-        tips: [
-          'پورت پیش‌فرض پرینت شبکه RAW Port 9100 می‌باشد.'
-        ]
-      },
-      {
-        id: 'step-prn-03',
-        orderIndex: 3,
-        stepKey: 'test-page-and-card',
-        title: 'تست چاپ صفحه وضعیت و فعال‌سازی کارت RFID کارمند',
-        stepType: 'end',
-        targetMenuPath: 'پرینتر > Swipe Card > همگام‌سازی کارت با کد پرسنلی',
-        contentMarkdown: 'کارت پرسنلی روی ریدر پرینتر گرفته شود تا سهمیه چاپ ماهانه به حساب کاربری متصل گردد.',
-      }
-    ]
-  },
-  {
-    id: 'proc-fin-08',
-    slug: 'finance-vat-taxpayers-system-return',
-    title: 'فرایند ثبت و پرداخت اظهارنامه مالیات بر ارزش افزوده در سامانه مودیان',
-    description: 'مراحل تجمیع فاکتورهای فصلی خرید و فروش، محاسبه مالیات و عوارض دوره، صدور قبض پرداخت مالیاتی و ثبت کد رهگیری پرداخت.',
-    category: 'finance',
-    departmentName: 'امور مالی و حسابداری',
-    estimatedMinutes: 35,
-    targetSystem: 'درگاه ملی خدمات الکترونیک سازمان امور مالیاتی (my.tax.gov.ir)',
-    targetUrl: 'https://my.tax.gov.ir',
-    isPopular: true,
-    totalSteps: 3,
-    tags: ['ارزش افزوده', 'سامانه مودیان', 'سازمان امور مالیاتی', 'اظهارنامه فصلی', 'قبض مالیاتی', 'ماده ۱۶۹'],
-    updatedAt: '۱۴۰۳/۰۷/۱۱',
-    steps: [
-      {
-        id: 'step-vat-01',
-        orderIndex: 1,
-        stepKey: 'data-consolidation',
-        title: 'تطبیق کارپوشه فروش با دفاتر قانونی و فاکتورهای ابطالی',
-        stepType: 'action',
-        targetMenuPath: 'کارپوشه مالیاتی > بخش صورتحساب‌های فروش > خروجی اکسل مقایسه‌ای',
-        contentMarkdown: 'فاکتورهای تایید شده، رد شده و در انتظار مودیان را استخراج کرده و مبالغ مشمول مالیات را بررسی کنید.',
-        copyableFields: [
-          { label: 'نرخ فعلی مالیات بر ارزش افزوده', value: '۱۰ درصد (سهم مالیات ۶٪ + سهم عوارض ۴٪)' }
-        ],
-        errorGuides: [
-          {
-            id: 'err-vat-01',
-            errorCode: 'TAX-DIFF-RECONCILE',
-            errorTitle: 'مغایرت صورتحساب‌های خرید پذیرفته‌شده با اعتبار مالیاتی',
-            cause: 'فروشنده فاکتور خرید را پس از مهلت قانونی در سامانه ثبت کرده یا وضعیت صورتحساب «ابطال شده» است.',
-            solution: 'با امور مالی فروشنده تماس گرفته و تاییدیه رسمی یا فاکتور اصلاحی دریافت کنید.',
-            escalationContact: 'مدیر حسابداری مالیاتی'
-          }
-        ]
-      },
-      {
-        id: 'step-vat-02',
-        orderIndex: 2,
-        stepKey: 'declaration-submission',
-        title: 'تکمیل فرم اظهارنامه پیش‌فرض و اعمال اعتبارات مالیاتی',
-        stepType: 'decision',
-        targetMenuPath: 'درگاه ملی مالیات > ارزش افزوده > ارسال اظهارنامه دوره جاری',
-        contentMarkdown: 'فرم پیش‌نویس سیستمی مالیاتی را مطالعه نمایید. در صورت وجود اعتبار دوره‌های قبل، کسر اعتبار را فعال کنید.',
-        tips: [
-          'جریمه تاخیر در تسلیم اظهارنامه معادل ۵۰ درصد مالیات متعلقه و غیرقابل بخشودگی کامل است.'
-        ]
-      },
-      {
-        id: 'step-vat-03',
-        orderIndex: 3,
-        stepKey: 'payment-slip-and-settlement',
-        title: 'تولید شناسه قبض و پرداخت و دریافت برگه قطعی تسویه',
-        stepType: 'end',
-        targetMenuPath: 'امور مالیاتی > صدور شناسه قبض و پرداخت برخط',
-        contentMarkdown: 'شناسه قبض ۳۰ رقمی صادر شده را با درگاه ساتنا پرداخت نموده و شماره پیگیری را در سیستم بایگانی فرمایید.',
-        copyableFields: [
-          { label: 'کد اقتصادی سازمان امور مالیاتی', value: '411111111111' }
-        ]
-      }
-    ]
   }
 ];
 
 export const CATEGORIES = [
   { key: 'all', label: 'همه فرایندها', count: MOCK_PROCESSES.length, icon: 'Layers' },
-  { key: 'hr', label: 'منابع انسانی و اداری', count: MOCK_PROCESSES.filter(p => p.category === 'hr').length, icon: 'Users' },
-  { key: 'finance', label: 'مالی و حسابداری', count: MOCK_PROCESSES.filter(p => p.category === 'finance').length, icon: 'Coins' },
-  { key: 'it', label: 'فناوری و زیرساخت', count: MOCK_PROCESSES.filter(p => p.category === 'it').length, icon: 'Server' },
-  { key: 'legal', label: 'حقوقی و امنیت', count: MOCK_PROCESSES.filter(p => p.category === 'legal').length, icon: 'ShieldCheck' },
-  { key: 'support', label: 'پشتیبانی مشتریان', count: MOCK_PROCESSES.filter(p => p.category === 'support').length, icon: 'Headphones' },
+  { key: 'software', label: 'نرم‌افزارها و ابزارها', count: MOCK_PROCESSES.filter(p => p.scope === 'software').length, icon: 'Laptop' },
+  { key: 'hr', label: 'منابع انسانی و کارگزینی', count: MOCK_PROCESSES.filter(p => p.category === 'hr').length, icon: 'Users' },
+  { key: 'finance', label: 'مالی و مودیان مالیاتی', count: MOCK_PROCESSES.filter(p => p.category === 'finance').length, icon: 'Coins' },
+  { key: 'it', label: 'زیرساخت و مهندسی نرم‌افزار', count: MOCK_PROCESSES.filter(p => p.category === 'it').length, icon: 'Server' },
+  { key: 'design', label: 'طراحی محصول و رابط کاربری', count: MOCK_PROCESSES.filter(p => p.category === 'design').length, icon: 'Palette' },
+  { key: 'legal', label: 'حقوقی و گواهی الکترونیک', count: MOCK_PROCESSES.filter(p => p.category === 'legal').length, icon: 'ShieldCheck' },
+  { key: 'support', label: 'پشتیبانی و انبارداری', count: MOCK_PROCESSES.filter(p => p.category === 'support').length, icon: 'Headphones' },
 ] as const;

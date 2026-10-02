@@ -1,5 +1,7 @@
 export type StepType = 'action' | 'decision' | 'warning' | 'end';
 
+export type WorkflowScope = 'organization' | 'software' | 'portal';
+
 export interface Hotspot {
   x: number; // percentage from left (0 - 100)
   y: number; // percentage from top (0 - 100)
@@ -38,15 +40,35 @@ export interface ProcessStep {
   errorGuides?: ErrorGuideItem[];
 }
 
+export interface SystemTool {
+  slug: string;
+  name: string;
+  category: 'software' | 'erp' | 'portal' | 'devtools';
+  icon: string;
+  description: string;
+  websiteUrl?: string;
+  processCount: number;
+}
+
+export interface OrganizationEntity {
+  slug: string;
+  name: string;
+  category: 'gov' | 'enterprise' | 'tech';
+  description: string;
+  processCount: number;
+}
+
 export interface Process {
   id: string;
   slug: string;
   title: string;
   description: string;
-  category: 'hr' | 'finance' | 'it' | 'legal' | 'support';
+  scope: WorkflowScope; // 'organization' | 'software' | 'portal'
+  category: 'hr' | 'finance' | 'it' | 'legal' | 'support' | 'software' | 'design';
   departmentName: string;
   estimatedMinutes: number;
   targetSystem: string;
+  targetSystemSlug: string;
   targetUrl?: string;
   isPopular?: boolean;
   totalSteps: number;

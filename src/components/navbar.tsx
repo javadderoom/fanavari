@@ -1,8 +1,17 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
-import { Compass, Search, GitBranch, Shield, Sparkles } from 'lucide-react';
+import { 
+  Compass, 
+  Search, 
+  GitBranch, 
+  ShieldAlert, 
+  Laptop, 
+  Building2, 
+  Sparkles 
+} from 'lucide-react';
 
 interface NavbarProps {
   onSearchClick?: () => void;
@@ -18,7 +27,7 @@ export function Navbar({ onSearchClick }: NavbarProps) {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Brand / Logo */}
-        <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md transition-transform hover:scale-105"
             style={{
               background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
@@ -43,24 +52,36 @@ export function Navbar({ onSearchClick }: NavbarProps) {
               </span>
             </div>
             <p className="text-[11px] font-medium hidden sm:block" style={{ color: 'var(--text-muted)' }}>
-              ناوبری بصری و هوشمند فرایندهای سازمانی (SOPs)
+              ناوبری بصری و هوشمند فرایندهای سازمانی و نرم‌افزاری
             </p>
           </div>
-        </div>
+        </Link>
 
-        {/* Center / Navigation Links */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-          <a href="#processes-section" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+        {/* Center / Multi-Page Navigation Links */}
+        <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+          <Link href="/" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
             <Compass className="w-4 h-4" />
             <span>کاتالوگ فرایندها</span>
-          </a>
-          <a href="#flow-simulator" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+          </Link>
+
+          <Link href="/systems" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+            <Laptop className="w-4 h-4 text-purple-500" />
+            <span>نرم‌افزارها و ابزارها</span>
+          </Link>
+
+          <Link href="/organizations" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+            <Building2 className="w-4 h-4 text-blue-500" />
+            <span>سازمان‌ها و ادارات</span>
+          </Link>
+
+          <Link href="/errors" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+            <ShieldAlert className="w-4 h-4 text-rose-500" />
+            <span>بانک خطایابی</span>
+          </Link>
+
+          <a href="/#flow-simulator" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-amber-500" />
-            <span>شبیه‌ساز زنده فلوچارت</span>
-          </a>
-          <a href="#features-section" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
-            <Shield className="w-4 h-4 text-emerald-500" />
-            <span>مزایای سامانه</span>
+            <span>شبیه‌ساز زنده</span>
           </a>
         </nav>
 
@@ -76,10 +97,10 @@ export function Navbar({ onSearchClick }: NavbarProps) {
               border: '1px solid var(--border-glass)',
               color: 'var(--text-muted)',
             }}
-            title="جستجوی سریع در تمام فرایندها"
+            title="جستجوی هوشمند در تمام فرایندها"
           >
             <Search className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">جستجوی هوشمند...</span>
+            <span className="hidden sm:inline">جستجو...</span>
             <kbd className="px-1.5 py-0.5 rounded text-[10px] font-mono shadow-xs"
               style={{
                 background: 'var(--bg-surface)',

@@ -15,14 +15,29 @@ model Department {
   processes Process[]
 }
 
+model SystemTool {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  category    String    // software, devtools, erp, portal
+  icon        String?
+  description String?
+  websiteUrl  String?
+  createdAt   DateTime  @default(now())
+  processes   Process[]
+}
+
 model Process {
   id               String         @id @default(uuid())
   title            String
   slug             String         @unique
   description      String
+  scope            String         @default("organization") // organization | software | portal
   category         String
   departmentId     String?
   department       Department?    @relation(fields: [departmentId], references: [id])
+  systemToolId     String?
+  systemTool       SystemTool?    @relation(fields: [systemToolId], references: [id])
   estimatedMinutes Int            @default(10)
   targetSystem     String?
   targetUrl        String?

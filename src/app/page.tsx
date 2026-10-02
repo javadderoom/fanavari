@@ -21,7 +21,9 @@ import {
   Coins, 
   Server, 
   Headphones, 
-  FileText 
+  FileText,
+  Laptop,
+  Palette
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -37,6 +39,7 @@ export default function HomePage() {
 
   const filteredProcesses = useMemo(() => {
     if (selectedCategory === 'all') return MOCK_PROCESSES;
+    if (selectedCategory === 'software') return MOCK_PROCESSES.filter(p => p.scope === 'software');
     return MOCK_PROCESSES.filter(p => p.category === selectedCategory);
   }, [selectedCategory]);
 
@@ -47,11 +50,13 @@ export default function HomePage() {
 
   const getCategoryIcon = (iconName: string) => {
     switch (iconName) {
-      case 'Users': return <Users className="w-4 h-4" />;
-      case 'Coins': return <Coins className="w-4 h-4" />;
-      case 'Server': return <Server className="w-4 h-4" />;
-      case 'ShieldCheck': return <ShieldCheck className="w-4 h-4" />;
-      case 'Headphones': return <Headphones className="w-4 h-4" />;
+      case 'Laptop': return <Laptop className="w-4 h-4 text-purple-500" />;
+      case 'Palette': return <Palette className="w-4 h-4 text-rose-500" />;
+      case 'Users': return <Users className="w-4 h-4 text-blue-500" />;
+      case 'Coins': return <Coins className="w-4 h-4 text-amber-500" />;
+      case 'Server': return <Server className="w-4 h-4 text-indigo-500" />;
+      case 'ShieldCheck': return <ShieldCheck className="w-4 h-4 text-emerald-500" />;
+      case 'Headphones': return <Headphones className="w-4 h-4 text-cyan-500" />;
       default: return <Layers className="w-4 h-4" />;
     }
   };

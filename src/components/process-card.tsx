@@ -1,21 +1,30 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Process } from '@/types/process';
-import { Clock, Layers, ShieldAlert, ArrowLeft, ExternalLink, Sparkles } from 'lucide-react';
+import { Clock, Layers, ShieldAlert, ArrowLeft, ExternalLink, Sparkles, Laptop, Building2 } from 'lucide-react';
 
 interface ProcessCardProps {
   process: Process;
-  onSelect: (process: Process) => void;
+  onSelect?: (process: Process) => void;
 }
 
 export function ProcessCard({ process, onSelect }: ProcessCardProps) {
   const errorCount = process.steps.reduce((acc, step) => acc + (step.errorGuides?.length || 0), 0);
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (onSelect) {
+      // If modal preview is desired, we can call onSelect, but the card defaults to dedicated page
+      onSelect(process);
+    }
+  };
+
   return (
-    <div
-      onClick={() => onSelect(process)}
-      className="glass-card rounded-3xl p-5 sm:p-6 flex flex-col justify-between cursor-pointer group transition-all duration-300 relative overflow-hidden"
+    <Link
+      href={`/process/${process.slug}`}
+      onClick={handleClick}
+      className="glass-card rounded-3xl p-5 sm:p-6 flex flex-col justify-between cursor-pointer group transition-all duration-300 relative overflow-hidden block"
     >
       {/* Popular Glow Indicator */}
       {process.isPopular && (
@@ -30,15 +39,28 @@ export function ProcessCard({ process, onSelect }: ProcessCardProps) {
       {/* Card Header */}
       <div>
         <div className="flex items-center justify-between gap-2 mb-3 mt-1">
-          <span className="text-xs px-2.5 py-1 rounded-xl font-bold transition-colors"
-            style={{
-              background: 'var(--accent-soft)',
-              color: 'var(--accent-primary)',
-              border: '1px solid var(--accent-border)'
-            }}
-          >
-            {process.departmentName}
-          </span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {process.scope === 'software' ? (
+              <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20 flex items-center gap-1">
+                <Laptop className="w-3 h-3" />
+                <span>نرم‌افزار</span>
+              </span>
+            ) : (
+              <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20 flex items-center gap-1">
+                <Building2 className="w-3 h-3" />
+                <span>اداری</span>
+              </span>
+            )}
+            <span className="text-xs px-2.5 py-0.5 rounded-xl font-bold"
+              style={{
+                background: 'var(--accent-soft)',
+                color: 'var(--accent-primary)',
+                border: '1px solid var(--accent-border)'
+              }}
+            >
+              {process.departmentName}
+            </span>
+          </div>
 
           <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
             <Clock className="w-3.5 h-3.5" />
@@ -94,7 +116,7 @@ export function ProcessCard({ process, onSelect }: ProcessCardProps) {
         {/* Action Button */}
         <div className="flex items-center justify-between pt-1">
           <span className="text-xs font-bold text-blue-600 group-hover:translate-x-[-4px] transition-transform flex items-center gap-1">
-            <span>مشاهده فلوچارت و نقشه راه</span>
+            <span>مشاهده صفحه کامل و فلوچارت</span>
             <ArrowLeft className="w-3.5 h-3.5" />
           </span>
 
@@ -105,6 +127,6 @@ export function ProcessCard({ process, onSelect }: ProcessCardProps) {
           )}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

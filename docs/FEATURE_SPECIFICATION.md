@@ -3,6 +3,20 @@
 ## 1. Overview
 This specification details all functional capabilities, user experiences, and operational components of **Fanavari**—the Intelligent Visual SOP & Flowchart Navigation Platform. It unifies our proprietary innovations with top benchmark capabilities identified from global digital adoption and workflow tools.
 
+### 1.1. Universal Scope: Organizational Procedures & Software Workflows
+The platform is designed to handle two fundamental classes of procedural knowledge:
+1. **Organizational & Government Procedures (فرایندهای سازمانی و اداری)**: Regulatory portals, government tax systems (*Samaneh Moadian*), social security (*Tamin*), digital token certification (*GICA*), internal HRMS onboarding, expense reimbursement, and inventory management.
+2. **Specialized Software & Tool Workflows (دستورالعمل‌ها و کار با نرم‌افزارها)**: Task-oriented, step-by-step guides for technical and office software—such as exporting clean SVGs and design tokens in **Figma**, resolving merge conflicts and rebasing in **Git**, performing bank statement reconciliations with XLOOKUP in **Excel**, building optimized container images in **Docker**, and managing accounting entries in **Sepidar**.
+
+### 1.2. Strict Multi-Page Architecture (No Single-Page Monolith)
+To ensure optimal SEO, shareability, deep-linking, and focused user context, the application strictly adheres to a multi-page URL hierarchy:
+- `/`: Central Landing Page with Google-style Omni-Search, live flow simulator, and featured catalog.
+- `/process/[slug]`: Dedicated, full-screen procedural workspace for each individual workflow with flowchart stepper, error matrix, copyable field presets, and persistent scratchpad.
+- `/systems`: Directory of all desktop/cloud software tools and government/enterprise portals.
+- `/system/[slug]`: Dedicated hub for a specific software or portal (e.g. `/system/figma`, `/system/git`, `/system/moadian`) listing all related procedures.
+- `/organizations`: Directory of public authorities, ministries, and internal enterprise departments.
+- `/errors`: Global searchable error database & troubleshooting directory for instant reverse-lookup.
+
 ---
 
 ## 2. Core Functional Modules
