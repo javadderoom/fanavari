@@ -15,7 +15,9 @@ import {
   Building2, 
   Sparkles,
   Code2,
-  Plus
+  Plus,
+  Lock,
+  ShieldCheck
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -85,9 +87,25 @@ export function Navbar({ onSearchClick, onCreateProcessClick }: NavbarProps) {
             <span>بانک خطاها</span>
           </Link>
 
-          <Link href="/dev" className="hover:text-blue-600 transition-colors flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-            <Code2 className="w-3.5 h-3.5" />
+          <Link 
+            href="/dev" 
+            className={`transition-colors flex items-center gap-1.5 px-2 py-1 rounded-lg ${
+              isSuperAdmin 
+                ? 'text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 font-semibold' 
+                : 'text-amber-600 dark:text-amber-400 hover:text-amber-700'
+            }`}
+          >
+            {isSuperAdmin ? (
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            ) : (
+              <Lock className="w-3.5 h-3.5 text-amber-500" />
+            )}
             <span>کنسول فنی /dev</span>
+            {!isSuperAdmin && (
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                قفل
+              </span>
+            )}
           </Link>
         </nav>
 

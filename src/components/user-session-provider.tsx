@@ -42,6 +42,7 @@ export const DEMO_USERS: AppUser[] = [
 interface UserContextType {
   currentUser: AppUser;
   switchUser: (userId: string) => void;
+  loginAsSuperAdmin: (password?: string) => boolean;
   can: (permission: number) => boolean;
   isSuperAdmin: boolean;
 }
@@ -49,6 +50,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType>({
   currentUser: DEMO_USERS[0],
   switchUser: () => {},
+  loginAsSuperAdmin: () => true,
   can: () => true,
   isSuperAdmin: true,
 });
@@ -73,6 +75,17 @@ export function UserSessionProvider({ children }: { children: React.ReactNode })
     }
   };
 
+  const loginAsSuperAdmin = (password?: string): boolean => {
+    // Master password check (or empty for quick login)
+    if (!password || password === 'admin' || password === 'fanavari1403' || password === 'fanavari') {
+      const adminUser = DEMO_USERS[0];
+      setCurrentUser(adminUser);
+      localStorage.setItem('fanavari-active-user', adminUser.id);
+      return true;
+    }
+    return false;
+  };
+
   const can = (permission: number): boolean => {
     return hasPermission(currentUser.permissions, permission);
   };
@@ -80,7 +93,7 @@ export function UserSessionProvider({ children }: { children: React.ReactNode })
   const isSuperAdmin = (currentUser.permissions & Permissions.ADMINISTRATOR) === Permissions.ADMINISTRATOR;
 
   return (
-    <UserContext.Provider value={{ currentUser, switchUser, can, isSuperAdmin }}>
+    <UserContext.Provider value={{ currentUser, switchUser, loginAsSuperAdmin, can, isSuperAdmin }}>
       {children}
     </UserContext.Provider>
   );

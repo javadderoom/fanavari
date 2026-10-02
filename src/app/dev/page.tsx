@@ -29,10 +29,44 @@ import {
   ArrowLeft,
   Lock,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  KeyRound,
+  ShieldAlert,
+  Eye,
+  EyeOff,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
+import { useUserSession } from '@/components/user-session-provider';
 
 export default function DevDocsPage() {
+  const { currentUser, switchUser, loginAsSuperAdmin, isSuperAdmin } = useUserSession();
+
+  // Super Admin Login Gate State
+  const [passwordInput, setPasswordInput] = useState('');
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handlePasswordLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
+
+    const success = loginAsSuperAdmin(passwordInput.trim());
+    if (!success) {
+      setError('رمز عبور مدیر ارشد نادرست است. لطفاً از رمز "admin" استفاده کنید یا روی ورود سریع کلیک نمایید.');
+    } else {
+      setPasswordInput('');
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleQuickUnlock = () => {
+    setError('');
+    loginAsSuperAdmin('admin');
+  };
+
   // Live Bitfield Playground State
   const [selectedBitfield, setSelectedBitfield] = useState<number>(
     Permissions.VIEW_PROCESSES | Permissions.CREATE_PROCESSES | Permissions.EDIT_PROCESSES
@@ -60,51 +94,239 @@ export default function DevDocsPage() {
     >
       <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs font-semibold mb-6" style={{ color: 'var(--text-muted)' }}>
-          <Link href="/" className="hover:text-blue-600 flex items-center gap-1">
-            <Home className="w-3.5 h-3.5" />
-            <span>خانه</span>
-          </Link>
-          <span>/</span>
-          <span className="text-blue-600">کنسول توسعه و معماری (/dev)</span>
-        </nav>
+      {!isSuperAdmin ? (
+        /* Super Admin Access Gate (Locked State) */
+        <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col justify-center">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-xs font-semibold mb-8" style={{ color: 'var(--text-muted)' }}>
+            <Link href="/" className="hover:text-blue-600 flex items-center gap-1">
+              <Home className="w-3.5 h-3.5" />
+              <span>خانه</span>
+            </Link>
+            <span>/</span>
+            <span className="text-amber-600 font-bold">منطقه حفاظت‌شده مهندسی (/dev)</span>
+          </nav>
 
-        {/* Hero Header */}
-        <div className="glass-panel-strong rounded-3xl p-6 sm:p-8 border shadow-xl mb-12"
-          style={{ borderColor: 'var(--border-glass)' }}
-        >
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
-                <Code2 className="w-3.5 h-3.5" />
-                <span>ENVIRONMENT: DEVELOPMENT • ROUTE: /dev</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black" style={{ color: 'var(--text-primary)' }}>
-                شناسنامه فنی، معماری و تصمیمات مهندسی سامانه فناوری
-              </h1>
-              <p className="text-sm sm:text-base font-medium leading-relaxed max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-                مستندات شفاف تمام تکنولوژی‌های زیرساخت، کدنویسی، امنیت بیتی دیسکورد، داکر، پایگاه داده PostgreSQL و استدلال انتخاب هر فناوری.
-              </p>
-            </div>
+          {/* Super Admin Lock Gate Card */}
+          <div className="glass-panel-strong rounded-3xl p-8 sm:p-12 border shadow-2xl relative overflow-hidden"
+            style={{ borderColor: 'rgba(239, 68, 68, 0.25)' }}
+          >
+            {/* Ambient Lighting Accents */}
+            <div className="absolute top-0 right-0 w-72 h-72 bg-rose-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+            <div className="absolute bottom-0 left-0 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
 
-            <div className="p-4 rounded-2xl border text-xs space-y-1.5 shrink-0"
-              style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
-            >
-              <div className="flex items-center gap-2 font-bold text-emerald-600">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>داکر دیتابیس: متصل و فعال (Port 5433)</span>
+            <div className="relative z-10 flex flex-col items-center text-center max-w-lg mx-auto space-y-6">
+              {/* Animated Lock Shield Badge */}
+              <div className="relative">
+                <div className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-lg transition-transform hover:scale-105"
+                  style={{
+                    background: 'linear-gradient(135deg, #ef4444, #f59e0b)',
+                    boxShadow: '0 10px 25px -5px rgba(239, 68, 68, 0.4)'
+                  }}
+                >
+                  <Lock className="w-10 h-10 text-white" />
+                </div>
+                <div className="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-900 text-amber-300 border border-amber-500/30">
+                  0x7FFFFFFF
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-slate-500 font-mono">
-                <span>Postgres 16 Alpine • Prisma 7.10.0</span>
+
+              {/* Security Header */}
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-rose-500/10 text-rose-600 border border-rose-500/20">
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <span>RESTRICTED ACCESS • SUPER ADMIN REQUIRED</span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-black" style={{ color: 'var(--text-primary)' }}>
+                  احراز هویت مدیر ارشد سامانه
+                </h1>
+                <p className="text-xs sm:text-sm font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                  صفحه شناسنامه معماری، مشخصات کانتینر داکر، متغیرهای فنی دیتابیس و شبیه‌ساز بیت‌فیلد در محیط امنیتی سطح ۱ قرار دارند. دسترسی به این بخش مستلزم مجوز <strong>مدیر ارشد (Super Admin)</strong> است.
+                </p>
               </div>
-              <div className="flex items-center gap-2 text-slate-500 font-mono">
-                <span>Next.js 16.3.8 • React 19 • TypeScript</span>
+
+              {/* Current Active User Status Card */}
+              <div className="w-full p-4 rounded-2xl border text-right space-y-2 text-xs"
+                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-500">کاربر و نشست جاری:</span>
+                  <span className="px-2 py-0.5 rounded font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                    {currentUser.roleName}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                  <span>{currentUser.name}</span>
+                  <span className="font-mono text-[11px]">{currentUser.email}</span>
+                </div>
+                <div className="pt-2 border-t flex items-center justify-between text-[11px]" style={{ borderColor: 'var(--border-subtle)' }}>
+                  <span className="text-slate-500">مجوز دیسکورد (Bitfield):</span>
+                  <span className="font-mono font-bold text-rose-500 flex items-center gap-1">
+                    <span>0x{currentUser.permissions.toString(16).toUpperCase()} (فاقد بیت 30 ADMINISTRATOR)</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Password Form */}
+              <form onSubmit={handlePasswordLogin} className="w-full space-y-3">
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={passwordInput}
+                    onChange={(e) => {
+                      setPasswordInput(e.target.value);
+                      if (error) setError('');
+                    }}
+                    placeholder="رمز عبور مدیر ارشد (پیش‌فرض: admin)"
+                    className="w-full px-4 py-3 pl-11 rounded-2xl border text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
+                    style={{
+                      background: 'var(--bg-input)',
+                      borderColor: error ? '#ef4444' : 'var(--border-glass)',
+                      color: 'var(--text-primary)',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    title={showPassword ? "مخفی‌سازی رمز" : "نمایش رمز"}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                {error && (
+                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 text-xs font-semibold text-right">
+                    {error}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-3 px-4 rounded-2xl text-xs font-bold transition-all shadow-md hover:shadow-lg hover:scale-[1.02] cursor-pointer flex items-center justify-center gap-2"
+                    style={{
+                      background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                      color: '#ffffff'
+                    }}
+                  >
+                    <KeyRound className="w-4 h-4" />
+                    <span>تأیید و ورود با رمز عبور</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleQuickUnlock}
+                    className="w-full py-3 px-4 rounded-2xl text-xs font-bold transition-all border hover:scale-[1.02] cursor-pointer flex items-center justify-center gap-2"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(245, 158, 11, 0.1))',
+                      borderColor: 'rgba(239, 68, 68, 0.3)',
+                      color: 'var(--text-primary)'
+                    }}
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    <span>ورود مستقیم (1-Click Super Admin)</span>
+                  </button>
+                </div>
+              </form>
+
+              {/* Back to Home Link */}
+              <div className="pt-2">
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold hover:text-blue-600 transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  <ArrowLeft className="w-3.5 h-3.5 rotate-180" />
+                  <span>بازگشت به کاتالوگ عمومی فرایندها</span>
+                </Link>
               </div>
             </div>
           </div>
-        </div>
+        </main>
+      ) : (
+        /* Super Admin Authenticated State */
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-xs font-semibold mb-6" style={{ color: 'var(--text-muted)' }}>
+            <Link href="/" className="hover:text-blue-600 flex items-center gap-1">
+              <Home className="w-3.5 h-3.5" />
+              <span>خانه</span>
+            </Link>
+            <span>/</span>
+            <span className="text-blue-600">کنسول توسعه و معماری (/dev)</span>
+          </nav>
+
+          {/* Super Admin Session Toolbar & Lock Tester */}
+          <div className="mb-6 p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm"
+            style={{
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.08))',
+              borderColor: 'rgba(16, 185, 129, 0.3)'
+            }}
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div className="text-right">
+                <div className="font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                  <span>احراز هویت شده به عنوان مدیر ارشد (Super Admin)</span>
+                  <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20">0x7FFFFFFF</span>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  تمامی ابزارهای معماری، مانیتور داکر، کدهای دیتابیس و شبیه‌ساز دسترسی فعال هستند.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => switchUser('usr-viewer')}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 hover:scale-105 transition-all cursor-pointer flex items-center gap-1.5"
+                title="تست قفل صفحه با تغییر نقش به پرسنل عادی"
+              >
+                <Lock className="w-3.5 h-3.5" />
+                <span>تست قفل صفحه (سوییچ به Viewer)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Hero Header */}
+          <div className="glass-panel-strong rounded-3xl p-6 sm:p-8 border shadow-xl mb-12"
+            style={{ borderColor: 'var(--border-glass)' }}
+          >
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                  <Code2 className="w-3.5 h-3.5" />
+                  <span>ENVIRONMENT: DEVELOPMENT • ROUTE: /dev</span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black" style={{ color: 'var(--text-primary)' }}>
+                  شناسنامه فنی، معماری و تصمیمات مهندسی سامانه فناوری
+                </h1>
+                <p className="text-sm sm:text-base font-medium leading-relaxed max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
+                  مستندات شفاف تمام تکنولوژی‌های زیرساخت، کدنویسی، امنیت بیتی دیسکورد، داکر، پایگاه داده PostgreSQL و استدلال انتخاب هر فناوری.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl border text-xs space-y-1.5 shrink-0"
+                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
+              >
+                <div className="flex items-center gap-2 font-bold text-emerald-600">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>داکر دیتابیس: متصل و فعال (Port 5433)</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-500 font-mono">
+                  <span>Postgres 16 Alpine • Prisma 7.10.0</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-500 font-mono">
+                  <span>Next.js 16.3.8 • React 19 • TypeScript</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
         {/* Section 1: Discord-Style Bitwise Permission System (Live Interactive Playground) */}
         <section className="mb-14">
@@ -385,6 +607,7 @@ export default function DevDocsPage() {
           </div>
         </section>
       </main>
+      )}
 
       <Footer />
     </div>
