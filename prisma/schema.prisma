@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Department {
+  id        String    @id @default(uuid())
+  name      String
+  slug      String    @unique
+  icon      String?
+  createdAt DateTime  @default(now())
+  processes Process[]
+}
+
+model Process {
+  id               String         @id @default(uuid())
+  title            String
+  slug             String         @unique
+  description      String
+  category         String
+  departmentId     String?
+  department       Department?    @relation(fields: [departmentId], references: [id])
+  estimatedMinutes Int            @default(10)
+  targetSystem     String?
+  targetUrl        String?
+  isPublished      Boolean        @default(true)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  steps            Step[]
+  savedSessions    SavedSession[]
+}
+
+model Step {
+  id              String       @id @default(uuid())
+  processId       String
+  process         Process      @relation(fields: [processId], references: [id], onDelete: Cascade)
+  orderIndex      Int
+  stepKey         String
+  title           String
+  contentMarkdown String
+  stepType        String       @default("action") // action, decision, warning, end
+  imageUrl        String?
+  hotspots        Json?        // Coordinates and labels on screenshots
+  copyableFields  Json?        // Helper sample data to copy
+  positionX       Float        @default(0)
+  positionY       Float        @default(0)
+  errorGuides     ErrorGuide[]
+}
+
+model ErrorGuide {
+  id               String  @id @default(uuid())
+  stepId           String
+  step             Step    @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  errorCode        String
+  errorTitle       String
+  solutionMarkdown String
+  screenshotUrl    String?
+}
+
+model SavedSession {
+  id             String   @id @default(uuid())
+  processId      String
+  process        Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
+  currentStepKey String?
+  scratchpadData Json?
+  completedSteps Json?
+  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now())
+}
