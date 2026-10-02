@@ -7,10 +7,8 @@ import { UserSwitcher } from './user-switcher';
 import { useUserSession } from './user-session-provider';
 import { Permissions } from '@/lib/permissions';
 import { 
-  Compass, 
   Search, 
   GitBranch, 
-  ShieldAlert, 
   Laptop, 
   Building2, 
   LayoutDashboard,
@@ -60,11 +58,6 @@ export function Navbar({ onSearchClick }: NavbarProps) {
 
         {/* Center Navigation Links */}
         <nav className="hidden lg:flex items-center gap-5 text-xs xl:text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>
-          <Link href="/" className="hover:text-blue-600 transition-colors flex items-center gap-1">
-            <Compass className="w-3.5 h-3.5" />
-            <span>کاتالوگ</span>
-          </Link>
-
           <Link href="/information" className="hover:text-blue-600 transition-colors flex items-center gap-1">
             <Megaphone className="w-3.5 h-3.5 text-indigo-500" />
             <span>اطلاعات و بخشنامه‌ها</span>
@@ -78,11 +71,6 @@ export function Navbar({ onSearchClick }: NavbarProps) {
           <Link href="/organizations" className="hover:text-blue-600 transition-colors flex items-center gap-1">
             <Building2 className="w-3.5 h-3.5 text-blue-500" />
             <span>سازمان‌ها</span>
-          </Link>
-
-          <Link href="/errors" className="hover:text-blue-600 transition-colors flex items-center gap-1">
-            <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
-            <span>بانک خطاها</span>
           </Link>
 
           <Link href="/dashboard" className="hover:text-blue-600 transition-colors flex items-center gap-1 text-indigo-600 dark:text-indigo-400">
