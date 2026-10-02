@@ -233,8 +233,9 @@ export function ProcessEditorModal({
 
   const handleAddStep = () => {
     const nextIndex = steps.length + 1;
+    const newId = `step-${Date.now()}-${nextIndex}`;
     const newStep: ProcessStep = {
-      id: `step-${Date.now()}-${nextIndex}`,
+      id: newId,
       orderIndex: nextIndex,
       stepKey: `step-${nextIndex}`,
       title: `گام ${nextIndex}: مرحله جدید`,
@@ -244,7 +245,17 @@ export function ProcessEditorModal({
       copyableFields: [],
       errorGuides: [],
     };
-    setSteps([...steps, newStep]);
+    setSteps((prev) => [...prev, newStep]);
+
+    // Automatically smooth-scroll to newly added step and focus its title
+    setTimeout(() => {
+      const el = document.getElementById(`step-card-${newId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const input = el.querySelector('input');
+        if (input) input.focus();
+      }
+    }, 120);
   };
 
   const handleRemoveStep = (indexToRemove: number) => {
@@ -871,12 +882,19 @@ export function ProcessEditorModal({
           </div>
 
           {/* Steps Management Section */}
-          <div className="pt-4 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
-            <div className="flex items-center justify-between mb-4">
+          <div className="pt-4 border-t relative" style={{ borderColor: 'var(--border-subtle)' }}>
+            <div className="sticky -top-6 z-20 backdrop-blur-md py-3 px-4 -mx-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 rounded-2xl shadow-xs"
+              style={{ borderColor: 'var(--border-glass)', background: 'var(--bg-glass-card)' }}
+            >
               <div>
-                <h3 className="text-base font-black" style={{ color: 'var(--text-primary)' }}>
-                  مراحل و گام‌های فرایند ({steps.length} گام)
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-black" style={{ color: 'var(--text-primary)' }}>
+                    مراحل و گام‌های فرایند
+                  </h3>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                    {steps.length} گام
+                  </span>
+                </div>
                 <span className="text-xs text-slate-500">
                   هر مرحله به عنوان یک نود در فلوچارت رسم شده و به ترتیب هدایت می‌شود.
                 </span>
@@ -885,7 +903,7 @@ export function ProcessEditorModal({
               <button
                 type="button"
                 onClick={handleAddStep}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white cursor-pointer hover:bg-blue-700 transition-colors"
+                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white cursor-pointer hover:bg-blue-700 transition-colors shadow-xs shrink-0"
               >
                 <Plus className="w-4 h-4" />
                 <span>افزودن مرحله جدید</span>
@@ -897,6 +915,7 @@ export function ProcessEditorModal({
               {steps.map((step, idx) => (
                 <div
                   key={step.id}
+                  id={`step-card-${step.id}`}
                   className="p-4 rounded-2xl border transition-all"
                   style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)' }}
                 >
@@ -1128,6 +1147,33 @@ export function ProcessEditorModal({
                   </div>
                 </div>
               ))}
+
+              {/* Bottom Prominent Add Step Button */}
+              <button
+                type="button"
+                onClick={handleAddStep}
+                className="w-full py-4 px-6 border-2 border-dashed rounded-2xl flex items-center justify-center gap-3 text-xs sm:text-sm font-black transition-all cursor-pointer hover:border-blue-500 hover:bg-blue-50/60 dark:hover:bg-blue-950/40 text-blue-600 dark:text-blue-400 group shadow-xs"
+                style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-surface)' }}
+              >
+                <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-xs">
+                  <Plus className="w-4 h-4 stroke-[3]" />
+                </div>
+                <span>افزودن مرحله جدید (گام {steps.length + 1})</span>
+              </button>
+
+              {/* Floating Quick Add Step Pill (Always accessible while scrolling) */}
+              {steps.length >= 2 && (
+                <div className="sticky bottom-2 z-30 flex justify-center pointer-events-none py-1">
+                  <button
+                    type="button"
+                    onClick={handleAddStep}
+                    className="pointer-events-auto flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-black text-white shadow-xl hover:shadow-blue-500/25 transition-all hover:scale-105 cursor-pointer bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 border border-white/20 backdrop-blur-md"
+                  >
+                    <Plus className="w-4 h-4 stroke-[3]" />
+                    <span>افزودن گام {steps.length + 1} (مرحله جدید)</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
