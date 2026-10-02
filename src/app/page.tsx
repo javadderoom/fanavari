@@ -7,12 +7,10 @@ import { Navbar } from '@/components/navbar';
 import { OmniSearch } from '@/components/omni-search';
 import { ProcessCard } from '@/components/process-card';
 import { ProcessDetailModal } from '@/components/process-detail-modal';
-import { ProcessEditorModal } from '@/components/process-editor-modal';
 import { InteractiveFlowSimulator } from '@/components/interactive-flow-simulator';
 import { FeaturesSection } from '@/components/features-section';
 import { Footer } from '@/components/footer';
 import { useUserSession } from '@/components/user-session-provider';
-import { Permissions } from '@/lib/permissions';
 import { CATEGORIES } from '@/data/mock-processes';
 import { Process } from '@/types/process';
 import { 
@@ -29,14 +27,13 @@ import {
   FileText,
   Laptop,
   Palette,
-  Plus,
   Loader2,
   Building2,
   X
 } from 'lucide-react';
 
 function HomePageContent() {
-  const { can, isSuperAdmin, currentUser } = useUserSession();
+  const { currentUser } = useUserSession();
   const searchParams = useSearchParams();
   const deptParam = searchParams.get('dept');
 
@@ -45,10 +42,6 @@ function HomePageContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedProcess, setSelectedProcess] = useState<Process | null>(null);
   const [selectedStepIndex, setSelectedStepIndex] = useState<number>(0);
-  
-  // Editor modal state
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [processToEdit, setProcessToEdit] = useState<Process | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -77,37 +70,6 @@ function HomePageContent() {
   const handleSelectProcess = (process: Process, initialStepIndex?: number) => {
     setSelectedProcess(process);
     setSelectedStepIndex(initialStepIndex || 0);
-  };
-
-  const handleOpenCreateModal = () => {
-    setProcessToEdit(null);
-    setIsEditorOpen(true);
-  };
-
-  const handleSaveProcess = async (savedProcess: Process) => {
-    setProcesses((prev) => {
-      const existingIdx = prev.findIndex((p) => p.id === savedProcess.id);
-      if (existingIdx !== -1) {
-        const next = [...prev];
-        next[existingIdx] = savedProcess;
-        return next;
-      }
-      return [savedProcess, ...prev];
-    });
-
-    // Also persist to PostgreSQL via API
-    try {
-      await fetch('/api/processes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-permissions': String(currentUser.permissions),
-        },
-        body: JSON.stringify(savedProcess),
-      });
-    } catch (e) {
-      console.warn('Database sync notification:', e);
-    }
   };
 
   const filteredProcesses = useMemo(() => {
@@ -161,7 +123,6 @@ function HomePageContent() {
       {/* Top Glassmorphic Navigation Bar */}
       <Navbar 
         onSearchClick={handleFocusSearch} 
-        onCreateProcessClick={handleOpenCreateModal}
       />
 
       <main className="flex-1">
@@ -293,18 +254,6 @@ function HomePageContent() {
                   );
                 })}
               </div>
-
-              {/* Action Button: Create New Process */}
-              {can(Permissions.CREATE_PROCESSES) && (
-                <button
-                  type="button"
-                  onClick={handleOpenCreateModal}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white cursor-pointer hover:bg-blue-700 transition-colors shadow-xs"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>ثبت فرایند جدید</span>
-                </button>
-              )}
             </div>
           </div>
 
@@ -379,14 +328,6 @@ function HomePageContent() {
         process={selectedProcess}
         initialStepIndex={selectedStepIndex}
         onClose={() => setSelectedProcess(null)}
-      />
-
-      {/* Process Creator / Editor Modal */}
-      <ProcessEditorModal
-        isOpen={isEditorOpen}
-        processToEdit={processToEdit}
-        onClose={() => setIsEditorOpen(false)}
-        onSave={handleSaveProcess}
       />
 
       {/* Global Footer */}

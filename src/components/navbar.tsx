@@ -13,19 +13,14 @@ import {
   ShieldAlert, 
   Laptop, 
   Building2, 
-  Sparkles,
-  Plus
+  LayoutDashboard
 } from 'lucide-react';
 
 interface NavbarProps {
   onSearchClick?: () => void;
-  onCreateProcessClick?: () => void;
 }
 
-export function Navbar({ onSearchClick, onCreateProcessClick }: NavbarProps) {
-  const { can, isSuperAdmin } = useUserSession();
-  const canCreate = can(Permissions.CREATE_PROCESSES);
-
+export function Navbar({ onSearchClick }: NavbarProps) {
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b transition-colors duration-200"
       style={{
@@ -83,23 +78,15 @@ export function Navbar({ onSearchClick, onCreateProcessClick }: NavbarProps) {
             <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
             <span>بانک خطاها</span>
           </Link>
+
+          <Link href="/dashboard" className="hover:text-blue-600 transition-colors flex items-center gap-1 text-indigo-600 dark:text-indigo-400">
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            <span>داشبورد مدیریت</span>
+          </Link>
         </nav>
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 sm:gap-2.5">
-          {/* Quick Create Process Button (for Super Admin / Editor) */}
-          {canCreate && onCreateProcessClick && (
-            <button
-              onClick={onCreateProcessClick}
-              type="button"
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer hover:scale-105"
-              style={{ background: 'var(--accent-primary)', color: '#ffffff' }}
-              title="ثبت فرایند جدید در سامانه"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">ثبت فرایند</span>
-            </button>
-          )}
 
           {/* Quick Search Trigger */}
           {onSearchClick && (
