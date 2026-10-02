@@ -1160,20 +1160,6 @@ export function ProcessEditorModal({
                 </div>
                 <span>افزودن مرحله جدید (گام {steps.length + 1})</span>
               </button>
-
-              {/* Floating Quick Add Step Pill (Always accessible while scrolling) */}
-              {steps.length >= 2 && (
-                <div className="sticky bottom-2 z-30 flex justify-center pointer-events-none py-1">
-                  <button
-                    type="button"
-                    onClick={handleAddStep}
-                    className="pointer-events-auto flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-black text-white shadow-xl hover:shadow-blue-500/25 transition-all hover:scale-105 cursor-pointer bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 border border-white/20 backdrop-blur-md"
-                  >
-                    <Plus className="w-4 h-4 stroke-[3]" />
-                    <span>افزودن گام {steps.length + 1} (مرحله جدید)</span>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 
