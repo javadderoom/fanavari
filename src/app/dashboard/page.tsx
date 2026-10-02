@@ -1290,7 +1290,7 @@ export default function DashboardPage() {
 
                           <td className="p-4 text-slate-500 font-mono text-[11px]" dir="ltr">
                             {post.publishedAt
-                              ? `\u200E${new Date(post.publishedAt).toLocaleDateString('fa-IR')}`
+                              ? '\u200E' + new Date(post.publishedAt).toLocaleDateString('fa-IR')
                               : '-'}
                           </td>
 

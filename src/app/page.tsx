@@ -211,7 +211,7 @@ function HomePageContent() {
                           </span>
                         )}
                         <span className="text-[11px] font-mono text-slate-400" dir="ltr">
-                          \u200E{new Date(announcements[0].publishedAt).toLocaleDateString('fa-IR')}
+                          {'\u200E' + new Date(announcements[0].publishedAt).toLocaleDateString('fa-IR')}
                         </span>
                       </div>
                       <Link

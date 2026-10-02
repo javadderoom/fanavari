@@ -180,7 +180,7 @@ export default async function InformationDetailPage({ params }: Props) {
               {/* Publication Date */}
               <div className="flex items-center gap-1.5 text-xs text-slate-400 font-mono" dir="ltr">
                 <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                <span>\u200E{new Date(post.publishedAt).toLocaleDateString('fa-IR')}</span>
+                <span>{'\u200E' + new Date(post.publishedAt).toLocaleDateString('fa-IR')}</span>
               </div>
             </div>
 

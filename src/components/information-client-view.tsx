@@ -282,7 +282,7 @@ export function InformationClientView({
 
                       <span className="flex items-center gap-1 text-[11px] font-mono text-slate-400" dir="ltr">
                         <Calendar className="w-3 h-3" />
-                        <span>\u200E{new Date(post.publishedAt).toLocaleDateString('fa-IR')}</span>
+                        <span>{'\u200E' + new Date(post.publishedAt).toLocaleDateString('fa-IR')}</span>
                       </span>
                     </div>
 
@@ -423,7 +423,7 @@ export function InformationClientView({
 
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] font-mono text-slate-400" dir="ltr">
-                        \u200E{new Date(post.publishedAt).toLocaleDateString('fa-IR')}
+                        {'\u200E' + new Date(post.publishedAt).toLocaleDateString('fa-IR')}
                       </span>
                       <Link
                         href={`/information/${post.slug}`}
