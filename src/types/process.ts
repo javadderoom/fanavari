@@ -51,8 +51,10 @@ export interface SystemTool {
 }
 
 export interface OrganizationEntity {
+  id?: string;
   slug: string;
   name: string;
+  icon?: string;
   category: 'gov' | 'enterprise' | 'tech';
   description: string;
   processCount: number;

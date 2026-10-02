@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUserSession } from './user-session-provider';
 import { 
   X, 
@@ -14,15 +14,17 @@ import {
   GraduationCap, 
   Loader2, 
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Edit
 } from 'lucide-react';
 import { OrganizationEntity } from '@/types/process';
 import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
 
 interface DepartmentEditorModalProps {
   isOpen: boolean;
+  departmentToEdit?: OrganizationEntity | null;
   onClose: () => void;
-  onSuccess: (newOrg: OrganizationEntity) => void;
+  onSuccess: (org: OrganizationEntity) => void;
 }
 
 const AVAILABLE_ICONS = [
@@ -37,10 +39,12 @@ const AVAILABLE_ICONS = [
 
 export function DepartmentEditorModal({
   isOpen,
+  departmentToEdit,
   onClose,
   onSuccess,
 }: DepartmentEditorModalProps) {
   const { currentUser } = useUserSession();
+  const isEditing = Boolean(departmentToEdit);
 
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
@@ -49,11 +53,26 @@ export function DepartmentEditorModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (departmentToEdit) {
+      setName(departmentToEdit.name);
+      setSlug(departmentToEdit.slug);
+      setIcon(departmentToEdit.icon || 'Building2');
+      setIsSlugManuallyEdited(true);
+    } else {
+      setName('');
+      setSlug('');
+      setIcon('Building2');
+      setIsSlugManuallyEdited(false);
+    }
+    setErrorMessage(null);
+  }, [departmentToEdit, isOpen]);
+
   if (!isOpen) return null;
 
   const handleNameChange = (val: string) => {
     setName(val);
-    if (!isSlugManuallyEdited) {
+    if (!isSlugManuallyEdited && !isEditing) {
       setSlug(formatToSlug(val));
     }
   };
@@ -81,32 +100,39 @@ export function DepartmentEditorModal({
     const finalSlug = cleanSlugForSubmit(slug || name, 'org');
 
     try {
-      const res = await fetch('/api/departments', {
-        method: 'POST',
+      const endpoint = '/api/departments';
+      const method = isEditing ? 'PUT' : 'POST';
+      const payload = isEditing
+        ? {
+            id: departmentToEdit?.id,
+            currentSlug: departmentToEdit?.slug,
+            name: name.trim(),
+            slug: finalSlug,
+            icon,
+          }
+        : {
+            name: name.trim(),
+            slug: finalSlug,
+            icon,
+          };
+
+      const res = await fetch(endpoint, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           'x-user-permissions': String(currentUser.permissions),
         },
-        body: JSON.stringify({
-          name: name.trim(),
-          slug: finalSlug,
-          icon,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'خطایی در ثبت سازمان رخ داد.');
+        throw new Error(data.error || 'خطایی در پردازش اطلاعات سازمان رخ داد.');
       }
 
       onSuccess(data);
       onClose();
-      // Reset form
-      setName('');
-      setSlug('');
-      setIsSlugManuallyEdited(false);
-      setIcon('Building2');
     } catch (err: any) {
       setErrorMessage(err.message || 'خطا در برقراری ارتباط با پایگاه داده.');
     } finally {
@@ -126,14 +152,18 @@ export function DepartmentEditorModal({
             <div className="w-10 h-10 rounded-2xl flex items-center justify-center border shadow-xs"
               style={{ background: 'var(--accent-soft)', borderColor: 'var(--accent-border)' }}
             >
-              <Building2 className="w-5 h-5 text-blue-600" />
+              {isEditing ? (
+                <Edit className="w-5 h-5 text-blue-600" />
+              ) : (
+                <Building2 className="w-5 h-5 text-blue-600" />
+              )}
             </div>
             <div>
               <h2 className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>
-                ثبت سازمان یا ارگان جدید
+                {isEditing ? 'ویرایش اطلاعات سازمان' : 'ثبت سازمان یا ارگان جدید'}
               </h2>
               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                ذخیره مستقیم در پایگاه داده جهت اتصال به فرایندهای رسمی
+                {isEditing ? 'ویرایش مشخصات، نام و شناسه سازمانی در پایگاه داده' : 'ذخیره مستقیم در پایگاه داده جهت اتصال به فرایندهای رسمی'}
               </p>
             </div>
           </div>
@@ -262,12 +292,12 @@ export function DepartmentEditorModal({
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>در حال ذخیره در دیتابیس...</span>
+                  <span>در حال ذخیره...</span>
                 </>
               ) : (
                 <>
                   <Save className="w-3.5 h-3.5" />
-                  <span>ثبت سازمان در پایگاه داده</span>
+                  <span>{isEditing ? 'ذخیره تغییرات سازمان' : 'ثبت سازمان در پایگاه داده'}</span>
                 </>
               )}
             </button>

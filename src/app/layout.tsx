@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { UserSessionProvider } from "@/components/user-session-provider";
+import { Toaster } from "@/lib/notify";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -27,6 +28,7 @@ export default function RootLayout({
         <ThemeProvider>
           <UserSessionProvider>
             {children}
+            <Toaster />
           </UserSessionProvider>
         </ThemeProvider>
       </body>

@@ -9,6 +9,7 @@ import { Permissions, hasPermission, ROLE_PRESETS } from '@/lib/permissions';
 import { ProcessEditorModal } from '@/components/process-editor-modal';
 import { DepartmentEditorModal } from '@/components/department-editor-modal';
 import { Process, OrganizationEntity } from '@/types/process';
+import { notify } from '@/lib/notify';
 import { 
   LayoutDashboard, 
   Workflow, 
@@ -28,7 +29,8 @@ import {
   ShieldAlert,
   Loader2,
   ChevronLeft,
-  KeyRound
+  KeyRound,
+  Trash2
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -49,6 +51,7 @@ export default function DashboardPage() {
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [processToEdit, setProcessToEdit] = useState<Process | null>(null);
   const [isDeptModalOpen, setIsDeptModalOpen] = useState(false);
+  const [deptToEdit, setDeptToEdit] = useState<OrganizationEntity | null>(null);
 
   // Check permissions
   const canCreateProcess = can(Permissions.CREATE_PROCESSES) || isSuperAdmin;
@@ -129,8 +132,66 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDeptCreated = (newDept: OrganizationEntity) => {
-    setDepartments((prev) => [newDept, ...prev.filter((d) => d.slug !== newDept.slug)]);
+  // Handlers for department operations
+  const handleOpenCreateDept = () => {
+    setDeptToEdit(null);
+    setIsDeptModalOpen(true);
+  };
+
+  const handleEditDept = (dept: OrganizationEntity) => {
+    setDeptToEdit(dept);
+    setIsDeptModalOpen(true);
+  };
+
+  const handleDeptSaved = (savedDept: OrganizationEntity) => {
+    setDepartments((prev) => {
+      const idx = prev.findIndex((d) => d.id === savedDept.id || d.slug === savedDept.slug);
+      if (idx !== -1) {
+        const next = [...prev];
+        next[idx] = savedDept;
+        return next;
+      }
+      return [savedDept, ...prev];
+    });
+    notify.success(`سازمان «${savedDept.name}» با موفقیت ذخیره گردید.`);
+    fetchDashboardData();
+  };
+
+  const handleDeleteDept = async (dept: OrganizationEntity) => {
+    const confirmed = await notify.confirm({
+      title: 'حذف سازمان از پایگاه داده',
+      message: `آیا از حذف سازمان «${dept.name}» اطمینان کامل دارید؟ ${
+        dept.processCount > 0
+          ? `این سازمان در حال حاضر به ${dept.processCount} فرایند متصل است. در صورت حذف، فرایندها بدون سازمان متولی باقی خواهند ماند.`
+          : ''
+      }`,
+      confirmText: 'بله، حذف شود',
+      cancelText: 'انصراف',
+      isDestructive: true,
+    });
+
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/departments?id=${dept.id || ''}&slug=${dept.slug}`, {
+        method: 'DELETE',
+        headers: {
+          'x-user-permissions': String(currentUser.permissions),
+        },
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'خطا در حذف سازمان');
+      }
+
+      setDepartments((prev) => prev.filter((d) => d.slug !== dept.slug && d.id !== dept.id));
+      notify.success(`سازمان «${dept.name}» با موفقیت از پایگاه داده حذف گردید.`);
+      fetchDashboardData();
+    } catch (err: any) {
+      console.error('Error deleting department:', err);
+      notify.error(err.message || 'خطا در حذف سازمان.');
+    }
   };
 
   // Filtered lists
@@ -480,7 +541,7 @@ export default function DashboardPage() {
               {canCreateDept && (
                 <button
                   type="button"
-                  onClick={() => setIsDeptModalOpen(true)}
+                  onClick={handleOpenCreateDept}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-2xs cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -504,7 +565,7 @@ export default function DashboardPage() {
                 {canCreateDept && (
                   <button
                     type="button"
-                    onClick={() => setIsDeptModalOpen(true)}
+                    onClick={handleOpenCreateDept}
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -523,6 +584,7 @@ export default function DashboardPage() {
                       <th className="p-4">شناسه یکتا (Slug)</th>
                       <th className="p-4 text-center">فرایندهای مرتبط</th>
                       <th className="p-4 text-center">مشاهده</th>
+                      <th className="p-4 text-center">عملیات</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
@@ -557,9 +619,33 @@ export default function DashboardPage() {
                             target="_blank"
                             className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline"
                           >
-                            <span>مشاهده در کاتالوگ</span>
+                            <span>مشاهده</span>
                             <ExternalLink className="w-3 h-3" />
                           </Link>
+                        </td>
+                        <td className="p-4 text-center">
+                          {canCreateDept ? (
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleEditDept(dept)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/50 transition-colors cursor-pointer"
+                                title="ویرایش سازمان"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteDept(dept)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                                title="حذف سازمان"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-slate-400 select-none">فقط خواندنی</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -690,11 +776,15 @@ export default function DashboardPage() {
         onSave={handleSaveProcess}
       />
 
-      {/* Organization Registration Modal (Opened Only From Dashboard) */}
+      {/* Organization Registration / Edit Modal */}
       <DepartmentEditorModal
         isOpen={isDeptModalOpen}
-        onClose={() => setIsDeptModalOpen(false)}
-        onSuccess={handleDeptCreated}
+        departmentToEdit={deptToEdit}
+        onClose={() => {
+          setIsDeptModalOpen(false);
+          setDeptToEdit(null);
+        }}
+        onSuccess={handleDeptSaved}
       />
 
       <Footer />
