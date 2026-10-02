@@ -89,6 +89,13 @@ async function main() {
     });
 
     if (!existing) {
+      const systemTool = await prisma.systemTool.findUnique({
+        where: { slug: proc.targetSystemSlug },
+      });
+      const department = await prisma.department.findFirst({
+        where: { name: proc.departmentName },
+      });
+
       await prisma.process.create({
         data: {
           slug: proc.slug,
@@ -100,6 +107,8 @@ async function main() {
           targetSystem: proc.targetSystem,
           targetUrl: proc.targetUrl,
           authorId: superAdmin.id,
+          systemToolId: systemTool?.id,
+          departmentId: department?.id,
           steps: {
             create: proc.steps.map((step) => ({
               orderIndex: step.orderIndex,
