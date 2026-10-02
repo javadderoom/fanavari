@@ -3,6 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
+import { UserSwitcher } from './user-switcher';
+import { useUserSession } from './user-session-provider';
+import { Permissions } from '@/lib/permissions';
 import { 
   Compass, 
   Search, 
@@ -10,14 +13,20 @@ import {
   ShieldAlert, 
   Laptop, 
   Building2, 
-  Sparkles 
+  Sparkles,
+  Code2,
+  Plus
 } from 'lucide-react';
 
 interface NavbarProps {
   onSearchClick?: () => void;
+  onCreateProcessClick?: () => void;
 }
 
-export function Navbar({ onSearchClick }: NavbarProps) {
+export function Navbar({ onSearchClick, onCreateProcessClick }: NavbarProps) {
+  const { can, isSuperAdmin } = useUserSession();
+  const canCreate = can(Permissions.CREATE_PROCESSES);
+
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b transition-colors duration-200"
       style={{
@@ -25,9 +34,9 @@ export function Navbar({ onSearchClick }: NavbarProps) {
         backgroundColor: 'var(--bg-glass-strong)',
       }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
         {/* Brand / Logo */}
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-2.5 shrink-0">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md transition-transform hover:scale-105"
             style={{
               background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
@@ -37,7 +46,7 @@ export function Navbar({ onSearchClick }: NavbarProps) {
             <GitBranch className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <span className="text-xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
                 فناوری
               </span>
@@ -48,69 +57,80 @@ export function Navbar({ onSearchClick }: NavbarProps) {
                   border: '1px solid var(--accent-border)'
                 }}
               >
-                نسخه ۱.۰
+                MVP
               </span>
             </div>
-            <p className="text-[11px] font-medium hidden sm:block" style={{ color: 'var(--text-muted)' }}>
-              ناوبری بصری و هوشمند فرایندهای سازمانی و نرم‌افزاری
-            </p>
           </div>
         </Link>
 
-        {/* Center / Multi-Page Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
-          <Link href="/" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
-            <Compass className="w-4 h-4" />
-            <span>کاتالوگ فرایندها</span>
+        {/* Center Navigation Links */}
+        <nav className="hidden lg:flex items-center gap-5 text-xs xl:text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>
+          <Link href="/" className="hover:text-blue-600 transition-colors flex items-center gap-1">
+            <Compass className="w-3.5 h-3.5" />
+            <span>کاتالوگ</span>
           </Link>
 
-          <Link href="/systems" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
-            <Laptop className="w-4 h-4 text-purple-500" />
+          <Link href="/systems" className="hover:text-blue-600 transition-colors flex items-center gap-1">
+            <Laptop className="w-3.5 h-3.5 text-purple-500" />
             <span>نرم‌افزارها و ابزارها</span>
           </Link>
 
-          <Link href="/organizations" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
-            <Building2 className="w-4 h-4 text-blue-500" />
-            <span>سازمان‌ها و ادارات</span>
+          <Link href="/organizations" className="hover:text-blue-600 transition-colors flex items-center gap-1">
+            <Building2 className="w-3.5 h-3.5 text-blue-500" />
+            <span>سازمان‌ها</span>
           </Link>
 
-          <Link href="/errors" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
-            <ShieldAlert className="w-4 h-4 text-rose-500" />
-            <span>بانک خطایابی</span>
+          <Link href="/errors" className="hover:text-blue-600 transition-colors flex items-center gap-1">
+            <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
+            <span>بانک خطاها</span>
           </Link>
 
-          <a href="/#flow-simulator" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-amber-500" />
-            <span>شبیه‌ساز زنده</span>
-          </a>
+          <Link href="/dev" className="hover:text-blue-600 transition-colors flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+            <Code2 className="w-3.5 h-3.5" />
+            <span>کنسول فنی /dev</span>
+          </Link>
         </nav>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-3">
-          {/* Quick Search Trigger Button */}
-          <button
-            onClick={onSearchClick}
-            type="button"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-all"
-            style={{
-              background: 'var(--bg-input)',
-              border: '1px solid var(--border-glass)',
-              color: 'var(--text-muted)',
-            }}
-            title="جستجوی هوشمند در تمام فرایندها"
-          >
-            <Search className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">جستجو...</span>
-            <kbd className="px-1.5 py-0.5 rounded text-[10px] font-mono shadow-xs"
-              style={{
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-faint)'
-              }}
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Quick Create Process Button (for Super Admin / Editor) */}
+          {canCreate && onCreateProcessClick && (
+            <button
+              onClick={onCreateProcessClick}
+              type="button"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer hover:scale-105"
+              style={{ background: 'var(--accent-primary)', color: '#ffffff' }}
+              title="ثبت فرایند جدید در سامانه"
             >
-              /
-            </kbd>
-          </button>
+              <Plus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">ثبت فرایند</span>
+            </button>
+          )}
+
+          {/* Quick Search Trigger */}
+          {onSearchClick && (
+            <button
+              onClick={onSearchClick}
+              type="button"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-all"
+              style={{
+                background: 'var(--bg-input)',
+                border: '1px solid var(--border-glass)',
+                color: 'var(--text-muted)',
+              }}
+              title="جستجوی سریع"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <kbd className="px-1 py-0.5 rounded text-[10px] font-mono"
+                style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+              >
+                /
+              </kbd>
+            </button>
+          )}
+
+          {/* User Session Switcher (Discord Bitfield) */}
+          <UserSwitcher />
 
           {/* Theme Toggle Button (Light by default) */}
           <ThemeToggle />

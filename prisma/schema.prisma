@@ -6,6 +6,19 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String
+  roleName      String         @default("User") // "Super Admin" | "Manager" | "Editor" | "Viewer"
+  permissions   Int            @default(1) // Discord-style bitfield flags (Int supports 31 bit flags)
+  avatarUrl     String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  processes     Process[]      @relation("CreatedProcesses")
+  savedSessions SavedSession[]
+}
+
 model Department {
   id        String    @id @default(uuid())
   name      String
@@ -38,6 +51,8 @@ model Process {
   department       Department?    @relation(fields: [departmentId], references: [id])
   systemToolId     String?
   systemTool       SystemTool?    @relation(fields: [systemToolId], references: [id])
+  authorId         String?
+  author           User?          @relation("CreatedProcesses", fields: [authorId], references: [id])
   estimatedMinutes Int            @default(10)
   targetSystem     String?
   targetUrl        String?
@@ -77,6 +92,8 @@ model ErrorGuide {
 
 model SavedSession {
   id             String   @id @default(uuid())
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   processId      String
   process        Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
   currentStepKey String?

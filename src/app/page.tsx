@@ -1,13 +1,16 @@
 'use client';
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Navbar } from '@/components/navbar';
 import { OmniSearch } from '@/components/omni-search';
 import { ProcessCard } from '@/components/process-card';
 import { ProcessDetailModal } from '@/components/process-detail-modal';
+import { ProcessEditorModal } from '@/components/process-editor-modal';
 import { InteractiveFlowSimulator } from '@/components/interactive-flow-simulator';
 import { FeaturesSection } from '@/components/features-section';
 import { Footer } from '@/components/footer';
+import { useUserSession } from '@/components/user-session-provider';
+import { Permissions } from '@/lib/permissions';
 import { MOCK_PROCESSES, CATEGORIES } from '@/data/mock-processes';
 import { Process } from '@/types/process';
 import { 
@@ -23,13 +26,21 @@ import {
   Headphones, 
   FileText,
   Laptop,
-  Palette
+  Palette,
+  Plus
 } from 'lucide-react';
 
 export default function HomePage() {
+  const { can, isSuperAdmin, currentUser } = useUserSession();
+  const [processes, setProcesses] = useState<Process[]>(MOCK_PROCESSES);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedProcess, setSelectedProcess] = useState<Process | null>(null);
   const [selectedStepIndex, setSelectedStepIndex] = useState<number>(0);
+  
+  // Editor modal state
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [processToEdit, setProcessToEdit] = useState<Process | null>(null);
+
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const handleSelectProcess = (process: Process, initialStepIndex?: number) => {
@@ -37,11 +48,42 @@ export default function HomePage() {
     setSelectedStepIndex(initialStepIndex || 0);
   };
 
+  const handleOpenCreateModal = () => {
+    setProcessToEdit(null);
+    setIsEditorOpen(true);
+  };
+
+  const handleSaveProcess = async (savedProcess: Process) => {
+    setProcesses((prev) => {
+      const existingIdx = prev.findIndex((p) => p.id === savedProcess.id);
+      if (existingIdx !== -1) {
+        const next = [...prev];
+        next[existingIdx] = savedProcess;
+        return next;
+      }
+      return [savedProcess, ...prev];
+    });
+
+    // Also persist to PostgreSQL via API
+    try {
+      await fetch('/api/processes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-permissions': String(currentUser.permissions),
+        },
+        body: JSON.stringify(savedProcess),
+      });
+    } catch (e) {
+      console.warn('Database sync notification:', e);
+    }
+  };
+
   const filteredProcesses = useMemo(() => {
-    if (selectedCategory === 'all') return MOCK_PROCESSES;
-    if (selectedCategory === 'software') return MOCK_PROCESSES.filter(p => p.scope === 'software');
-    return MOCK_PROCESSES.filter(p => p.category === selectedCategory);
-  }, [selectedCategory]);
+    if (selectedCategory === 'all') return processes;
+    if (selectedCategory === 'software') return processes.filter(p => p.scope === 'software');
+    return processes.filter(p => p.category === selectedCategory);
+  }, [processes, selectedCategory]);
 
   const handleFocusSearch = () => {
     searchInputRef.current?.focus();
@@ -66,7 +108,10 @@ export default function HomePage() {
       style={{ backgroundColor: 'var(--bg-app)', color: 'var(--text-primary)' }}
     >
       {/* Top Glassmorphic Navigation Bar */}
-      <Navbar onSearchClick={handleFocusSearch} />
+      <Navbar 
+        onSearchClick={handleFocusSearch} 
+        onCreateProcessClick={handleOpenCreateModal}
+      />
 
       <main className="flex-1">
         {/* Hero Section */}
@@ -87,7 +132,7 @@ export default function HomePage() {
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                 <Workflow className="w-3.5 h-3.5 text-blue-600" />
-                <span>سامانه راهنمای تعاملی و بصری فرایندهای سازمانی</span>
+                <span>سامانه راهنمای تعاملی و بصری فرایندهای سازمانی و نرم‌افزاری</span>
               </div>
             </div>
 
@@ -112,7 +157,7 @@ export default function HomePage() {
             {/* Omni-Search Box (Google-style, prominent) */}
             <div className="mb-14">
               <OmniSearch 
-                processes={MOCK_PROCESSES} 
+                processes={processes} 
                 onSelectProcess={handleSelectProcess} 
                 inputRef={searchInputRef}
               />
@@ -122,7 +167,7 @@ export default function HomePage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
               <div className="glass-card rounded-2xl p-4 text-center">
                 <span className="text-2xl sm:text-3xl font-black text-blue-600 block mb-0.5">
-                  ۸
+                  {processes.length}
                 </span>
                 <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>
                   فرایند استاندارد تدوین‌شده
@@ -168,38 +213,47 @@ export default function HomePage() {
                 دایرکتوری دستورالعمل‌ها
               </span>
               <h2 className="text-2xl sm:text-3xl font-black" style={{ color: 'var(--text-primary)' }}>
-                کاتالوگ فرایندهای سازمانی
+                کاتالوگ فرایندهای سازمانی و نرم‌افزاری
               </h2>
             </div>
 
-            {/* Category Filter Pills */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {CATEGORIES.map((cat) => {
-                const isSelected = selectedCategory === cat.key;
-                return (
-                  <button
-                    key={cat.key}
-                    type="button"
-                    onClick={() => setSelectedCategory(cat.key)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      isSelected ? 'shadow-sm scale-105' : 'opacity-70 hover:opacity-100'
-                    }`}
-                    style={{
-                      background: isSelected ? 'var(--accent-primary)' : 'var(--bg-surface)',
-                      color: isSelected ? '#ffffff' : 'var(--text-secondary)',
-                      border: '1px solid var(--border-glass)'
-                    }}
-                  >
-                    {getCategoryIcon(cat.icon)}
-                    <span>{cat.label}</span>
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                    }`}>
-                      {cat.count}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Category Filter Pills */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {CATEGORIES.map((cat) => {
+                  const isSelected = selectedCategory === cat.key;
+                  return (
+                    <button
+                      key={cat.key}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat.key)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        isSelected ? 'shadow-sm scale-105' : 'opacity-70 hover:opacity-100'
+                      }`}
+                      style={{
+                        background: isSelected ? 'var(--accent-primary)' : 'var(--bg-surface)',
+                        color: isSelected ? '#ffffff' : 'var(--text-secondary)',
+                        border: '1px solid var(--border-glass)'
+                      }}
+                    >
+                      {getCategoryIcon(cat.icon)}
+                      <span>{cat.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Action Button: Create New Process */}
+              {can(Permissions.CREATE_PROCESSES) && (
+                <button
+                  type="button"
+                  onClick={handleOpenCreateModal}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white cursor-pointer hover:bg-blue-700 transition-colors shadow-xs"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>ثبت فرایند جدید</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -227,6 +281,14 @@ export default function HomePage() {
         process={selectedProcess}
         initialStepIndex={selectedStepIndex}
         onClose={() => setSelectedProcess(null)}
+      />
+
+      {/* Process Creator / Editor Modal */}
+      <ProcessEditorModal
+        isOpen={isEditorOpen}
+        processToEdit={processToEdit}
+        onClose={() => setIsEditorOpen(false)}
+        onSave={handleSaveProcess}
       />
 
       {/* Global Footer */}

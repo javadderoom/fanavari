@@ -1,0 +1,16 @@
+services:
+  fanavari-postgres:
+    image: postgres:16-alpine
+    container_name: fanavari-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fanavari
+      POSTGRES_PASSWORD: fanavaripassword
+      POSTGRES_DB: fanavari
+    ports:
+      - "5433:5432"
+    volumes:
+      - fanavari-pgdata:/var/lib/postgresql/data
+
+volumes:
+  fanavari-pgdata:

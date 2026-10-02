@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { UserSessionProvider } from "@/components/user-session-provider";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -24,7 +25,9 @@ export default function RootLayout({
     <html lang="fa" dir="rtl" className={vazirmatn.variable} data-theme="light">
       <body className="font-sans antialiased min-h-screen">
         <ThemeProvider>
-          {children}
+          <UserSessionProvider>
+            {children}
+          </UserSessionProvider>
         </ThemeProvider>
       </body>
     </html>
