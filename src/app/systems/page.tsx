@@ -16,7 +16,8 @@ import {
   Shield, 
   Key, 
   Container,
-  Home
+  Home,
+  GraduationCap
 } from 'lucide-react';
 import type { Metadata } from 'next';
 
@@ -37,6 +38,7 @@ export default function SystemsPage() {
       case 'Shield': return <Shield className="w-6 h-6 text-sky-500" />;
       case 'Key': return <Key className="w-6 h-6 text-rose-500" />;
       case 'Container': return <Container className="w-6 h-6 text-cyan-500" />;
+      case 'GraduationCap': return <GraduationCap className="w-6 h-6 text-emerald-600" />;
       default: return <Laptop className="w-6 h-6 text-blue-500" />;
     }
   };

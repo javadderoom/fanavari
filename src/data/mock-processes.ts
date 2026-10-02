@@ -81,6 +81,15 @@ export const SYSTEM_TOOLS: SystemTool[] = [
     description: 'سامانه رسمی صدور نماد الکترونیک، توکن‌های سخت‌افزاری امضای دیجیتال و احراز هویت ویدئویی.',
     websiteUrl: 'https://gica.ir',
     processCount: 1,
+  },
+  {
+    slug: 'ltms',
+    name: 'سامانه آموزش و ضمن خدمت فرهنگیان (LTMS)',
+    category: 'portal',
+    icon: 'GraduationCap',
+    description: 'سامانه جامع یادگیری و توانمندسازی ضمن خدمت معلمان و کادر آموزشی وزارت آموزش و پرورش (ltms.medu.ir)؛ ثبت‌نام دوره‌های تخصصی، آزمون‌های مجازی ارتقای رتبه و صدور گواهی‌نامه الکترونیکی.',
+    websiteUrl: 'https://ltms.medu.ir',
+    processCount: 0,
   }
 ];
 
@@ -91,6 +100,13 @@ export const ORGANIZATIONS: OrganizationEntity[] = [
     category: 'gov',
     description: 'مرجع رسمی صدور صورتحساب الکترونیکی، دریافت مالیات بر ارزش افزوده و نظارت بر کارپوشه مودیان.',
     processCount: 2,
+  },
+  {
+    slug: 'org-medu',
+    name: 'وزارت آموزش و پرورش',
+    category: 'gov',
+    description: 'دستگاه متولی تعلیم و تربیت، منابع انسانی فرهنگیان، سامانه‌های ضمن خدمت (LTMS) و دوره‌های ارتقای شغلی معلمان.',
+    processCount: 0,
   },
   {
     slug: 'org-tamin',
