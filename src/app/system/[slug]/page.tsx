@@ -23,7 +23,14 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const { tool } = await getDbSystemToolBySlug(slug);
+  let decodedSlug = slug;
+  try {
+    decodedSlug = decodeURIComponent(slug);
+  } catch (e) {
+    // fallback
+  }
+
+  const { tool } = await getDbSystemToolBySlug(decodedSlug);
   if (!tool) return { title: 'نرم‌افزار یا سامانه یافت نشد | سامانه فناوری' };
 
   return {
@@ -34,7 +41,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SingleSystemPage({ params }: Props) {
   const { slug } = await params;
-  const { tool, processes: relatedProcesses } = await getDbSystemToolBySlug(slug);
+  let decodedSlug = slug;
+  try {
+    decodedSlug = decodeURIComponent(slug);
+  } catch (e) {
+    // fallback
+  }
+
+  const { tool, processes: relatedProcesses } = await getDbSystemToolBySlug(decodedSlug);
 
   if (!tool) {
     notFound();

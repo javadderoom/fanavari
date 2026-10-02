@@ -76,8 +76,23 @@ export async function getDbProcesses(): Promise<Process[]> {
  */
 export async function getDbProcessBySlug(slug: string): Promise<Process | null> {
   try {
-    const item = await prisma.process.findUnique({
-      where: { slug },
+    if (!slug) return null;
+    const rawSlug = slug.trim();
+    let decodedSlug = rawSlug;
+    try {
+      decodedSlug = decodeURIComponent(rawSlug).trim();
+    } catch (e) {
+      // ignore
+    }
+
+    const item = await prisma.process.findFirst({
+      where: {
+        OR: [
+          { slug: decodedSlug },
+          { slug: rawSlug },
+          { id: rawSlug },
+        ],
+      },
       include: {
         steps: {
           orderBy: { orderIndex: 'asc' },
@@ -130,8 +145,23 @@ export async function getDbSystemTools(): Promise<SystemTool[]> {
  */
 export async function getDbSystemToolBySlug(slug: string): Promise<{ tool: SystemTool | null; processes: Process[] }> {
   try {
-    const tool = await prisma.systemTool.findUnique({
-      where: { slug },
+    if (!slug) return { tool: null, processes: [] };
+    const rawSlug = slug.trim();
+    let decodedSlug = rawSlug;
+    try {
+      decodedSlug = decodeURIComponent(rawSlug).trim();
+    } catch (e) {
+      // ignore
+    }
+
+    const tool = await prisma.systemTool.findFirst({
+      where: {
+        OR: [
+          { slug: decodedSlug },
+          { slug: rawSlug },
+          { id: rawSlug },
+        ],
+      },
       include: {
         processes: {
           include: {

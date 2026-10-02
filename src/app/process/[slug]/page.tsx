@@ -23,7 +23,14 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const process = await getDbProcessBySlug(slug);
+  let decodedSlug = slug;
+  try {
+    decodedSlug = decodeURIComponent(slug);
+  } catch (e) {
+    // fallback
+  }
+
+  const process = await getDbProcessBySlug(decodedSlug);
   if (!process) return { title: 'فرایند یافت نشد | سامانه فناوری' };
 
   return {
@@ -34,7 +41,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProcessPage({ params }: Props) {
   const { slug } = await params;
-  const process = await getDbProcessBySlug(slug);
+  let decodedSlug = slug;
+  try {
+    decodedSlug = decodeURIComponent(slug);
+  } catch (e) {
+    // fallback
+  }
+
+  const process = await getDbProcessBySlug(decodedSlug);
 
   if (!process) {
     notFound();
