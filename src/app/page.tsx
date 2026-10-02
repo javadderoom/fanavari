@@ -12,7 +12,7 @@ import { FeaturesSection } from '@/components/features-section';
 import { Footer } from '@/components/footer';
 import { useUserSession } from '@/components/user-session-provider';
 import { CATEGORIES } from '@/data/mock-processes';
-import { Process } from '@/types/process';
+import { Process, InformationPost } from '@/types/process';
 import { 
   Sparkles, 
   Workflow, 
@@ -29,7 +29,9 @@ import {
   Palette,
   Loader2,
   Building2,
-  X
+  X,
+  Megaphone,
+  ArrowLeft
 } from 'lucide-react';
 
 function HomePageContent() {
@@ -38,6 +40,7 @@ function HomePageContent() {
   const deptParam = searchParams.get('dept');
 
   const [processes, setProcesses] = useState<Process[]>([]);
+  const [announcements, setAnnouncements] = useState<InformationPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedProcess, setSelectedProcess] = useState<Process | null>(null);
@@ -45,18 +48,20 @@ function HomePageContent() {
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Load processes live from PostgreSQL database on mount
+  // Load processes and announcements live from PostgreSQL database on mount
   useEffect(() => {
     let isMounted = true;
-    fetch('/api/processes')
-      .then((res) => res.json())
-      .then((data) => {
-        if (isMounted && Array.isArray(data)) {
-          setProcesses(data);
-        }
+    Promise.all([
+      fetch('/api/processes').then((res) => res.json()).catch(() => []),
+      fetch('/api/information?limit=5').then((res) => res.json()).catch(() => []),
+    ])
+      .then(([procData, infoData]) => {
+        if (!isMounted) return;
+        if (Array.isArray(procData)) setProcesses(procData);
+        if (Array.isArray(infoData)) setAnnouncements(infoData);
       })
       .catch((err) => {
-        console.error('Failed to fetch processes from database API:', err);
+        console.error('Failed to fetch data from database API:', err);
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -167,13 +172,68 @@ function HomePageContent() {
             </div>
 
             {/* Omni-Search Box (Google-style, prominent) */}
-            <div className="mb-14">
+            <div className="mb-8">
               <OmniSearch 
                 processes={processes} 
                 onSelectProcess={handleSelectProcess} 
                 inputRef={searchInputRef}
               />
             </div>
+
+            {/* Latest Announcement Banner (if any) */}
+            {announcements.length > 0 && (
+              <div className="mb-10 max-w-4xl mx-auto">
+                <div
+                  className="glass-card rounded-2xl p-3.5 sm:p-4 border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm transition-all hover:border-indigo-500/40"
+                  style={{
+                    borderColor: announcements[0].priority === 'urgent' ? 'rgba(244, 63, 94, 0.4)' : 'rgba(99, 102, 241, 0.3)',
+                    background: announcements[0].priority === 'urgent'
+                      ? 'linear-gradient(135deg, rgba(244, 63, 94, 0.08), var(--bg-surface))'
+                      : 'linear-gradient(135deg, rgba(99, 102, 241, 0.06), var(--bg-surface))',
+                  }}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500 shrink-0">
+                      <Megaphone className="w-4 h-4" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-indigo-600 text-white">
+                          {announcements[0].type === 'circular'
+                            ? 'بخشنامه جدید'
+                            : announcements[0].type === 'guide'
+                            ? 'راهنمای سامانه'
+                            : 'اطلاعیه رسمی'}
+                        </span>
+                        {announcements[0].priority === 'urgent' && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20 animate-pulse">
+                            فوری
+                          </span>
+                        )}
+                        <span className="text-[11px] font-mono text-slate-400" dir="ltr">
+                          \u200E{new Date(announcements[0].publishedAt).toLocaleDateString('fa-IR')}
+                        </span>
+                      </div>
+                      <Link
+                        href={`/information/${announcements[0].slug}`}
+                        className="text-xs sm:text-sm font-bold truncate block hover:text-indigo-600 transition-colors mt-0.5"
+                        style={{ color: 'var(--text-primary)' }}
+                      >
+                        {announcements[0].title}
+                      </Link>
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/information"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline shrink-0 self-end sm:self-center"
+                  >
+                    <span>مرکز اطلاعات ({announcements.length}+)</span>
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            )}
 
             {/* Quick Metrics Banner (Calculated Live from Database) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">

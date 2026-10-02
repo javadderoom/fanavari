@@ -16,6 +16,7 @@ export const Permissions = {
   MANAGE_SYSTEMS: 1 << 7,       // 128: Can register and edit software and portals
   MANAGE_USERS: 1 << 8,         // 256: Can manage users and assign permission bitfields
   VIEW_AUDIT_LOGS: 1 << 9,      // 512: Can view audit logs and execution metrics
+  MANAGE_INFORMATION: 1 << 10,  // 1024: Can manage announcements, circulars, and guides
   ADMINISTRATOR: 1 << 30,       // 1073741824: Super Admin - all permissions granted unconditionally
 } as const;
 
@@ -33,6 +34,7 @@ export const PERMISSION_LABELS: Record<PermissionKey, { fa: string; en: string; 
   MANAGE_SYSTEMS: { fa: 'مدیریت نرم‌افزارها و پرتال‌ها', en: 'Manage Systems', description: 'Add and configure software tools' },
   MANAGE_USERS: { fa: 'مدیریت کاربران و دسترسی‌ها', en: 'Manage Users', description: 'Create users and adjust permission bits' },
   VIEW_AUDIT_LOGS: { fa: 'مشاهده لاگ‌های امنیتی', en: 'View Audit Logs', description: 'Access audit trails and run histories' },
+  MANAGE_INFORMATION: { fa: 'مدیریت بخش اطلاعات و اطلاعیه‌ها', en: 'Manage Information', description: 'Create and publish announcements, circulars, and guides' },
   ADMINISTRATOR: { fa: 'مدیر کل (Super Admin)', en: 'Administrator', description: 'Full bypass of all permission restrictions' },
 };
 
@@ -96,7 +98,8 @@ export const ROLE_PRESETS = {
       Permissions.MANAGE_STEPS |
       Permissions.MANAGE_ERRORS |
       Permissions.MANAGE_CATEGORIES |
-      Permissions.MANAGE_SYSTEMS,
+      Permissions.MANAGE_SYSTEMS |
+      Permissions.MANAGE_INFORMATION,
     color: 'amber',
   },
   PROCESS_EDITOR: {

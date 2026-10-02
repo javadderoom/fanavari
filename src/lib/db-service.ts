@@ -1,5 +1,5 @@
 import { prisma } from './prisma';
-import { Process, ProcessStep, SystemTool, OrganizationEntity, ErrorGuideItem } from '@/types/process';
+import { Process, ProcessStep, SystemTool, OrganizationEntity, ErrorGuideItem, InformationPost } from '@/types/process';
 
 /**
  * Maps a Prisma process record to the frontend Process interface.
@@ -256,3 +256,108 @@ export async function getDbErrorGuides(): Promise<any[]> {
     return [];
   }
 }
+
+/**
+ * Maps a Prisma information post record to frontend InformationPost interface.
+ */
+export function mapPrismaInformationPost(p: any): InformationPost {
+  return {
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    summary: p.summary || null,
+    content: p.content,
+    type: p.type || 'announcement',
+    priority: p.priority || 'normal',
+    isPinned: Boolean(p.isPinned),
+    departmentId: p.departmentId || null,
+    departmentName: p.department?.name || null,
+    departmentSlug: p.department?.slug || null,
+    systemToolId: p.systemToolId || null,
+    systemToolName: p.systemTool?.name || null,
+    systemToolSlug: p.systemTool?.slug || null,
+    authorId: p.authorId || null,
+    authorName: p.author?.name || null,
+    targetUrl: p.targetUrl || null,
+    publishedAt: p.publishedAt ? new Date(p.publishedAt).toISOString() : new Date().toISOString(),
+    createdAt: p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString(),
+    updatedAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : new Date().toISOString(),
+  };
+}
+
+/**
+ * Fetch information posts directly from PostgreSQL database.
+ */
+export async function getDbInformationPosts(options?: {
+  type?: string;
+  priority?: string;
+  departmentSlug?: string;
+  systemSlug?: string;
+  limit?: number;
+}): Promise<InformationPost[]> {
+  try {
+    const where: any = {};
+    if (options?.type) where.type = options.type;
+    if (options?.priority) where.priority = options.priority;
+    if (options?.departmentSlug) where.department = { slug: options.departmentSlug };
+    if (options?.systemSlug) where.systemTool = { slug: options.systemSlug };
+
+    const posts = await prisma.informationPost.findMany({
+      where,
+      include: {
+        department: true,
+        systemTool: true,
+        author: true,
+      },
+      orderBy: [
+        { isPinned: 'desc' },
+        { publishedAt: 'desc' },
+        { createdAt: 'desc' },
+      ],
+      take: options?.limit,
+    });
+
+    return posts.map(mapPrismaInformationPost);
+  } catch (error) {
+    console.error('Error in getDbInformationPosts:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetch a single information post by slug directly from PostgreSQL database.
+ */
+export async function getDbInformationPostBySlug(slug: string): Promise<InformationPost | null> {
+  try {
+    if (!slug) return null;
+    const rawSlug = slug.trim();
+    let decodedSlug = rawSlug;
+    try {
+      decodedSlug = decodeURIComponent(rawSlug).trim();
+    } catch (e) {
+      // ignore
+    }
+
+    const post = await prisma.informationPost.findFirst({
+      where: {
+        OR: [
+          { slug: decodedSlug },
+          { slug: rawSlug },
+          { id: rawSlug },
+        ],
+      },
+      include: {
+        department: true,
+        systemTool: true,
+        author: true,
+      },
+    });
+
+    if (!post) return null;
+    return mapPrismaInformationPost(post);
+  } catch (error) {
+    console.error('Error in getDbInformationPostBySlug:', error);
+    return null;
+  }
+}
+

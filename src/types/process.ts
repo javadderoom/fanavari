@@ -98,3 +98,29 @@ export interface SearchResult {
   bestMatch: SearchMatchDetail;
   allMatchesCount: number;
 }
+
+export type InformationType = 'announcement' | 'circular' | 'guide' | 'article';
+export type InformationPriority = 'urgent' | 'high' | 'normal';
+
+export interface InformationPost {
+  id: string;
+  title: string;
+  slug: string;
+  summary?: string | null;
+  content: string;
+  type: InformationType;
+  priority: InformationPriority;
+  isPinned: boolean;
+  departmentId?: string | null;
+  departmentName?: string | null;
+  departmentSlug?: string | null;
+  systemToolId?: string | null;
+  systemToolName?: string | null;
+  systemToolSlug?: string | null;
+  authorId?: string | null;
+  authorName?: string | null;
+  targetUrl?: string | null;
+  publishedAt: string | Date;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}

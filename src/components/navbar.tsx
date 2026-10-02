@@ -13,7 +13,8 @@ import {
   ShieldAlert, 
   Laptop, 
   Building2, 
-  LayoutDashboard
+  LayoutDashboard,
+  Megaphone
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -62,6 +63,11 @@ export function Navbar({ onSearchClick }: NavbarProps) {
           <Link href="/" className="hover:text-blue-600 transition-colors flex items-center gap-1">
             <Compass className="w-3.5 h-3.5" />
             <span>کاتالوگ</span>
+          </Link>
+
+          <Link href="/information" className="hover:text-blue-600 transition-colors flex items-center gap-1">
+            <Megaphone className="w-3.5 h-3.5 text-indigo-500" />
+            <span>اطلاعات و بخشنامه‌ها</span>
           </Link>
 
           <Link href="/systems" className="hover:text-blue-600 transition-colors flex items-center gap-1">

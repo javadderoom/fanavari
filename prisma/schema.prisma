@@ -15,29 +15,32 @@ model User {
   avatarUrl     String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  processes     Process[]      @relation("CreatedProcesses")
-  savedSessions SavedSession[]
+  processes        Process[]         @relation("CreatedProcesses")
+  savedSessions    SavedSession[]
+  informationPosts InformationPost[] @relation("CreatedInformationPosts")
 }
 
 model Department {
-  id        String    @id @default(uuid())
-  name      String
-  slug      String    @unique
-  icon      String?
-  createdAt DateTime  @default(now())
-  processes Process[]
+  id               String            @id @default(uuid())
+  name             String
+  slug             String            @unique
+  icon             String?
+  createdAt        DateTime          @default(now())
+  processes        Process[]
+  informationPosts InformationPost[]
 }
 
 model SystemTool {
-  id          String    @id @default(uuid())
-  name        String
-  slug        String    @unique
-  category    String    // software, devtools, erp, portal
-  icon        String?
-  description String?
-  websiteUrl  String?
-  createdAt   DateTime  @default(now())
-  processes   Process[]
+  id               String            @id @default(uuid())
+  name             String
+  slug             String            @unique
+  category         String    // software, devtools, erp, portal
+  icon             String?
+  description      String?
+  websiteUrl       String?
+  createdAt        DateTime          @default(now())
+  processes        Process[]
+  informationPosts InformationPost[]
 }
 
 model Process {
@@ -102,4 +105,25 @@ model SavedSession {
   completedSteps Json?
   updatedAt      DateTime @updatedAt
   createdAt      DateTime @default(now())
+}
+
+model InformationPost {
+  id           String      @id @default(uuid())
+  title        String
+  slug         String      @unique
+  summary      String?
+  content      String      // Markdown & multiline content
+  type         String      @default("announcement") // announcement, circular, guide, article
+  priority     String      @default("normal")       // urgent, high, normal
+  isPinned     Boolean     @default(false)
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  systemToolId String?
+  systemTool   SystemTool? @relation(fields: [systemToolId], references: [id])
+  authorId     String?
+  author       User?       @relation("CreatedInformationPosts", fields: [authorId], references: [id])
+  targetUrl    String?
+  publishedAt  DateTime    @default(now())
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
