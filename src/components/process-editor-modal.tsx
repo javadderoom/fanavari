@@ -53,19 +53,21 @@ export function ProcessEditorModal({
   const [estimatedMinutes, setEstimatedMinutes] = useState(15);
   const [tagsInput, setTagsInput] = useState('');
 
-  // Live departments list from database
+  // Live departments and systems lists from database
   const [departmentsList, setDepartmentsList] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const [systemsList, setSystemsList] = useState<{ id?: string; name: string; slug: string; category?: string; websiteUrl?: string }[]>([]);
 
   useEffect(() => {
     if (isOpen) {
-      fetch('/api/departments')
-        .then((res) => res.json())
-        .then((data) => {
-          if (Array.isArray(data)) {
-            setDepartmentsList(data);
-          }
+      Promise.all([
+        fetch('/api/departments').then((r) => r.json()).catch(() => []),
+        fetch('/api/systems').then((r) => r.json()).catch(() => []),
+      ])
+        .then(([depts, syss]) => {
+          if (Array.isArray(depts)) setDepartmentsList(depts);
+          if (Array.isArray(syss)) setSystemsList(syss);
         })
-        .catch((err) => console.error('Error fetching departments:', err));
+        .catch((err) => console.error('Error fetching departments/systems:', err));
     }
   }, [isOpen]);
 
@@ -277,6 +279,7 @@ export function ProcessEditorModal({
       .filter(t => t.length > 0);
 
     const matchedDept = departmentsList.find((d) => d.name === departmentName.trim());
+    const matchedSys = systemsList.find((s) => s.name === targetSystem.trim());
 
     const savedProcess: Process = {
       id: processToEdit?.id || `proc-${Date.now()}`,
@@ -288,7 +291,7 @@ export function ProcessEditorModal({
       departmentName: departmentName.trim() || 'مدیریت سازمانی',
       departmentSlug: matchedDept?.slug,
       targetSystem: targetSystem.trim() || 'سامانه سازمانی',
-      targetSystemSlug: targetSystem.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      targetSystemSlug: matchedSys ? matchedSys.slug : targetSystem.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       targetUrl: targetUrl.trim() || undefined,
       estimatedMinutes: Number(estimatedMinutes) || 10,
       totalSteps: steps.length,
@@ -490,14 +493,53 @@ export function ProcessEditorModal({
                 <Laptop className="w-3.5 h-3.5 text-blue-500" />
                 <span>نام نرم‌افزار یا سامانه هدف</span>
               </label>
-              <input
-                type="text"
-                value={targetSystem}
-                onChange={(e) => setTargetSystem(e.target.value)}
-                placeholder="مثلاً: فیگما، گیت‌هاب، سامانه LTMS، سیدا..."
-                className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-blue-500"
-                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-              />
+              {systemsList.length > 0 ? (
+                <div className="space-y-2">
+                  <select
+                    value={systemsList.some((s) => s.name === targetSystem) ? targetSystem : 'custom'}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === 'custom') {
+                        setTargetSystem('');
+                      } else {
+                        setTargetSystem(val);
+                        const found = systemsList.find((s) => s.name === val);
+                        if (found?.websiteUrl && !targetUrl) {
+                          setTargetUrl(found.websiteUrl);
+                        }
+                      }
+                    }}
+                    className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all cursor-pointer"
+                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                  >
+                    <option value="custom">-- انتخاب از سامانه‌های ثبت‌شده یا تایپ دلخواه --</option>
+                    {systemsList.map((s) => (
+                      <option key={s.slug} value={s.name}>
+                        {s.name} ({s.category === 'software' ? 'نرم‌افزار' : s.category === 'devtools' ? 'ابزار' : 'سامانه'})
+                      </option>
+                    ))}
+                  </select>
+                  {(!systemsList.some((s) => s.name === targetSystem) || targetSystem === '') && (
+                    <input
+                      type="text"
+                      value={targetSystem}
+                      onChange={(e) => setTargetSystem(e.target.value)}
+                      placeholder="نام نرم‌افزار یا سامانه را بنویسید..."
+                      className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-blue-500"
+                      style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                    />
+                  )}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  value={targetSystem}
+                  onChange={(e) => setTargetSystem(e.target.value)}
+                  placeholder="مثلاً: فیگما، گیت‌هاب، سامانه LTMS، سیدا..."
+                  className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-blue-500"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                />
+              )}
             </div>
 
             <div>

@@ -41,6 +41,7 @@ export interface ProcessStep {
 }
 
 export interface SystemTool {
+  id?: string;
   slug: string;
   name: string;
   category: 'software' | 'erp' | 'portal' | 'devtools';
@@ -48,6 +49,7 @@ export interface SystemTool {
   description: string;
   websiteUrl?: string;
   processCount: number;
+  createdAt?: string | Date;
 }
 
 export interface OrganizationEntity {

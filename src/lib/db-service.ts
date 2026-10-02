@@ -126,6 +126,7 @@ export async function getDbSystemTools(): Promise<SystemTool[]> {
     });
 
     return tools.map((t) => ({
+      id: t.id,
       slug: t.slug,
       name: t.name,
       category: (t.category as any) || 'portal',
@@ -133,6 +134,7 @@ export async function getDbSystemTools(): Promise<SystemTool[]> {
       description: t.description || '',
       websiteUrl: t.websiteUrl || undefined,
       processCount: t.processes.length,
+      createdAt: t.createdAt,
     }));
   } catch (error) {
     console.error('Error in getDbSystemTools:', error);

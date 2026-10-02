@@ -8,7 +8,8 @@ import { useUserSession } from '@/components/user-session-provider';
 import { Permissions, hasPermission, ROLE_PRESETS } from '@/lib/permissions';
 import { ProcessEditorModal } from '@/components/process-editor-modal';
 import { DepartmentEditorModal } from '@/components/department-editor-modal';
-import { Process, OrganizationEntity } from '@/types/process';
+import { SystemEditorModal } from '@/components/system-editor-modal';
+import { Process, OrganizationEntity, SystemTool } from '@/types/process';
 import { notify } from '@/lib/notify';
 import { 
   LayoutDashboard, 
@@ -30,7 +31,16 @@ import {
   Loader2,
   ChevronLeft,
   KeyRound,
-  Trash2
+  Trash2,
+  Globe,
+  Server,
+  GitBranch,
+  Table,
+  Calculator,
+  Shield,
+  Key,
+  Container,
+  GraduationCap
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -42,6 +52,7 @@ export default function DashboardPage() {
   // Live database data states
   const [processes, setProcesses] = useState<Process[]>([]);
   const [departments, setDepartments] = useState<OrganizationEntity[]>([]);
+  const [systems, setSystems] = useState<SystemTool[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Search in dashboard tables
@@ -52,22 +63,27 @@ export default function DashboardPage() {
   const [processToEdit, setProcessToEdit] = useState<Process | null>(null);
   const [isDeptModalOpen, setIsDeptModalOpen] = useState(false);
   const [deptToEdit, setDeptToEdit] = useState<OrganizationEntity | null>(null);
+  const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
+  const [systemToEdit, setSystemToEdit] = useState<SystemTool | null>(null);
 
   // Check permissions
   const canCreateProcess = can(Permissions.CREATE_PROCESSES) || isSuperAdmin;
   const canCreateDept = can(Permissions.MANAGE_CATEGORIES) || isSuperAdmin;
+  const canManageSystems = can(Permissions.MANAGE_SYSTEMS) || can(Permissions.MANAGE_CATEGORIES) || isSuperAdmin;
 
   // Load live data from database APIs
   const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [procRes, deptRes] = await Promise.all([
+      const [procRes, deptRes, sysRes] = await Promise.all([
         fetch('/api/processes').then((r) => r.json()),
         fetch('/api/departments').then((r) => r.json()),
+        fetch('/api/systems').then((r) => r.json()),
       ]);
 
       if (Array.isArray(procRes)) setProcesses(procRes);
       if (Array.isArray(deptRes)) setDepartments(deptRes);
+      if (Array.isArray(sysRes)) setSystems(sysRes);
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -194,6 +210,68 @@ export default function DashboardPage() {
     }
   };
 
+  // Handlers for system / software operations
+  const handleOpenCreateSystem = () => {
+    setSystemToEdit(null);
+    setIsSystemModalOpen(true);
+  };
+
+  const handleEditSystem = (tool: SystemTool) => {
+    setSystemToEdit(tool);
+    setIsSystemModalOpen(true);
+  };
+
+  const handleSystemSaved = (savedTool: SystemTool) => {
+    setSystems((prev) => {
+      const idx = prev.findIndex((s) => s.id === savedTool.id || s.slug === savedTool.slug);
+      if (idx !== -1) {
+        const next = [...prev];
+        next[idx] = savedTool;
+        return next;
+      }
+      return [savedTool, ...prev];
+    });
+    notify.success(`سامانه «${savedTool.name}» با موفقیت ذخیره گردید.`);
+    fetchDashboardData();
+  };
+
+  const handleDeleteSystem = async (tool: SystemTool) => {
+    const confirmed = await notify.confirm({
+      title: 'حذف نرم‌افزار / سامانه از پایگاه داده',
+      message: `آیا از حذف سامانه «${tool.name}» اطمینان کامل دارید؟ ${
+        tool.processCount > 0
+          ? `این سامانه در حال حاضر به ${tool.processCount} فرایند متصل است. در صورت حذف، فرایندها بدون اتصال سامانه باقی خواهند ماند.`
+          : ''
+      }`,
+      confirmText: 'بله، حذف شود',
+      cancelText: 'انصراف',
+      isDestructive: true,
+    });
+
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/systems?id=${tool.id || ''}&slug=${tool.slug}`, {
+        method: 'DELETE',
+        headers: {
+          'x-user-permissions': String(currentUser.permissions),
+        },
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'خطا در حذف سامانه');
+      }
+
+      setSystems((prev) => prev.filter((s) => s.slug !== tool.slug && s.id !== tool.id));
+      notify.success(`سامانه «${tool.name}» با موفقیت از پایگاه داده حذف گردید.`);
+      fetchDashboardData();
+    } catch (err: any) {
+      console.error('Error deleting system:', err);
+      notify.error(err.message || 'خطا در حذف سامانه.');
+    }
+  };
+
   // Filtered lists
   const filteredProcesses = useMemo(() => {
     if (!searchQuery.trim()) return processes;
@@ -215,9 +293,50 @@ export default function DashboardPage() {
     );
   }, [departments, searchQuery]);
 
+  const filteredSystems = useMemo(() => {
+    if (!searchQuery.trim()) return systems;
+    const q = searchQuery.toLowerCase();
+    return systems.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.slug.toLowerCase().includes(q) ||
+        (s.description && s.description.toLowerCase().includes(q))
+    );
+  }, [systems, searchQuery]);
+
   const totalSteps = useMemo(() => {
     return processes.reduce((acc, p) => acc + (p.steps?.length || p.totalSteps || 0), 0);
   }, [processes]);
+
+  const renderSystemIcon = (iconName?: string) => {
+    switch (iconName) {
+      case 'Globe': return <Globe className="w-4 h-4 text-cyan-600" />;
+      case 'Server': return <Server className="w-4 h-4 text-indigo-600" />;
+      case 'Layers': return <Layers className="w-4 h-4 text-purple-600" />;
+      case 'GitBranch': return <GitBranch className="w-4 h-4 text-orange-500" />;
+      case 'Table': return <Table className="w-4 h-4 text-emerald-600" />;
+      case 'Calculator': return <Calculator className="w-4 h-4 text-blue-600" />;
+      case 'Shield': return <Shield className="w-4 h-4 text-sky-600" />;
+      case 'Key': return <Key className="w-4 h-4 text-rose-600" />;
+      case 'Container': return <Container className="w-4 h-4 text-cyan-500" />;
+      case 'GraduationCap': return <GraduationCap className="w-4 h-4 text-emerald-600" />;
+      case 'Building2': return <Building2 className="w-4 h-4 text-amber-600" />;
+      default: return <Laptop className="w-4 h-4 text-purple-600" />;
+    }
+  };
+
+  const getCategoryBadge = (cat?: string) => {
+    switch (cat) {
+      case 'software':
+        return { label: 'نرم‌افزار کاربردی', bg: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' };
+      case 'devtools':
+        return { label: 'ابزار مهندسی', bg: 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300' };
+      case 'erp':
+        return { label: 'سازمانی / ERP', bg: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' };
+      default:
+        return { label: 'سامانه و پرتال وب', bg: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' };
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-200"
@@ -284,6 +403,22 @@ export default function DashboardPage() {
                   <span>ثبت سازمان جدید</span>
                 </button>
               )}
+
+              {canManageSystems && (
+                <button
+                  type="button"
+                  onClick={handleOpenCreateSystem}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold border transition-all hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  style={{
+                    borderColor: 'rgba(168, 85, 247, 0.4)',
+                    background: 'var(--bg-surface)',
+                    color: 'rgb(168, 85, 247)',
+                  }}
+                >
+                  <Laptop className="w-4 h-4 text-purple-600" />
+                  <span>ثبت سامانه جدید</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -310,11 +445,11 @@ export default function DashboardPage() {
 
           <div className="glass-card rounded-2xl p-5 border shadow-xs" style={{ borderColor: 'var(--border-glass)' }}>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>سامانه‌ها و درگاه‌ها</span>
+              <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>نرم‌افزارها و سامانه‌ها</span>
               <Laptop className="w-4 h-4 text-purple-600" />
             </div>
-            <div className="text-2xl sm:text-3xl font-black text-purple-600">۱</div>
-            <p className="text-[11px] mt-1 text-slate-500">پرتال‌های فعال (LTMS)</p>
+            <div className="text-2xl sm:text-3xl font-black text-purple-600">{systems.length}</div>
+            <p className="text-[11px] mt-1 text-slate-500">پرتال‌ها و ابزارهای فعال</p>
           </div>
 
           <div className="glass-card rounded-2xl p-5 border shadow-xs" style={{ borderColor: 'var(--border-glass)' }}>
@@ -350,12 +485,25 @@ export default function DashboardPage() {
               onClick={() => { setActiveTab('organizations'); setSearchQuery(''); }}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'organizations'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-blue-600'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-emerald-600'
               }`}
             >
               <Building2 className="w-3.5 h-3.5" />
               <span>سازمان‌ها ({departments.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setActiveTab('systems'); setSearchQuery(''); }}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'systems'
+                  ? 'bg-purple-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-purple-600'
+              }`}
+            >
+              <Laptop className="w-3.5 h-3.5" />
+              <span>نرم‌افزارها و ابزارها ({systems.length})</span>
             </button>
 
             <button
@@ -656,7 +804,175 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Tab 3: Permissions & Roles Breakdown */}
+        {/* Tab 3: Systems & Tools Management */}
+        {activeTab === 'systems' && (
+          <div className="glass-panel-strong rounded-3xl border shadow-lg overflow-hidden"
+            style={{ borderColor: 'var(--border-glass)' }}
+          >
+            <div className="p-4 sm:p-6 border-b flex items-center justify-between"
+              style={{ borderColor: 'var(--border-subtle)' }}
+            >
+              <div>
+                <h3 className="text-base font-black" style={{ color: 'var(--text-primary)' }}>
+                  بانک نرم‌افزارها، ابزارها و سامانه‌های سازمانی
+                </h3>
+                <p className="text-xs text-slate-500">
+                  مدیریت نرم‌افزارهای کاربردی، پرتال‌های وب و ابزارهای مهندسی متصل به فرایندهای رسمی
+                </p>
+              </div>
+
+              {canManageSystems && (
+                <button
+                  type="button"
+                  onClick={handleOpenCreateSystem}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors shadow-2xs cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>ثبت سامانه / ابزار</span>
+                </button>
+              )}
+            </div>
+
+            {isLoading ? (
+              <div className="p-16 text-center">
+                <Loader2 className="w-8 h-8 mx-auto animate-spin text-purple-600 mb-3" />
+                <p className="text-xs text-slate-500">در حال دریافت سامانه‌ها از دیتابیس...</p>
+              </div>
+            ) : filteredSystems.length === 0 ? (
+              <div className="p-16 text-center">
+                <Laptop className="w-12 h-12 mx-auto mb-3 opacity-40 text-purple-500" />
+                <h4 className="text-sm font-bold">سامانه‌ای یافت نشد</h4>
+                <p className="text-xs text-slate-500 mt-1 mb-4">
+                  {searchQuery ? 'با این عبارت جستجو موردی یافت نشد.' : 'می‌توانید اولین نرم‌افزار یا پرتال را در پایگاه داده ثبت کنید.'}
+                </p>
+                {canManageSystems && (
+                  <button
+                    type="button"
+                    onClick={handleOpenCreateSystem}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>ثبت اولین سامانه</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-right border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b bg-slate-50/50 dark:bg-slate-900/50 font-bold"
+                      style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}
+                    >
+                      <th className="p-4">نام سامانه / نرم‌افزار</th>
+                      <th className="p-4">نوع</th>
+                      <th className="p-4">شناسه یکتا (Slug)</th>
+                      <th className="p-4">پرتال رسمی</th>
+                      <th className="p-4 text-center">فرایندهای مرتبط</th>
+                      <th className="p-4 text-center">مشاهده</th>
+                      <th className="p-4 text-center">عملیات</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
+                    {filteredSystems.map((sys) => {
+                      const badge = getCategoryBadge(sys.category);
+                      return (
+                        <tr 
+                          key={sys.slug}
+                          className="hover:bg-purple-50/30 dark:hover:bg-purple-950/20 transition-colors"
+                        >
+                          <td className="p-4">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-xl flex items-center justify-center border shadow-xs"
+                                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)' }}
+                              >
+                                {renderSystemIcon(sys.icon)}
+                              </div>
+                              <div>
+                                <span className="font-bold text-sm block" style={{ color: 'var(--text-primary)' }}>
+                                  {sys.name}
+                                </span>
+                                {sys.description && (
+                                  <span className="text-[11px] text-slate-400 line-clamp-1 max-w-xs">
+                                    {sys.description}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${badge.bg}`}>
+                              {badge.label}
+                            </span>
+                          </td>
+                          <td className="p-4 font-mono text-[11px] text-slate-500" dir="ltr">
+                            {sys.slug}
+                          </td>
+                          <td className="p-4">
+                            {sys.websiteUrl ? (
+                              <a
+                                href={sys.websiteUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 font-mono text-[11px] text-blue-600 hover:underline"
+                                dir="ltr"
+                              >
+                                <span className="truncate max-w-[160px]">{sys.websiteUrl.replace(/^https?:\/\//, '')}</span>
+                                <ExternalLink className="w-3 h-3 shrink-0" />
+                              </a>
+                            ) : (
+                              <span className="text-slate-400 text-[11px]">-</span>
+                            )}
+                          </td>
+                          <td className="p-4 text-center font-bold">
+                            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+                              {sys.processCount} فرایند
+                            </span>
+                          </td>
+                          <td className="p-4 text-center">
+                            <Link
+                              href={`/system/${sys.slug}`}
+                              target="_blank"
+                              className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline"
+                            >
+                              <span>مشاهده</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </Link>
+                          </td>
+                          <td className="p-4 text-center">
+                            {canManageSystems ? (
+                              <div className="flex items-center justify-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleEditSystem(sys)}
+                                  className="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/50 transition-colors cursor-pointer"
+                                  title="ویرایش سامانه"
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteSystem(sys)}
+                                  className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                                  title="حذف سامانه"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-slate-400 select-none">فقط خواندنی</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 4: Permissions & Roles Breakdown */}
         {activeTab === 'permissions' && (
           <div className="space-y-6">
             <div className="glass-panel-strong rounded-3xl p-6 sm:p-8 border shadow-lg"
@@ -785,6 +1101,17 @@ export default function DashboardPage() {
           setDeptToEdit(null);
         }}
         onSuccess={handleDeptSaved}
+      />
+
+      {/* System / Software Tool Registration / Edit Modal */}
+      <SystemEditorModal
+        isOpen={isSystemModalOpen}
+        systemToEdit={systemToEdit}
+        onClose={() => {
+          setIsSystemModalOpen(false);
+          setSystemToEdit(null);
+        }}
+        onSuccess={handleSystemSaved}
       />
 
       <Footer />
