@@ -141,7 +141,7 @@ export default function DevDocsPage() {
                   احراز هویت مدیر ارشد سامانه
                 </h1>
                 <p className="text-xs sm:text-sm font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                  صفحه شناسنامه معماری، مشخصات کانتینر داکر، متغیرهای فنی دیتابیس و شبیه‌ساز بیت‌فیلد در محیط امنیتی سطح ۱ قرار دارند. دسترسی به این بخش مستلزم مجوز <strong>مدیر ارشد (Super Admin)</strong> است.
+                  صفحه شناسنامه معماری، مشخصات کانتینر داکر، متغیرهای فنی دیتابیس و شبیه‌ساز دسترسی در محیط امنیتی سطح ۱ قرار دارند. دسترسی به این بخش مستلزم مجوز <strong>مدیر ارشد (Super Admin)</strong> است.
                 </p>
               </div>
 
@@ -160,9 +160,9 @@ export default function DevDocsPage() {
                   <span className="font-mono text-[11px]">{currentUser.email}</span>
                 </div>
                 <div className="pt-2 border-t flex items-center justify-between text-[11px]" style={{ borderColor: 'var(--border-subtle)' }}>
-                  <span className="text-slate-500">مجوز دیسکورد (Bitfield):</span>
-                  <span className="font-mono font-bold text-rose-500 flex items-center gap-1">
-                    <span>0x{currentUser.permissions.toString(16).toUpperCase()} (فاقد بیت 30 ADMINISTRATOR)</span>
+                  <span className="text-slate-500">سطح دسترسی فعال:</span>
+                  <span className="font-bold text-rose-500 flex items-center gap-1">
+                    <span>فاقد مجوز مدیر ارشد (Super Admin)</span>
                   </span>
                 </div>
               </div>
@@ -307,7 +307,7 @@ export default function DevDocsPage() {
                   شناسنامه فنی، معماری و تصمیمات مهندسی سامانه فناوری
                 </h1>
                 <p className="text-sm sm:text-base font-medium leading-relaxed max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-                  مستندات شفاف تمام تکنولوژی‌های زیرساخت، کدنویسی، امنیت بیتی دیسکورد، داکر، پایگاه داده PostgreSQL و استدلال انتخاب هر فناوری.
+                  مستندات شفاف تمام تکنولوژی‌های زیرساخت، کدنویسی، امنیت پیشرفته، داکر، پایگاه داده PostgreSQL و استدلال انتخاب هر فناوری.
                 </p>
               </div>
 
@@ -328,7 +328,7 @@ export default function DevDocsPage() {
             </div>
           </div>
 
-        {/* Section 1: Discord-Style Bitwise Permission System (Live Interactive Playground) */}
+        {/* Section 1: Advanced Permission System (Live Interactive Playground) */}
         <section className="mb-14">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -336,11 +336,11 @@ export default function DevDocsPage() {
                 مدل امنیت و سطوح دسترسی (Security Architecture)
               </span>
               <h2 className="text-xl sm:text-2xl font-black" style={{ color: 'var(--text-primary)' }}>
-                سیستم دسترسی بیتی (Discord-Style Bitfield Permissions)
+                سیستم یکپارچه سطوح دسترسی (Role & Permissions Matrix)
               </h2>
             </div>
             <span className="text-xs px-2.5 py-1 rounded-full font-bold bg-rose-500/10 text-rose-600">
-              پیاده‌سازی شده با عملگرهای Bitwise
+              مدل فشرده‌سازی امنیتی
             </span>
           </div>
 
@@ -349,7 +349,7 @@ export default function DevDocsPage() {
           >
             <div className="text-xs sm:text-sm leading-relaxed space-y-2" style={{ color: 'var(--text-secondary)' }}>
               <p>
-                <strong>دلیل انتخاب سیستم بیتی دیسکورد:</strong> در معماری سنتی RBAC، برای اتصال هر کاربر به نقش‌ها و دسترسی‌ها به ۳ تا ۴ جدول مجزا با JOINهای سنگین دیتابیس نیاز است. در مدل دیسکورد، تمام دسترسی‌ها داخل <strong>یک عدد صحیح ۳۱ بیتی</strong> فشرده می‌شوند. بررسی دسترسی در کسری از نانوثانیه با عملگر <code className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono font-bold">(user.permissions & bit) === bit</code> انجام شده و هیچ سرباری به سرور تحمیل نمی‌کند. بیت ۳۰ ام (<code className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono font-bold">ADMINISTRATOR</code>) تمام محدودیت‌ها را به صورت خودکار Bypass می‌کند.
+                <strong>دلیل انتخاب معماری دسترسی بهینه:</strong> در معماری سنتی RBAC، برای اتصال هر کاربر به نقش‌ها و دسترسی‌ها به ۳ تا ۴ جدول مجزا با JOINهای سنگین دیتابیس نیاز است. در مدل این سامانه، تمام دسترسی‌ها داخل <strong>یک فیلد فشرده امنیتی</strong> نگهداری می‌شوند. بررسی دسترسی در کسری از نانوثانیه انجام شده و هیچ سرباری به سرور تحمیل نمی‌کند. مجوز مدیر ارشد (<code className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono font-bold">ADMINISTRATOR</code>) تمام محدودیت‌ها را به صورت خودکار Bypass می‌کند.
               </p>
             </div>
 
@@ -397,7 +397,7 @@ export default function DevDocsPage() {
                 <span className="text-base font-bold text-amber-400">0x{selectedBitfield.toString(16).toUpperCase()}</span>
               </div>
               <div>
-                <span className="text-slate-400 block mb-1">Binary (بیت‌های فعال):</span>
+                <span className="text-slate-400 block mb-1">Binary (وضعیت مجوزها):</span>
                 <span className="text-xs font-bold text-cyan-300 break-all">
                   0b{selectedBitfield.toString(2).padStart(31, '0')}
                 </span>
@@ -566,7 +566,7 @@ export default function DevDocsPage() {
             <div className="p-4 rounded-2xl border" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)' }}>
               <span className="text-xs font-mono font-bold text-blue-600 block mb-1">Table: User</span>
               <p className="text-xs text-slate-500">
-                مدیریت کاربران، ایمیل یکتا، رول و فیلد <code className="font-mono text-slate-700 dark:text-slate-300">permissions (Int)</code> بیتی دیسکورد.
+                مدیریت کاربران، ایمیل یکتا، رول و فیلد <code className="font-mono text-slate-700 dark:text-slate-300">permissions (Int)</code> برای سطوح دسترسی سازمانی.
               </p>
             </div>
 

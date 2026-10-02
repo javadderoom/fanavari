@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     // Discord-style bitfield check: Requires CREATE_PROCESSES or ADMINISTRATOR
     if (!hasPermission(userPermissions, Permissions.CREATE_PROCESSES)) {
       return NextResponse.json(
-        { error: 'Forbidden: Insufficient bitfield permissions (CREATE_PROCESSES required)' },
+        { error: 'Forbidden: Insufficient permissions (CREATE_PROCESSES required)' },
         { status: 403 }
       );
     }

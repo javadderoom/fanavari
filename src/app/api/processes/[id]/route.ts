@@ -15,7 +15,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
     // Discord-style bitfield check: Requires EDIT_PROCESSES or ADMINISTRATOR
     if (!hasPermission(userPermissions, Permissions.EDIT_PROCESSES)) {
       return NextResponse.json(
-        { error: 'Forbidden: Insufficient bitfield permissions (EDIT_PROCESSES required)' },
+        { error: 'Forbidden: Insufficient permissions (EDIT_PROCESSES required)' },
         { status: 403 }
       );
     }
@@ -50,7 +50,7 @@ export async function DELETE(req: NextRequest, { params }: RouteContext) {
     // Discord-style bitfield check: Requires DELETE_PROCESSES or ADMINISTRATOR
     if (!hasPermission(userPermissions, Permissions.DELETE_PROCESSES)) {
       return NextResponse.json(
-        { error: 'Forbidden: Insufficient bitfield permissions (DELETE_PROCESSES required)' },
+        { error: 'Forbidden: Insufficient permissions (DELETE_PROCESSES required)' },
         { status: 403 }
       );
     }

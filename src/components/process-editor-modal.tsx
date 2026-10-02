@@ -210,7 +210,7 @@ export function ProcessEditorModal({
           {!canSave && (
             <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-xs font-bold text-red-600 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span>کاربر فعلی شما بیت دسترسی لازم برای ثبت یا ویرایش فرایند را ندارد! لطفاً از گوشه بالا کاربر را به Super Admin تغییر دهید.</span>
+              <span>کاربر فعلی شما مجوز لازم برای ثبت یا ویرایش فرایند را ندارد! لطفاً با نقش دارای مجوز (مانند مدیر ارشد یا کارشناس تدوین) وارد شوید.</span>
             </div>
           )}
 

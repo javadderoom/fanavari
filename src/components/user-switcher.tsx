@@ -19,7 +19,7 @@ export function UserSwitcher() {
           borderColor: isSuperAdmin ? 'rgba(239, 68, 68, 0.4)' : 'var(--border-glass)',
           color: 'var(--text-primary)',
         }}
-        title="تغییر کاربر فعال و بررسی دسترسی‌های بیتی"
+        title="تغییر حساب کاربری و سطح دسترسی سازمانی"
       >
         <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-slate-200 dark:bg-slate-700">
           {isSuperAdmin ? (
@@ -54,7 +54,7 @@ export function UserSwitcher() {
         >
           <div className="px-3 py-2 border-b mb-1" style={{ borderColor: 'var(--border-subtle)' }}>
             <span className="text-[11px] font-bold block" style={{ color: 'var(--text-muted)' }}>
-              کاربر فعال (سیستم دسترسی بیتی / Bitfield):
+              حساب کاربری و سطح دسترسی:
             </span>
           </div>
 
@@ -77,8 +77,8 @@ export function UserSwitcher() {
                     <span className="block font-bold" style={{ color: 'var(--text-primary)' }}>
                       {user.name}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-mono">
-                      بیت دسترسی: 0x{user.permissions.toString(16).toUpperCase()}
+                    <span className="text-[10px] text-slate-400">
+                      {user.roleName} • {user.email}
                     </span>
                   </div>
                   {isSelected && <Check className="w-4 h-4 text-blue-600" />}
