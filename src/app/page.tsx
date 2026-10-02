@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useMemo, useEffect, Suspense } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Navbar } from '@/components/navbar';
 import { OmniSearch } from '@/components/omni-search';
 import { ProcessCard } from '@/components/process-card';
@@ -28,11 +30,16 @@ import {
   Laptop,
   Palette,
   Plus,
-  Loader2
+  Loader2,
+  Building2,
+  X
 } from 'lucide-react';
 
-export default function HomePage() {
+function HomePageContent() {
   const { can, isSuperAdmin, currentUser } = useUserSession();
+  const searchParams = useSearchParams();
+  const deptParam = searchParams.get('dept');
+
   const [processes, setProcesses] = useState<Process[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -104,10 +111,19 @@ export default function HomePage() {
   };
 
   const filteredProcesses = useMemo(() => {
-    if (selectedCategory === 'all') return processes;
-    if (selectedCategory === 'software') return processes.filter(p => p.scope === 'software');
-    return processes.filter(p => p.category === selectedCategory);
-  }, [processes, selectedCategory]);
+    let list = processes;
+    if (deptParam) {
+      list = list.filter(
+        (p) =>
+          p.departmentSlug === deptParam ||
+          p.tags?.includes(deptParam) ||
+          p.departmentName?.toLowerCase().includes(deptParam.toLowerCase())
+      );
+    }
+    if (selectedCategory === 'all') return list;
+    if (selectedCategory === 'software') return list.filter((p) => p.scope === 'software');
+    return list.filter((p) => p.category === selectedCategory);
+  }, [processes, selectedCategory, deptParam]);
 
   const totalSteps = useMemo(() => {
     return processes.reduce((acc, p) => acc + (p.steps?.length || p.totalSteps || 0), 0);
@@ -292,6 +308,28 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Department Filter Banner (if filtering by organization) */}
+          {deptParam && (
+            <div 
+              className="flex items-center justify-between gap-3 mb-6 p-4 rounded-2xl border shadow-xs animate-in fade-in"
+              style={{ background: 'var(--accent-soft)', borderColor: 'var(--accent-border)' }}
+            >
+              <div className="flex items-center gap-2.5">
+                <Building2 className="w-5 h-5 text-blue-600" />
+                <span className="text-xs sm:text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                  فیلتر فعال: نمایش فرایندهای متصل به شناسه سازمان <span className="text-blue-600 font-mono">"{deptParam}"</span>
+                </span>
+              </div>
+              <Link
+                href="/"
+                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl font-bold bg-white dark:bg-slate-800 text-rose-600 border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950 transition-colors shadow-2xs"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>حذف فیلتر</span>
+              </Link>
+            </div>
+          )}
+
           {/* Process Cards Grid / Loading / Empty State */}
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -354,5 +392,13 @@ export default function HomePage() {
       {/* Global Footer */}
       <Footer />
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" style={{ backgroundColor: 'var(--bg-app)' }} />}>
+      <HomePageContent />
+    </Suspense>
   );
 }

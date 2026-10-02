@@ -44,11 +44,27 @@ export function ProcessEditorModal({
   const [description, setDescription] = useState('');
   const [scope, setScope] = useState<WorkflowScope>('organization');
   const [category, setCategory] = useState<Process['category']>('hr');
-  const [departmentName, setDepartmentName] = useState('');
+  const [departmentName, setDepartmentName] = useState('وزارت آموزش و پرورش');
   const [targetSystem, setTargetSystem] = useState('');
   const [targetUrl, setTargetUrl] = useState('');
   const [estimatedMinutes, setEstimatedMinutes] = useState(15);
   const [tagsInput, setTagsInput] = useState('');
+
+  // Live departments list from database
+  const [departmentsList, setDepartmentsList] = useState<{ id: string; name: string; slug: string }[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetch('/api/departments')
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setDepartmentsList(data);
+          }
+        })
+        .catch((err) => console.error('Error fetching departments:', err));
+    }
+  }, [isOpen]);
 
   // Steps state
   const [steps, setSteps] = useState<ProcessStep[]>([]);
@@ -143,6 +159,8 @@ export function ProcessEditorModal({
       .map(t => t.trim())
       .filter(t => t.length > 0);
 
+    const matchedDept = departmentsList.find((d) => d.name === departmentName.trim());
+
     const savedProcess: Process = {
       id: processToEdit?.id || `proc-${Date.now()}`,
       slug: generatedSlug,
@@ -151,6 +169,7 @@ export function ProcessEditorModal({
       scope,
       category,
       departmentName: departmentName.trim() || 'مدیریت سازمانی',
+      departmentSlug: matchedDept?.slug,
       targetSystem: targetSystem.trim() || 'سامانه سازمانی',
       targetSystemSlug: targetSystem.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       targetUrl: targetUrl.trim() || undefined,
@@ -282,16 +301,50 @@ export function ProcessEditorModal({
 
             <div>
               <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                دپارتمان یا واحد متولی
+                دپارتمان یا سازمان متولی (پایگاه داده)
               </label>
-              <input
-                type="text"
-                value={departmentName}
-                onChange={(e) => setDepartmentName(e.target.value)}
-                placeholder="مثلاً: مدیریت سرمایه انسانی، یا تیم طراحی"
-                className="w-full p-3 rounded-xl border text-sm font-medium outline-none"
-                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-              />
+              {departmentsList.length > 0 ? (
+                <div className="space-y-1.5">
+                  <select
+                    value={departmentsList.some((d) => d.name === departmentName) ? departmentName : 'custom'}
+                    onChange={(e) => {
+                      if (e.target.value !== 'custom') {
+                        setDepartmentName(e.target.value);
+                      } else {
+                        setDepartmentName('');
+                      }
+                    }}
+                    className="w-full p-3 rounded-xl border text-sm font-medium outline-none cursor-pointer"
+                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                  >
+                    {departmentsList.map((d) => (
+                      <option key={d.slug} value={d.name}>
+                        {d.name}
+                      </option>
+                    ))}
+                    <option value="custom">سایر / ورود دستی نام سازمان...</option>
+                  </select>
+                  {(!departmentsList.some((d) => d.name === departmentName) || departmentName === '') && (
+                    <input
+                      type="text"
+                      value={departmentName}
+                      onChange={(e) => setDepartmentName(e.target.value)}
+                      placeholder="نام دقیق سازمان یا واحد را بنویسید..."
+                      className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none"
+                      style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                    />
+                  )}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  value={departmentName}
+                  onChange={(e) => setDepartmentName(e.target.value)}
+                  placeholder="مثلاً: وزارت آموزش و پرورش"
+                  className="w-full p-3 rounded-xl border text-sm font-medium outline-none"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                />
+              )}
             </div>
 
             <div>

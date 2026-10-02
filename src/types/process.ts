@@ -66,6 +66,7 @@ export interface Process {
   scope: WorkflowScope; // 'organization' | 'software' | 'portal'
   category: 'hr' | 'finance' | 'it' | 'legal' | 'support' | 'software' | 'design';
   departmentName: string;
+  departmentSlug?: string;
   estimatedMinutes: number;
   targetSystem: string;
   targetSystemSlug: string;

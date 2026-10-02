@@ -64,11 +64,22 @@ export async function POST(req: NextRequest) {
       scope,
       category,
       departmentName,
+      departmentId,
       targetSystem,
       targetUrl,
       estimatedMinutes,
       steps,
     } = body;
+
+    let resolvedDeptId = departmentId;
+    if (!resolvedDeptId && departmentName) {
+      const foundDept = await prisma.department.findFirst({
+        where: { name: departmentName.trim() },
+      });
+      if (foundDept) {
+        resolvedDeptId = foundDept.id;
+      }
+    }
 
     const newProcess = await prisma.process.create({
       data: {
@@ -77,6 +88,7 @@ export async function POST(req: NextRequest) {
         description,
         scope: scope || 'organization',
         category: category || 'hr',
+        departmentId: resolvedDeptId || undefined,
         targetSystem: targetSystem || 'سامانه سازمانی',
         targetUrl: targetUrl || null,
         estimatedMinutes: Number(estimatedMinutes) || 10,
