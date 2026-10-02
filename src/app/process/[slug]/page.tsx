@@ -1,26 +1,29 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { MOCK_PROCESSES } from '@/data/mock-processes';
+import { getDbProcesses, getDbProcessBySlug } from '@/lib/db-service';
 import { ProcessDetailView } from '@/components/process-detail-view';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { ArrowRight, Home, Layers, Laptop, Globe } from 'lucide-react';
 import type { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  return MOCK_PROCESSES.map((proc) => ({
+  const processes = await getDbProcesses();
+  return processes.map((proc) => ({
     slug: proc.slug,
   }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const process = MOCK_PROCESSES.find((p) => p.slug === slug);
+  const process = await getDbProcessBySlug(slug);
   if (!process) return { title: 'فرایند یافت نشد | سامانه فناوری' };
 
   return {
@@ -31,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProcessPage({ params }: Props) {
   const { slug } = await params;
-  const process = MOCK_PROCESSES.find((p) => p.slug === slug);
+  const process = await getDbProcessBySlug(slug);
 
   if (!process) {
     notFound();

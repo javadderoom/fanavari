@@ -25,12 +25,10 @@ interface OmniSearchProps {
 }
 
 const POPULAR_SEARCH_SUGGESTIONS = [
-  { label: 'ثبت پرسنل جدید', query: 'ثبت پرسنل جدید', category: 'HR' },
-  { label: 'خطای ۴۰۳', query: '۴۰۳', category: 'خطایابی' },
-  { label: 'شماره شبا', query: 'شماره شبا', category: 'مالی' },
-  { label: 'کلید SSH', query: 'ssh-keygen', category: 'DevOps' },
-  { label: 'سامانه مودیان', query: 'سامانه مودیان', category: 'مالیات' },
-  { label: 'توکن دیجیتال', query: 'توکن دیجیتال', category: 'امنیت' },
+  { label: 'به‌روزرسانی ابلاغ و حکم', query: 'ابلاغ', category: 'LTMS' },
+  { label: 'خطای کد ملی نامعتبر', query: 'LTMS-ERR-01', category: 'خطایابی' },
+  { label: 'ضمن خدمت فرهنگیان', query: 'ضمن خدمت', category: 'آموزش و پرورش' },
+  { label: 'استعلام سوابق پرسنلی', query: 'سوابق', category: 'کارگزینی' },
 ];
 
 export function OmniSearch({ processes, onSelectProcess, inputRef }: OmniSearchProps) {

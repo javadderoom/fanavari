@@ -11,7 +11,7 @@ import { FeaturesSection } from '@/components/features-section';
 import { Footer } from '@/components/footer';
 import { useUserSession } from '@/components/user-session-provider';
 import { Permissions } from '@/lib/permissions';
-import { MOCK_PROCESSES, CATEGORIES } from '@/data/mock-processes';
+import { CATEGORIES } from '@/data/mock-processes';
 import { Process } from '@/types/process';
 import { 
   Sparkles, 
@@ -27,12 +27,14 @@ import {
   FileText,
   Laptop,
   Palette,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
 
 export default function HomePage() {
   const { can, isSuperAdmin, currentUser } = useUserSession();
-  const [processes, setProcesses] = useState<Process[]>(MOCK_PROCESSES);
+  const [processes, setProcesses] = useState<Process[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedProcess, setSelectedProcess] = useState<Process | null>(null);
   const [selectedStepIndex, setSelectedStepIndex] = useState<number>(0);
@@ -42,6 +44,28 @@ export default function HomePage() {
   const [processToEdit, setProcessToEdit] = useState<Process | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Load processes live from PostgreSQL database on mount
+  useEffect(() => {
+    let isMounted = true;
+    fetch('/api/processes')
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && Array.isArray(data)) {
+          setProcesses(data);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch processes from database API:', err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSelectProcess = (process: Process, initialStepIndex?: number) => {
     setSelectedProcess(process);
@@ -84,6 +108,17 @@ export default function HomePage() {
     if (selectedCategory === 'software') return processes.filter(p => p.scope === 'software');
     return processes.filter(p => p.category === selectedCategory);
   }, [processes, selectedCategory]);
+
+  const totalSteps = useMemo(() => {
+    return processes.reduce((acc, p) => acc + (p.steps?.length || p.totalSteps || 0), 0);
+  }, [processes]);
+
+  const totalErrors = useMemo(() => {
+    return processes.reduce(
+      (acc, p) => acc + (p.steps?.reduce((sAcc, s) => sAcc + (s.errorGuides?.length || 0), 0) || 0),
+      0
+    );
+  }, [processes]);
 
   const handleFocusSearch = () => {
     searchInputRef.current?.focus();
@@ -163,20 +198,20 @@ export default function HomePage() {
               />
             </div>
 
-            {/* Quick Metrics Banner */}
+            {/* Quick Metrics Banner (Calculated Live from Database) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
               <div className="glass-card rounded-2xl p-4 text-center">
                 <span className="text-2xl sm:text-3xl font-black text-blue-600 block mb-0.5">
                   {processes.length}
                 </span>
                 <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>
-                  فرایند استاندارد تدوین‌شده
+                  فرایند استاندارد در پایگاه داده
                 </span>
               </div>
 
               <div className="glass-card rounded-2xl p-4 text-center">
                 <span className="text-2xl sm:text-3xl font-black text-indigo-600 block mb-0.5">
-                  ۲۶
+                  {totalSteps}
                 </span>
                 <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>
                   گام عملیاتی با مسیر منوها
@@ -185,7 +220,7 @@ export default function HomePage() {
 
               <div className="glass-card rounded-2xl p-4 text-center">
                 <span className="text-2xl sm:text-3xl font-black text-rose-600 block mb-0.5">
-                  ۱۳
+                  {totalErrors}
                 </span>
                 <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>
                   راهنمای تخصصی رفع خطا
@@ -197,7 +232,7 @@ export default function HomePage() {
                   ۱۰۰٪
                 </span>
                 <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>
-                  بصری، تعاملی و قابل جستجو
+                  داده زنده از سرور مرکزی
                 </span>
               </div>
             </div>
@@ -213,7 +248,7 @@ export default function HomePage() {
                 دایرکتوری دستورالعمل‌ها
               </span>
               <h2 className="text-2xl sm:text-3xl font-black" style={{ color: 'var(--text-primary)' }}>
-                کاتالوگ فرایندهای سازمانی و نرم‌افزاری
+                کاتالوگ فرایندهای سازمانی و سامانه‌ها
               </h2>
             </div>
 
@@ -257,16 +292,41 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Process Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProcesses.map((process) => (
-              <ProcessCard
-                key={process.id}
-                process={process}
-                onSelect={(p) => handleSelectProcess(p)}
-              />
-            ))}
-          </div>
+          {/* Process Cards Grid / Loading / Empty State */}
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="glass-card rounded-3xl p-6 h-64 animate-pulse flex flex-col justify-between"
+                  style={{ background: 'var(--bg-surface)' }}
+                >
+                  <div className="space-y-3">
+                    <div className="w-24 h-5 rounded-lg bg-slate-200 dark:bg-slate-800" />
+                    <div className="w-3/4 h-6 rounded-lg bg-slate-200 dark:bg-slate-800" />
+                    <div className="w-full h-12 rounded-lg bg-slate-200 dark:bg-slate-800" />
+                  </div>
+                  <div className="w-1/2 h-4 rounded-lg bg-slate-200 dark:bg-slate-800" />
+                </div>
+              ))}
+            </div>
+          ) : filteredProcesses.length === 0 ? (
+            <div className="text-center py-16 glass-card rounded-3xl">
+              <Layers className="w-12 h-12 mx-auto mb-3 opacity-40 text-blue-500" />
+              <h3 className="text-lg font-bold">هیچ فرایندی در این دسته‌بندی یافت نشد</h3>
+              <p className="text-sm text-gray-500 mt-1">فرایندها مستقیماً از پایگاه داده بازیابی می‌شوند.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProcesses.map((process) => (
+                <ProcessCard
+                  key={process.id}
+                  process={process}
+                  onSelect={(p) => handleSelectProcess(p)}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Live Interactive Flow Simulator */}

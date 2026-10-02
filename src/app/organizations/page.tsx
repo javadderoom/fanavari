@@ -2,16 +2,20 @@ import React from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
-import { ORGANIZATIONS, MOCK_PROCESSES } from '@/data/mock-processes';
-import { Building2, Home, ArrowLeft, Shield, Users, Landmark, Server, Coins, Headphones } from 'lucide-react';
+import { getDbDepartments } from '@/lib/db-service';
+import { Building2, Home, ArrowLeft, Shield, Users, Landmark, Server, Coins } from 'lucide-react';
 import type { Metadata } from 'next';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'دایرکتوری سازمان‌ها و ادارات | سامانه فناوری',
   description: 'فهرست سازمان‌ها، وزارتخانه‌ها و دپارتمان‌های سازمانی به تفکیک فرایندهای اجرایی و اداری',
 };
 
-export default function OrganizationsPage() {
+export default async function OrganizationsPage() {
+  const departments = await getDbDepartments();
+
   const getOrgIcon = (slug: string) => {
     switch (slug) {
       case 'org-tax': return <Landmark className="w-6 h-6 text-amber-500" />;
@@ -52,13 +56,22 @@ export default function OrganizationsPage() {
             دایرکتوری سازمان‌ها و مراجع ذی‌ربط
           </h1>
           <p className="text-sm sm:text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            دسته‌بندی فرایندها بر اساس دستگاه‌های دولتی، سازمان‌های متبوع و دپارتمان‌های عملیاتی داخلی شرکت.
+            دسته‌بندی فرایندها بر اساس دستگاه‌های دولتی، سازمان‌های متبوع و دپارتمان‌های عملیاتی.
           </p>
         </div>
 
+        {/* Empty State */}
+        {departments.length === 0 && (
+          <div className="text-center py-16 glass-card rounded-3xl">
+            <Building2 className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <h3 className="text-lg font-bold">هیچ سازمانی در دیتابیس ثبت نشده است</h3>
+            <p className="text-sm text-gray-500 mt-1">اطلاعات سازمان‌ها مستقیماً از پایگاه داده خوانده می‌شوند.</p>
+          </div>
+        )}
+
         {/* Organizations Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {ORGANIZATIONS.map((org) => {
+          {departments.map((org) => {
             return (
               <div
                 key={org.slug}
@@ -74,7 +87,7 @@ export default function OrganizationsPage() {
                     <span className="text-xs font-bold px-2.5 py-1 rounded-full"
                       style={{ background: 'var(--accent-soft)', color: 'var(--accent-primary)' }}
                     >
-                      {org.category === 'gov' ? 'نهاد دولتی' : org.category === 'tech' ? 'تیم فنی' : 'دپارتمان سازمانی'}
+                      {org.category === 'gov' ? 'نهاد دولتی / وزارتخانه' : 'دپارتمان سازمانی'}
                     </span>
                   </div>
 
@@ -94,8 +107,11 @@ export default function OrganizationsPage() {
                 <div className="flex items-center justify-between pt-3 border-t text-xs font-bold text-blue-600"
                   style={{ borderColor: 'var(--border-subtle)' }}
                 >
-                  <Link href={`/?category=all`} className="group-hover:translate-x-[-4px] transition-transform flex items-center gap-1">
-                    <span>مشاهده فرایندهای مربوطه</span>
+                  <span className="text-xs text-slate-500 font-normal">
+                    {org.processCount} فرایند فعال
+                  </span>
+                  <Link href={`/?category=all`} className="group-hover:translate-x-[-4px] transition-transform flex items-center gap-1 font-bold">
+                    <span>مشاهده فرایندها</span>
                     <ArrowLeft className="w-3.5 h-3.5" />
                   </Link>
                 </div>

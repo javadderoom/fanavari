@@ -4,24 +4,27 @@ import Link from 'next/link';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { ProcessCard } from '@/components/process-card';
-import { SYSTEM_TOOLS, MOCK_PROCESSES } from '@/data/mock-processes';
-import { Home, Laptop, ExternalLink, ArrowRight, Layers } from 'lucide-react';
+import { getDbSystemTools, getDbSystemToolBySlug } from '@/lib/db-service';
+import { Home, Laptop, ExternalLink } from 'lucide-react';
 import type { Metadata } from 'next';
+
+export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  return SYSTEM_TOOLS.map((tool) => ({
+  const tools = await getDbSystemTools();
+  return tools.map((tool) => ({
     slug: tool.slug,
   }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const tool = SYSTEM_TOOLS.find((t) => t.slug === slug);
-  if (!tool) return { title: 'نرم‌افزار یافت نشد | سامانه فناوری' };
+  const { tool } = await getDbSystemToolBySlug(slug);
+  if (!tool) return { title: 'نرم‌افزار یا سامانه یافت نشد | سامانه فناوری' };
 
   return {
     title: `فرایندهای ${tool.name} | سامانه فناوری`,
@@ -31,15 +34,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SingleSystemPage({ params }: Props) {
   const { slug } = await params;
-  const tool = SYSTEM_TOOLS.find((t) => t.slug === slug);
+  const { tool, processes: relatedProcesses } = await getDbSystemToolBySlug(slug);
 
   if (!tool) {
     notFound();
   }
-
-  const relatedProcesses = MOCK_PROCESSES.filter(
-    (p) => p.targetSystemSlug === slug
-  );
 
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-200"

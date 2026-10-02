@@ -2,29 +2,19 @@ import React from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
-import { MOCK_PROCESSES } from '@/data/mock-processes';
-import { ShieldAlert, Home, ArrowLeft, AlertTriangle, Layers, ExternalLink } from 'lucide-react';
+import { getDbErrorGuides } from '@/lib/db-service';
+import { ShieldAlert, Home, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'بانک جامع خطایابی و عیب‌یابی فرایندها | سامانه فناوری',
   description: 'فهرست کامل کدهای خطا، علل وقوع و راه‌حل‌های تست‌شده برای فرایندهای اداری و نرم‌افزاری',
 };
 
-export default function ErrorsDirectoryPage() {
-  // Aggregate all error guides across all processes
-  const allErrors = MOCK_PROCESSES.flatMap((proc) =>
-    proc.steps.flatMap((step) =>
-      (step.errorGuides || []).map((err) => ({
-        ...err,
-        processTitle: proc.title,
-        processSlug: proc.slug,
-        stepTitle: step.title,
-        stepIndex: step.orderIndex,
-        targetSystem: proc.targetSystem,
-      }))
-    )
-  );
+export default async function ErrorsDirectoryPage() {
+  const allErrors = await getDbErrorGuides();
 
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-200"
@@ -59,6 +49,15 @@ export default function ErrorsDirectoryPage() {
           </p>
         </div>
 
+        {/* Empty State */}
+        {allErrors.length === 0 && (
+          <div className="text-center py-16 glass-card rounded-3xl">
+            <ShieldAlert className="w-12 h-12 mx-auto mb-3 opacity-40 text-rose-500" />
+            <h3 className="text-lg font-bold">هیچ راهنمای خطایی ثبت نشده است</h3>
+            <p className="text-sm text-gray-500 mt-1">خطاها همراه با مراحل فرایند از دیتابیس بارگذاری می‌شوند.</p>
+          </div>
+        )}
+
         {/* Error Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {allErrors.map((err) => (
@@ -91,13 +90,6 @@ export default function ErrorsDirectoryPage() {
                     {err.solution}
                   </p>
                 </div>
-
-                {err.escalationContact && (
-                  <div className="text-xs text-slate-400 mb-3">
-                    <span>واحد پیگیری: </span>
-                    <span className="text-blue-500 font-semibold">{err.escalationContact}</span>
-                  </div>
-                )}
               </div>
 
               {/* Direct Jump to Process */}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
+import { mapPrismaProcess } from '@/lib/db-service';
 
 export async function GET(req: NextRequest) {
   try {
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
       orderBy: { updatedAt: 'desc' },
     });
 
-    return NextResponse.json(processes);
+    return NextResponse.json(processes.map(mapPrismaProcess));
   } catch (error) {
     console.error('Error fetching processes:', error);
     return NextResponse.json({ error: 'Failed to fetch processes' }, { status: 500 });
