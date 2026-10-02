@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Process, ProcessStep, StepType, WorkflowScope } from '@/types/process';
+import { Process, ProcessStep, StepType, WorkflowScope, ErrorGuideItem, CopyableField } from '@/types/process';
 import { useUserSession } from './user-session-provider';
 import { Permissions } from '@/lib/permissions';
 import { 
@@ -84,7 +84,21 @@ export function ProcessEditorModal({
       setTargetUrl(processToEdit.targetUrl || '');
       setEstimatedMinutes(processToEdit.estimatedMinutes);
       setTagsInput(processToEdit.tags.join('، '));
-      setSteps(processToEdit.steps);
+      setSteps(
+        (processToEdit.steps || []).map((s) => ({
+          ...s,
+          copyableFields: s.copyableFields ? [...s.copyableFields] : [],
+          errorGuides: (s.errorGuides || []).map((err: any) => ({
+            id: err.id || `err-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            errorCode: err.errorCode || '',
+            errorTitle: err.errorTitle || '',
+            cause: err.cause || '',
+            solution: err.solution || err.solutionMarkdown || '',
+            escalationContact: err.escalationContact || '',
+            screenshotUrl: err.screenshotUrl || '',
+          })),
+        }))
+      );
     } else {
       // Defaults for brand new process
       setTitle('');
@@ -149,6 +163,89 @@ export function ProcessEditorModal({
   const handleUpdateStep = (index: number, updatedFields: Partial<ProcessStep>) => {
     const updated = [...steps];
     updated[index] = { ...updated[index], ...updatedFields };
+    setSteps(updated);
+  };
+
+  // Error guides management for a step
+  const handleAddErrorGuide = (stepIndex: number) => {
+    const updated = [...steps];
+    const currentGuides = updated[stepIndex].errorGuides || [];
+    const newGuide: ErrorGuideItem = {
+      id: `err-${Date.now()}-${currentGuides.length + 1}`,
+      errorCode: `ERR-${stepIndex + 1}-${currentGuides.length + 1}`,
+      errorTitle: '',
+      cause: '',
+      solution: '',
+    };
+    updated[stepIndex] = {
+      ...updated[stepIndex],
+      errorGuides: [...currentGuides, newGuide],
+    };
+    setSteps(updated);
+  };
+
+  const handleUpdateErrorGuide = (
+    stepIndex: number,
+    errIndex: number,
+    fields: Partial<ErrorGuideItem>
+  ) => {
+    const updated = [...steps];
+    const currentGuides = [...(updated[stepIndex].errorGuides || [])];
+    currentGuides[errIndex] = { ...currentGuides[errIndex], ...fields };
+    updated[stepIndex] = {
+      ...updated[stepIndex],
+      errorGuides: currentGuides,
+    };
+    setSteps(updated);
+  };
+
+  const handleRemoveErrorGuide = (stepIndex: number, errIndex: number) => {
+    const updated = [...steps];
+    const currentGuides = (updated[stepIndex].errorGuides || []).filter((_, idx) => idx !== errIndex);
+    updated[stepIndex] = {
+      ...updated[stepIndex],
+      errorGuides: currentGuides,
+    };
+    setSteps(updated);
+  };
+
+  // Copyable fields management for a step
+  const handleAddCopyableField = (stepIndex: number) => {
+    const updated = [...steps];
+    const currentFields = updated[stepIndex].copyableFields || [];
+    const newField: CopyableField = {
+      label: '',
+      value: '',
+    };
+    updated[stepIndex] = {
+      ...updated[stepIndex],
+      copyableFields: [...currentFields, newField],
+    };
+    setSteps(updated);
+  };
+
+  const handleUpdateCopyableField = (
+    stepIndex: number,
+    fIndex: number,
+    fields: Partial<CopyableField>
+  ) => {
+    const updated = [...steps];
+    const currentFields = [...(updated[stepIndex].copyableFields || [])];
+    currentFields[fIndex] = { ...currentFields[fIndex], ...fields };
+    updated[stepIndex] = {
+      ...updated[stepIndex],
+      copyableFields: currentFields,
+    };
+    setSteps(updated);
+  };
+
+  const handleRemoveCopyableField = (stepIndex: number, fIndex: number) => {
+    const updated = [...steps];
+    const currentFields = (updated[stepIndex].copyableFields || []).filter((_, idx) => idx !== fIndex);
+    updated[stepIndex] = {
+      ...updated[stepIndex],
+      copyableFields: currentFields,
+    };
     setSteps(updated);
   };
 
@@ -552,14 +649,179 @@ export function ProcessEditorModal({
                   </div>
 
                   {/* Step Description */}
-                  <textarea
-                    rows={2}
-                    value={step.contentMarkdown}
-                    onChange={(e) => handleUpdateStep(idx, { contentMarkdown: e.target.value })}
-                    placeholder="دستورالعمل اجرایی و نکات این مرحله را بنویسید..."
-                    className="w-full p-2.5 text-xs rounded-xl border outline-none leading-relaxed"
-                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
-                  />
+                  <div className="mb-3">
+                    <label className="block text-[10px] font-bold text-slate-500 mb-1">
+                      دستورالعمل اجرایی و شرح تفصیلی گام
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={step.contentMarkdown}
+                      onChange={(e) => handleUpdateStep(idx, { contentMarkdown: e.target.value })}
+                      placeholder="دستورالعمل اجرایی، پیش‌نیازها و نکات کلیدی این مرحله را بنویسید..."
+                      className="w-full p-2.5 text-xs rounded-xl border outline-none leading-relaxed transition-all focus:ring-2 focus:ring-blue-500"
+                      style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+
+                  {/* Step Copyable Helper Fields */}
+                  <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 mb-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400">
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>فیلدهای نمونه و داده‌های قابل کپی ({step.copyableFields?.length || 0})</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleAddCopyableField(idx)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-300 transition-colors cursor-pointer border border-blue-500/20"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>افزودن فیلد نمونه</span>
+                      </button>
+                    </div>
+
+                    {step.copyableFields && step.copyableFields.length > 0 ? (
+                      <div className="space-y-2">
+                        {step.copyableFields.map((field, fIdx) => (
+                          <div
+                            key={fIdx}
+                            className="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40"
+                          >
+                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-[10px] font-bold text-slate-500 mb-0.5">
+                                  عنوان فیلد (برچسب)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={field.label || ''}
+                                  onChange={(e) => handleUpdateCopyableField(idx, fIdx, { label: e.target.value })}
+                                  placeholder="مثلاً: آدرس سامانه یا کد پیگیری"
+                                  className="w-full p-2 text-xs rounded-lg border font-medium outline-none"
+                                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-slate-500 mb-0.5">
+                                  مقدار قابل کپی (Value)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={field.value || ''}
+                                  onChange={(e) => handleUpdateCopyableField(idx, fIdx, { value: e.target.value })}
+                                  placeholder="مثلاً: 12345678 یا https://..."
+                                  dir="auto"
+                                  className="w-full p-2 text-xs rounded-lg border font-mono outline-none"
+                                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
+                                />
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCopyableField(idx, fIdx)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors cursor-pointer self-center"
+                              title="حذف این فیلد"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
+                        فیلد یا دیتای نمونه‌ای برای کپی مستقیم در این گام تعریف نشده است.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Step Error Guides */}
+                  <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span>راهنمای خطاها و اشکالات این مرحله ({step.errorGuides?.length || 0} خطا)</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleAddErrorGuide(idx)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-300 transition-colors cursor-pointer border border-rose-500/20"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>افزودن خطا به این گام</span>
+                      </button>
+                    </div>
+
+                    {step.errorGuides && step.errorGuides.length > 0 ? (
+                      <div className="space-y-3">
+                        {step.errorGuides.map((err, errIdx) => (
+                          <div
+                            key={err.id || errIdx}
+                            className="p-3 rounded-xl border border-rose-500/20 bg-rose-500/5 dark:bg-rose-950/20 space-y-2.5"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <div>
+                                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                                    کد اختصاصی خطا (Error Code)
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={err.errorCode || ''}
+                                    onChange={(e) => handleUpdateErrorGuide(idx, errIdx, { errorCode: e.target.value })}
+                                    placeholder="مثلاً: ERR-403 یا LTMS-ERR-01"
+                                    dir="ltr"
+                                    className="w-full p-2 text-xs rounded-lg border font-mono font-bold text-rose-600 dark:text-rose-400 outline-none"
+                                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
+                                  />
+                                </div>
+                                <div className="sm:col-span-2">
+                                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                                    عنوان و شرح خطای دریافتی
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={err.errorTitle || ''}
+                                    onChange={(e) => handleUpdateErrorGuide(idx, errIdx, { errorTitle: e.target.value })}
+                                    placeholder="مثلاً: عدم یافتن ابلاغ تدریس در سرور پایگاه مرکزی"
+                                    className="w-full p-2 text-xs rounded-lg border font-medium outline-none"
+                                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
+                                  />
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveErrorGuide(idx, errIdx)}
+                                className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/20 transition-colors cursor-pointer mt-5"
+                                title="حذف این راهنمای خطا"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                                دستورالعمل و راهکار تست‌شده رفع خطا (Solution)
+                              </label>
+                              <textarea
+                                rows={2}
+                                value={err.solution || ''}
+                                onChange={(e) => handleUpdateErrorGuide(idx, errIdx, { solution: e.target.value })}
+                                placeholder="راهکار گام‌به‌گام برای کاربر یا پرسنل جهت برطرف کردن این مشکل..."
+                                className="w-full p-2.5 text-xs rounded-lg border outline-none leading-relaxed"
+                                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
+                        هیچ خطایی برای این مرحله ثبت نشده است. در صورت نیاز با زدن «افزودن خطا به این گام» آن را اضافه نمایید.
+                      </p>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
