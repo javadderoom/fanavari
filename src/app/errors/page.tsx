@@ -81,11 +81,11 @@ export default async function ErrorsDirectoryPage() {
                 </div>
 
                 <div className="text-xs sm:text-sm space-y-2.5 mb-4" style={{ color: 'var(--text-secondary)' }}>
-                  <p>
+                  <p className="whitespace-pre-line">
                     <span className="font-bold text-slate-500 ml-1">علت وقوع:</span>
                     {err.cause}
                   </p>
-                  <p className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                  <p className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 whitespace-pre-line">
                     <span className="font-bold text-emerald-600 dark:text-emerald-400 ml-1">راه‌حل:</span>
                     {err.solution}
                   </p>

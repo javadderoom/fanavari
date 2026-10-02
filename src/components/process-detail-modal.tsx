@@ -115,6 +115,11 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
             <h2 className="text-xl sm:text-2xl font-black leading-snug" style={{ color: 'var(--text-primary)' }}>
               {process.title}
             </h2>
+            {process.description && (
+              <p className="text-xs sm:text-sm mt-1.5 font-medium leading-relaxed whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>
+                {process.description}
+              </p>
+            )}
           </div>
 
           <button
@@ -254,7 +259,7 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
                   </div>
 
                   {/* Step Markdown / Instructions */}
-                  <div className="text-sm font-medium leading-relaxed mb-5" style={{ color: 'var(--text-secondary)' }}>
+                  <div className="text-sm font-medium leading-relaxed mb-5 whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>
                     {currentStep.contentMarkdown}
                   </div>
 
@@ -332,7 +337,7 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
                                 </span>
                               )}
                             </div>
-                            <p className="text-slate-600 dark:text-slate-300">
+                            <p className="text-slate-600 dark:text-slate-300 whitespace-pre-line">
                               <span className="font-semibold">راه‌حل: </span>
                               {err.solution}
                             </p>
@@ -408,11 +413,11 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
                   </div>
 
                   <div className="text-xs space-y-2 font-medium" style={{ color: 'var(--text-secondary)' }}>
-                    <p>
+                    <p className="whitespace-pre-line">
                       <span className="font-bold text-slate-500 ml-1">علت وقوع:</span>
                       {err.cause}
                     </p>
-                    <p className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <p className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 whitespace-pre-line">
                       <span className="font-bold text-emerald-600 dark:text-emerald-400 ml-1">راهکار رفع خطا:</span>
                       {err.solution}
                     </p>

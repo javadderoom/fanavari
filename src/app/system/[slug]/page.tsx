@@ -88,7 +88,7 @@ export default async function SingleSystemPage({ params }: Props) {
               <h1 className="text-2xl sm:text-3xl font-black mt-1" style={{ color: 'var(--text-primary)' }}>
                 {tool.name}
               </h1>
-              <p className="text-sm sm:text-base font-medium leading-relaxed max-w-2xl mt-2" style={{ color: 'var(--text-secondary)' }}>
+              <p className="text-sm sm:text-base font-medium leading-relaxed max-w-2xl mt-2 whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>
                 {tool.description}
               </p>
             </div>

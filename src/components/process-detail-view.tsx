@@ -118,7 +118,7 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
               {process.title}
             </h1>
 
-            <p className="text-sm sm:text-base font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-sm sm:text-base font-medium leading-relaxed whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>
               {process.description}
             </p>
           </div>
@@ -292,7 +292,7 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
               </div>
 
               {/* Instructions */}
-              <div className="text-sm sm:text-base font-medium leading-relaxed mb-6" style={{ color: 'var(--text-secondary)' }}>
+              <div className="text-sm sm:text-base font-medium leading-relaxed mb-6 whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>
                 {currentStep.contentMarkdown}
               </div>
 
@@ -370,7 +370,7 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
                             </span>
                           )}
                         </div>
-                        <p className="text-slate-600 dark:text-slate-300">
+                        <p className="text-slate-600 dark:text-slate-300 whitespace-pre-line">
                           <span className="font-semibold">راه‌حل رفع خطا: </span>
                           {err.solution}
                         </p>
@@ -448,11 +448,11 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
                 </div>
 
                 <div className="text-xs sm:text-sm space-y-2.5 font-medium" style={{ color: 'var(--text-secondary)' }}>
-                  <p>
+                  <p className="whitespace-pre-line">
                     <span className="font-bold text-slate-500 ml-1">علت بروز:</span>
                     {err.cause}
                   </p>
-                  <p className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                  <p className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 whitespace-pre-line">
                     <span className="font-bold text-emerald-600 dark:text-emerald-400 ml-1">راه‌حل گام‌به‌گام:</span>
                     {err.solution}
                   </p>
