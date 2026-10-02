@@ -18,8 +18,11 @@ import {
   Globe, 
   Laptop, 
   FileText,
-  Sparkles
+  Sparkles,
+  Building2,
+  Loader2
 } from 'lucide-react';
+import { notify } from '@/lib/notify';
 import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
 
 interface ProcessEditorModalProps {
@@ -35,7 +38,7 @@ export function ProcessEditorModal({
   onClose,
   onSave,
 }: ProcessEditorModalProps) {
-  const { can, isSuperAdmin } = useUserSession();
+  const { currentUser, can, isSuperAdmin } = useUserSession();
 
   const isEditing = Boolean(processToEdit);
   const canSave = isEditing ? can(Permissions.EDIT_PROCESSES) : can(Permissions.CREATE_PROCESSES);
@@ -56,6 +59,18 @@ export function ProcessEditorModal({
   // Live departments and systems lists from database
   const [departmentsList, setDepartmentsList] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [systemsList, setSystemsList] = useState<{ id?: string; name: string; slug: string; category?: string; websiteUrl?: string }[]>([]);
+
+  // Quick creation states for system/software
+  const [isQuickSystemOpen, setIsQuickSystemOpen] = useState(false);
+  const [quickSystemName, setQuickSystemName] = useState('');
+  const [quickSystemCategory, setQuickSystemCategory] = useState<'portal' | 'software' | 'devtools' | 'erp'>('portal');
+  const [quickSystemUrl, setQuickSystemUrl] = useState('');
+  const [isSavingQuickSystem, setIsSavingQuickSystem] = useState(false);
+
+  // Quick creation states for department
+  const [isQuickDeptOpen, setIsQuickDeptOpen] = useState(false);
+  const [quickDeptName, setQuickDeptName] = useState('');
+  const [isSavingQuickDept, setIsSavingQuickDept] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -136,6 +151,83 @@ export function ProcessEditorModal({
       ]);
     }
   }, [processToEdit, isOpen]);
+
+  // Quick save handlers
+  const handleQuickSaveSystem = async () => {
+    if (!quickSystemName.trim()) {
+      notify.error('نام نرم‌افزار یا سامانه الزامی است.');
+      return;
+    }
+
+    setIsSavingQuickSystem(true);
+    try {
+      const res = await fetch('/api/systems', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-permissions': String(currentUser.permissions),
+        },
+        body: JSON.stringify({
+          name: quickSystemName.trim(),
+          category: quickSystemCategory,
+          websiteUrl: quickSystemUrl.trim() || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'خطا در ثبت سامانه');
+      }
+
+      setSystemsList((prev) => [data, ...prev]);
+      setTargetSystem(data.name);
+      if (data.websiteUrl) setTargetUrl(data.websiteUrl);
+      setIsQuickSystemOpen(false);
+      setQuickSystemName('');
+      setQuickSystemUrl('');
+      notify.success(`سامانه «${data.name}» با موفقیت ثبت و انتخاب شد.`);
+    } catch (err: any) {
+      notify.error(err.message || 'خطا در ثبت سامانه');
+    } finally {
+      setIsSavingQuickSystem(false);
+    }
+  };
+
+  const handleQuickSaveDept = async () => {
+    if (!quickDeptName.trim()) {
+      notify.error('نام سازمان الزامی است.');
+      return;
+    }
+
+    setIsSavingQuickDept(true);
+    try {
+      const res = await fetch('/api/departments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-permissions': String(currentUser.permissions),
+        },
+        body: JSON.stringify({
+          name: quickDeptName.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'خطا در ثبت سازمان');
+      }
+
+      setDepartmentsList((prev) => [data, ...prev]);
+      setDepartmentName(data.name);
+      setIsQuickDeptOpen(false);
+      setQuickDeptName('');
+      notify.success(`سازمان «${data.name}» با موفقیت ثبت و انتخاب شد.`);
+    } catch (err: any) {
+      notify.error(err.message || 'خطا در ثبت سازمان');
+    } finally {
+      setIsSavingQuickDept(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -440,106 +532,276 @@ export function ProcessEditorModal({
               </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                دپارتمان یا سازمان متولی (پایگاه داده)
-              </label>
-              {departmentsList.length > 0 ? (
-                <div className="space-y-1.5">
-                  <select
-                    value={departmentsList.some((d) => d.name === departmentName) ? departmentName : 'custom'}
-                    onChange={(e) => {
-                      if (e.target.value !== 'custom') {
-                        setDepartmentName(e.target.value);
-                      } else {
-                        setDepartmentName('');
-                      }
-                    }}
-                    className="w-full p-3 rounded-xl border text-sm font-medium outline-none cursor-pointer"
-                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                  >
-                    {departmentsList.map((d) => (
-                      <option key={d.slug} value={d.name}>
-                        {d.name}
-                      </option>
-                    ))}
-                    <option value="custom">سایر / ورود دستی نام سازمان...</option>
-                  </select>
-                  {(!departmentsList.some((d) => d.name === departmentName) || departmentName === '') && (
+            {/* Department / Organization Field */}
+            <div className="rounded-2xl p-4 border" style={{ background: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}>
+              <div className="flex items-center justify-between mb-2">
+                <label className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                  <Building2 className="w-4 h-4 text-emerald-600" />
+                  <span>دپارتمان یا سازمان متولی</span>
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => setIsQuickDeptOpen((prev) => !prev)}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{isQuickDeptOpen ? 'بستن ثبت سازمان' : 'ثبت سازمان جدید'}</span>
+                </button>
+              </div>
+
+              {/* Quick Dept Creation Sub-form */}
+              {isQuickDeptOpen && (
+                <div className="mb-4 p-4 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 space-y-3 animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>ثبت فوری سازمان در پایگاه داده</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsQuickDeptOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 text-xs font-medium cursor-pointer"
+                    >
+                      بستن
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                      نام سازمان یا وزارتخانه <span className="text-rose-500">*</span>
+                    </label>
                     <input
                       type="text"
-                      value={departmentName}
-                      onChange={(e) => setDepartmentName(e.target.value)}
-                      placeholder="نام دقیق سازمان یا واحد را بنویسید..."
-                      className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none"
-                      style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                      value={quickDeptName}
+                      onChange={(e) => setQuickDeptName(e.target.value)}
+                      placeholder="مثلاً: سازمان تامین اجتماعی، وزارت جهاد کشاورزی..."
+                      className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
                     />
-                  )}
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsQuickDeptOpen(false)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 cursor-pointer"
+                    >
+                      انصراف
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSavingQuickDept || !quickDeptName.trim()}
+                      onClick={handleQuickSaveDept}
+                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 cursor-pointer shadow-xs"
+                    >
+                      {isSavingQuickDept ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>در حال ذخیره...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-3.5 h-3.5" />
+                          <span>ثبت و انتخاب در این فرایند</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-              ) : (
-                <input
-                  type="text"
-                  value={departmentName}
-                  onChange={(e) => setDepartmentName(e.target.value)}
-                  placeholder="مثلاً: وزارت آموزش و پرورش"
-                  className="w-full p-3 rounded-xl border text-sm font-medium outline-none"
-                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                />
               )}
+
+              {/* Main Selector */}
+              <div className="space-y-2">
+                <select
+                  value={departmentsList.some((d) => d.name === departmentName) ? departmentName : (departmentName ? 'custom' : '')}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '__NEW__') {
+                      setIsQuickDeptOpen(true);
+                    } else if (val === 'custom') {
+                      setDepartmentName('');
+                    } else {
+                      setDepartmentName(val);
+                    }
+                  }}
+                  className="w-full p-3 rounded-xl border text-sm font-medium outline-none cursor-pointer"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                >
+                  <option value="">-- انتخاب سازمان از لیست دیتابیس --</option>
+                  {departmentsList.map((d) => (
+                    <option key={d.slug} value={d.name}>
+                      {d.name}
+                    </option>
+                  ))}
+                  <option value="__NEW__">+ تعریف و ثبت سازمان جدید در دیتابیس...</option>
+                  <option value="custom">سایر / ورود دستی نام سازمان...</option>
+                </select>
+
+                {(!departmentsList.some((d) => d.name === departmentName) || departmentName === '') && (
+                  <input
+                    type="text"
+                    value={departmentName}
+                    onChange={(e) => setDepartmentName(e.target.value)}
+                    placeholder="نام دقیق سازمان یا واحد را بنویسید..."
+                    className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none"
+                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                  />
+                )}
+              </div>
             </div>
 
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                <Laptop className="w-3.5 h-3.5 text-blue-500" />
-                <span>نام نرم‌افزار یا سامانه هدف</span>
-              </label>
-              {systemsList.length > 0 ? (
-                <div className="space-y-2">
-                  <select
-                    value={systemsList.some((s) => s.name === targetSystem) ? targetSystem : 'custom'}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val === 'custom') {
-                        setTargetSystem('');
-                      } else {
-                        setTargetSystem(val);
-                        const found = systemsList.find((s) => s.name === val);
-                        if (found?.websiteUrl && !targetUrl) {
-                          setTargetUrl(found.websiteUrl);
-                        }
-                      }
-                    }}
-                    className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all cursor-pointer"
-                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                  >
-                    <option value="custom">-- انتخاب از سامانه‌های ثبت‌شده یا تایپ دلخواه --</option>
-                    {systemsList.map((s) => (
-                      <option key={s.slug} value={s.name}>
-                        {s.name} ({s.category === 'software' ? 'نرم‌افزار' : s.category === 'devtools' ? 'ابزار' : 'سامانه'})
-                      </option>
-                    ))}
-                  </select>
-                  {(!systemsList.some((s) => s.name === targetSystem) || targetSystem === '') && (
+            {/* Target Software / System Field */}
+            <div className="rounded-2xl p-4 border" style={{ background: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}>
+              <div className="flex items-center justify-between mb-2">
+                <label className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                  <Laptop className="w-4 h-4 text-purple-600" />
+                  <span>نرم‌افزار یا سامانه هدف این فرایند</span>
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => setIsQuickSystemOpen((prev) => !prev)}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-purple-600 hover:text-purple-700 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{isQuickSystemOpen ? 'بستن ثبت سامانه' : 'ثبت سامانه جدید'}</span>
+                </button>
+              </div>
+
+              {/* Quick System Creation Sub-form */}
+              {isQuickSystemOpen && (
+                <div className="mb-4 p-4 rounded-xl border border-purple-300 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30 space-y-3 animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>ثبت فوری سامانه در پایگاه داده</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsQuickSystemOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 text-xs font-medium cursor-pointer"
+                    >
+                      بستن
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        نام سامانه یا نرم‌افزار <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={quickSystemName}
+                        onChange={(e) => setQuickSystemName(e.target.value)}
+                        placeholder="مثلاً: سامانه سیدا، ادوبی فتوشاپ..."
+                        className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        نوع ابزار
+                      </label>
+                      <select
+                        value={quickSystemCategory}
+                        onChange={(e) => setQuickSystemCategory(e.target.value as any)}
+                        className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 cursor-pointer"
+                      >
+                        <option value="portal">سامانه و درگاه تحت وب</option>
+                        <option value="software">نرم‌افزار کاربردی دسکتاپ</option>
+                        <option value="devtools">ابزار فنی و برنامه‌نویسی</option>
+                        <option value="erp">سیستم سازمانی و ERP</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                      آدرس وبگاه رسمی (اختیاری)
+                    </label>
                     <input
-                      type="text"
-                      value={targetSystem}
-                      onChange={(e) => setTargetSystem(e.target.value)}
-                      placeholder="نام نرم‌افزار یا سامانه را بنویسید..."
-                      className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-blue-500"
-                      style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                      type="url"
+                      dir="ltr"
+                      value={quickSystemUrl}
+                      onChange={(e) => setQuickSystemUrl(e.target.value)}
+                      placeholder="https://sida.medu.ir"
+                      className="w-full px-3 py-2 rounded-lg text-xs font-mono border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
                     />
-                  )}
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsQuickSystemOpen(false)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 cursor-pointer"
+                    >
+                      انصراف
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSavingQuickSystem || !quickSystemName.trim()}
+                      onClick={handleQuickSaveSystem}
+                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 cursor-pointer shadow-xs"
+                    >
+                      {isSavingQuickSystem ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>در حال ذخیره...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-3.5 h-3.5" />
+                          <span>ثبت و انتخاب در این فرایند</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-              ) : (
-                <input
-                  type="text"
-                  value={targetSystem}
-                  onChange={(e) => setTargetSystem(e.target.value)}
-                  placeholder="مثلاً: فیگما، گیت‌هاب، سامانه LTMS، سیدا..."
-                  className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-blue-500"
-                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                />
               )}
+
+              {/* Main Selector */}
+              <div className="space-y-2">
+                <select
+                  value={systemsList.some((s) => s.name === targetSystem) ? targetSystem : (targetSystem ? 'custom' : '')}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '__NEW__') {
+                      setIsQuickSystemOpen(true);
+                    } else if (val === 'custom') {
+                      setTargetSystem('');
+                    } else {
+                      setTargetSystem(val);
+                      const found = systemsList.find((s) => s.name === val);
+                      if (found?.websiteUrl) {
+                        setTargetUrl(found.websiteUrl);
+                      }
+                    }
+                  }}
+                  className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all cursor-pointer"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                >
+                  <option value="">-- انتخاب نرم‌افزار یا سامانه از لیست دیتابیس --</option>
+                  {systemsList.map((s) => (
+                    <option key={s.slug} value={s.name}>
+                      {s.name} ({s.category === 'software' ? 'نرم‌افزار' : s.category === 'devtools' ? 'ابزار' : s.category === 'erp' ? 'ERP سازمانی' : 'سامانه وب'})
+                    </option>
+                  ))}
+                  <option value="__NEW__">+ تعریف و ثبت نرم‌افزار / سامانه جدید در دیتابیس...</option>
+                  <option value="custom">سایر / تایپ دستی نام نرم‌افزار...</option>
+                </select>
+
+                {(!systemsList.some((s) => s.name === targetSystem) || targetSystem === '') && (
+                  <input
+                    type="text"
+                    value={targetSystem}
+                    onChange={(e) => setTargetSystem(e.target.value)}
+                    placeholder="نام نرم‌افزار یا سامانه را تایپ کنید..."
+                    className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none transition-all focus:ring-2 focus:ring-blue-500"
+                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                  />
+                )}
+              </div>
             </div>
 
             <div>

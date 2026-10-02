@@ -101,6 +101,28 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Resolve systemTool cleanly
+    let resolvedSystemToolId: string | undefined = undefined;
+    const incomingSystemToolId = body.systemToolId;
+    if (incomingSystemToolId) {
+      const exists = await prisma.systemTool.findUnique({ where: { id: incomingSystemToolId } });
+      if (exists) resolvedSystemToolId = exists.id;
+    }
+
+    if (!resolvedSystemToolId && targetSystem) {
+      const foundTool = await prisma.systemTool.findFirst({
+        where: {
+          OR: [
+            { name: targetSystem.trim() },
+            { slug: targetSystem.trim() },
+          ],
+        },
+      });
+      if (foundTool) {
+        resolvedSystemToolId = foundTool.id;
+      }
+    }
+
     // Sanitize steps and nested error guides
     const sanitizedSteps = (steps || []).map((step: any, idx: number) => {
       const rawGuides = Array.isArray(step.errorGuides) ? step.errorGuides : [];
@@ -152,6 +174,7 @@ export async function POST(req: NextRequest) {
             scope: scope || existingProcess.scope,
             category: category || existingProcess.category,
             departmentId: resolvedDeptId !== undefined ? resolvedDeptId : existingProcess.departmentId,
+            systemToolId: resolvedSystemToolId !== undefined ? resolvedSystemToolId : existingProcess.systemToolId,
             targetSystem: targetSystem?.trim() || existingProcess.targetSystem,
             targetUrl: targetUrl !== undefined ? (targetUrl?.trim() || null) : existingProcess.targetUrl,
             estimatedMinutes: Number(estimatedMinutes) || existingProcess.estimatedMinutes,
@@ -188,6 +211,7 @@ export async function POST(req: NextRequest) {
         scope: scope || 'organization',
         category: category || 'hr',
         departmentId: resolvedDeptId,
+        systemToolId: resolvedSystemToolId,
         targetSystem: targetSystem?.trim() || 'سامانه سازمانی',
         targetUrl: targetUrl?.trim() || null,
         estimatedMinutes: Number(estimatedMinutes) || 10,
