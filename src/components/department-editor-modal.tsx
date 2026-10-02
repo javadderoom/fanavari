@@ -13,9 +13,11 @@ import {
   Coins, 
   GraduationCap, 
   Loader2, 
-  AlertCircle 
+  AlertCircle,
+  Sparkles
 } from 'lucide-react';
 import { OrganizationEntity } from '@/types/process';
+import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
 
 interface DepartmentEditorModalProps {
   isOpen: boolean;
@@ -42,6 +44,7 @@ export function DepartmentEditorModal({
 
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
   const [icon, setIcon] = useState('Building2');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -50,11 +53,19 @@ export function DepartmentEditorModal({
 
   const handleNameChange = (val: string) => {
     setName(val);
-    // If slug hasn't been manually edited or is empty, suggest a transliterated/clean slug
-    if (!slug || slug.startsWith('org-')) {
-      const generated = 'org-' + val.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\u0600-\u06FF-]/g, '').slice(0, 20);
-      setSlug(generated);
+    if (!isSlugManuallyEdited) {
+      setSlug(formatToSlug(val));
     }
+  };
+
+  const handleSlugChange = (val: string) => {
+    setIsSlugManuallyEdited(true);
+    setSlug(formatToSlug(val));
+  };
+
+  const handleAutoGenerateSlug = () => {
+    setIsSlugManuallyEdited(true);
+    setSlug(formatToSlug(name));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,6 +78,8 @@ export function DepartmentEditorModal({
     setIsSubmitting(true);
     setErrorMessage(null);
 
+    const finalSlug = cleanSlugForSubmit(slug || name, 'org');
+
     try {
       const res = await fetch('/api/departments', {
         method: 'POST',
@@ -76,7 +89,7 @@ export function DepartmentEditorModal({
         },
         body: JSON.stringify({
           name: name.trim(),
-          slug: slug.trim() || undefined,
+          slug: finalSlug,
           icon,
         }),
       });
@@ -92,6 +105,7 @@ export function DepartmentEditorModal({
       // Reset form
       setName('');
       setSlug('');
+      setIsSlugManuallyEdited(false);
       setIcon('Building2');
     } catch (err: any) {
       setErrorMessage(err.message || 'خطا در برقراری ارتباط با پایگاه داده.');
@@ -164,15 +178,27 @@ export function DepartmentEditorModal({
           </div>
 
           <div>
-            <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>
-              شناسه یکتا لاتین (Slug)
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                شناسه یکتای URL (Slug)
+              </label>
+              {name.trim() && (
+                <button
+                  type="button"
+                  onClick={handleAutoGenerateSlug}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
+                >
+                  <Sparkles className="w-3 h-3 text-amber-500" />
+                  <span>تولید از نام سازمان</span>
+                </button>
+              )}
+            </div>
             <input
               type="text"
               value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              placeholder="مثال: org-economy"
-              dir="ltr"
+              onChange={(e) => handleSlugChange(e.target.value)}
+              placeholder="مثال: org-medu یا اموزش-و-پرورش"
+              dir="auto"
               className="w-full px-4 py-2.5 rounded-xl text-sm border font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
               style={{
                 background: 'var(--bg-input)',
@@ -180,9 +206,14 @@ export function DepartmentEditorModal({
                 color: 'var(--text-primary)',
               }}
             />
-            <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
-              این شناسه در آدرس‌های اینترنتی و فیلترهای سامانه استفاده خواهد شد.
-            </p>
+            <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1 flex-wrap gap-1">
+              <span className="font-mono truncate max-w-xs" dir="ltr">
+                /?dept={slug || '...'}
+              </span>
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                ✓ فاصله‌ها خودکار به خط تیره (-) تبدیل می‌شوند
+              </span>
+            </div>
           </div>
 
           <div>

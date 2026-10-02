@@ -29,6 +29,7 @@ export function mapPrismaProcess(p: any): Process {
       title: step.title,
       contentMarkdown: step.contentMarkdown,
       stepType: (step.stepType as any) || 'action',
+      targetMenuPath: step.targetMenuPath || undefined,
       copyableFields: Array.isArray(step.copyableFields) ? step.copyableFields : undefined,
       hotspots: Array.isArray(step.hotspots) ? step.hotspots : undefined,
       tips: [],

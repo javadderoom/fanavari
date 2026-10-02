@@ -17,8 +17,10 @@ import {
   Clock, 
   Globe, 
   Laptop, 
-  FileText 
+  FileText,
+  Sparkles
 } from 'lucide-react';
+import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
 
 interface ProcessEditorModalProps {
   isOpen: boolean;
@@ -41,6 +43,7 @@ export function ProcessEditorModal({
   // Form states
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
   const [description, setDescription] = useState('');
   const [scope, setScope] = useState<WorkflowScope>('organization');
   const [category, setCategory] = useState<Process['category']>('hr');
@@ -149,11 +152,28 @@ export function ProcessEditorModal({
     setSteps(updated);
   };
 
+  const handleTitleChange = (val: string) => {
+    setTitle(val);
+    if (!isSlugManuallyEdited && !processToEdit) {
+      setSlug(formatToSlug(val));
+    }
+  };
+
+  const handleSlugChange = (val: string) => {
+    setIsSlugManuallyEdited(true);
+    setSlug(formatToSlug(val));
+  };
+
+  const handleAutoGenerateSlug = () => {
+    setIsSlugManuallyEdited(true);
+    setSlug(formatToSlug(title));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return alert('لطفاً عنوان فرایند را وارد کنید');
 
-    const generatedSlug = slug.trim() || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `process-${Date.now()}`;
+    const finalSlug = cleanSlugForSubmit(slug || title, 'proc');
     const tagsArray = tagsInput
       .split(/[،,]/)
       .map(t => t.trim())
@@ -163,7 +183,7 @@ export function ProcessEditorModal({
 
     const savedProcess: Process = {
       id: processToEdit?.id || `proc-${Date.now()}`,
-      slug: generatedSlug,
+      slug: finalSlug,
       title: title.trim(),
       description: description.trim(),
       scope,
@@ -243,25 +263,46 @@ export function ProcessEditorModal({
                 type="text"
                 required
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="مثلاً: ثبت پرسنل جدید، یا خروجی SVG در فیگما..."
-                className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all"
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder="مثلاً: ثبت پرسنل جدید، یا به‌روزرسانی ابلاغ و حکم..."
+                className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-blue-500"
                 style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                شناسه یکتای URL (Slug انگلیسی)
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>
+                  شناسه یکتای URL (Slug)
+                </label>
+                {title.trim() && (
+                  <button
+                    type="button"
+                    onClick={handleAutoGenerateSlug}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    <span>تولید خودکار از عنوان</span>
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
                 value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                placeholder="new-employee-onboarding"
-                className="w-full p-3 rounded-xl border text-sm font-mono outline-none transition-all"
+                onChange={(e) => handleSlugChange(e.target.value)}
+                placeholder="مثال: ltms-decree-update یا بروزرسانی-ابلاغ"
+                dir="auto"
+                className="w-full p-3 rounded-xl border text-sm font-mono outline-none transition-all focus:ring-2 focus:ring-blue-500"
                 style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
               />
+              <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1.5 flex-wrap gap-1">
+                <span className="font-mono truncate max-w-xs" dir="ltr">
+                  /process/{slug || '...'}
+                </span>
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                  ✓ فاصله‌ها خودکار به خط تیره (-) تبدیل می‌شوند
+                </span>
+              </div>
             </div>
 
             <div>

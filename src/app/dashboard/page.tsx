@@ -89,7 +89,7 @@ export default function DashboardPage() {
 
   const handleSaveProcess = async (savedProcess: Process) => {
     setProcesses((prev) => {
-      const idx = prev.findIndex((p) => p.id === savedProcess.id);
+      const idx = prev.findIndex((p) => p.id === savedProcess.id || p.slug === savedProcess.slug);
       if (idx !== -1) {
         const next = [...prev];
         next[idx] = savedProcess;
@@ -99,7 +99,7 @@ export default function DashboardPage() {
     });
 
     try {
-      await fetch('/api/processes', {
+      const res = await fetch('/api/processes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,10 +107,25 @@ export default function DashboardPage() {
         },
         body: JSON.stringify(savedProcess),
       });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `خطای سرور (${res.status})`);
+      }
+
+      const confirmedProcess = await res.json();
+      setProcesses((prev) =>
+        prev.map((p) =>
+          p.id === savedProcess.id || p.slug === savedProcess.slug ? confirmedProcess : p
+        )
+      );
+
       // Refresh to ensure relational bindings are updated
-      fetchDashboardData();
-    } catch (err) {
+      await fetchDashboardData();
+    } catch (err: any) {
       console.error('Error saving process:', err);
+      await fetchDashboardData();
+      alert(`خطا در ثبت فرایند: ${err.message || 'خطای سرور'}`);
     }
   };
 

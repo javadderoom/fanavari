@@ -72,6 +72,7 @@ model Step {
   title           String
   contentMarkdown String
   stepType        String       @default("action") // action, decision, warning, end
+  targetMenuPath  String?
   imageUrl        String?
   hotspots        Json?        // Coordinates and labels on screenshots
   copyableFields  Json?        // Helper sample data to copy
