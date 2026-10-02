@@ -389,15 +389,67 @@ export function ProcessEditorModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                نام نرم‌افزار یا سامانه هدف
+              <label className="flex items-center gap-1.5 text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                <Laptop className="w-3.5 h-3.5 text-blue-500" />
+                <span>نام نرم‌افزار یا سامانه هدف</span>
               </label>
               <input
                 type="text"
                 value={targetSystem}
                 onChange={(e) => setTargetSystem(e.target.value)}
-                placeholder="مثلاً: فیگما، گیت‌هاب، سامانه مودیان..."
-                className="w-full p-3 rounded-xl border text-sm font-medium outline-none"
+                placeholder="مثلاً: فیگما، گیت‌هاب، سامانه LTMS، سیدا..."
+                className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-blue-500"
+                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+              />
+            </div>
+
+            <div>
+              <label className="flex items-center gap-1.5 text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                <Globe className="w-3.5 h-3.5 text-emerald-500" />
+                <span>نشانی اینترنتی سامانه (URL)</span>
+              </label>
+              <input
+                type="url"
+                value={targetUrl}
+                onChange={(e) => setTargetUrl(e.target.value)}
+                placeholder="https://ltms.medu.ir"
+                dir="ltr"
+                className="w-full p-3 rounded-xl border text-sm font-mono text-left outline-none transition-all focus:ring-2 focus:ring-blue-500"
+                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+              />
+            </div>
+
+            <div>
+              <label className="flex items-center gap-1.5 text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                <Clock className="w-3.5 h-3.5 text-amber-500" />
+                <span>مدت زمان تقریبی اجرا (دقیقه)</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  min="1"
+                  max="480"
+                  value={estimatedMinutes}
+                  onChange={(e) => setEstimatedMinutes(Math.max(1, Number(e.target.value)))}
+                  className="w-full p-3 rounded-xl border text-sm font-mono outline-none transition-all focus:ring-2 focus:ring-blue-500"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 select-none">
+                  دقیقه
+                </span>
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                برچسب‌ها و کلمات کلیدی (با کاما یا ویرگول جدا کنید)
+              </label>
+              <input
+                type="text"
+                value={tagsInput}
+                onChange={(e) => setTagsInput(e.target.value)}
+                placeholder="مثلاً: آموزش، فرهنگیان، استعلام حکم، سیدا"
+                className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-blue-500"
                 style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
               />
             </div>
