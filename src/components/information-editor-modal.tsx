@@ -5,33 +5,24 @@ import { useUserSession } from './user-session-provider';
 import { notify } from '@/lib/notify';
 import {
   X,
-  Save,
   Loader2,
   AlertCircle,
   FileText,
   Megaphone,
   BookOpen,
   Pin,
-  ExternalLink,
-  Building2,
-  Laptop,
   CheckCircle2,
   HelpCircle,
   Clock,
   Sparkles,
   Link as LinkIcon,
-  Bold,
-  Heading,
-  List,
-  ListOrdered,
-  Quote,
-  Code,
   FileEdit,
   Send,
   Check,
 } from 'lucide-react';
 import { InformationPost, InformationType, InformationPriority, OrganizationEntity, SystemTool } from '@/types/process';
 import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
+import { RichTextEditor } from './rich-text-editor';
 
 interface InformationEditorModalProps {
   isOpen: boolean;
@@ -110,10 +101,7 @@ export function InformationEditorModal({
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
 
-  // Textarea reference for inserting formatting
-  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Keep saved item reference so subsequent auto-saves update rather than re-create
+  // Persistent reference to entity identity for sequential auto-saves
   const savedPostRef = useRef<{ id: string | null; slug: string | null; isPublished: boolean }>({
     id: null,
     slug: null,
@@ -207,7 +195,13 @@ export function InformationEditorModal({
       const cur = stateRef.current;
       // Auto-save only when dirty, not currently busy, and either title or content is present
       if (!cur.isDirty || cur.isSubmitting) return;
-      if (!cur.title.trim() && !cur.content.trim()) return;
+
+      const isContentPresent =
+        cur.content.trim() &&
+        cur.content.trim() !== '<p></p>' &&
+        cur.content.replace(/<[^>]*>/g, '').trim() !== '';
+
+      if (!cur.title.trim() && !isContentPresent) return;
 
       await handleSaveOperation({ isDraft: true, isAutoSave: true });
     }, 10000); // exactly 10 seconds
@@ -223,24 +217,6 @@ export function InformationEditorModal({
     if (!isSlugManuallyEdited) {
       setSlug(formatToSlug(val));
     }
-  };
-
-  const insertFormatting = (prefix: string, suffix: string = '') => {
-    const el = contentTextareaRef.current;
-    if (!el) return;
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    const selectedText = content.substring(start, end);
-    const replacement = `${prefix}${selectedText || 'متن نمونه'}${suffix}`;
-    const newContent = content.substring(0, start) + replacement + content.substring(end);
-    setContent(newContent);
-    setIsDirty(true);
-    setTimeout(() => {
-      el.focus();
-      const newCursorStart = start + prefix.length;
-      const newCursorEnd = newCursorStart + (selectedText ? selectedText.length : 'متن نمونه'.length);
-      el.setSelectionRange(newCursorStart, newCursorEnd);
-    }, 0);
   };
 
   const handleSaveOperation = async ({
@@ -259,7 +235,12 @@ export function InformationEditorModal({
       return;
     }
 
-    if (!isDraft && !cur.content.trim()) {
+    const isContentEmpty =
+      !cur.content.trim() ||
+      cur.content.trim() === '<p></p>' ||
+      cur.content.replace(/<[^>]*>/g, '').trim() === '';
+
+    if (!isDraft && isContentEmpty) {
       setErrorMessage('متن کامل محتوا برای انتشار الزامی است.');
       return;
     }
@@ -351,19 +332,16 @@ export function InformationEditorModal({
     }
   };
 
-  const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
-  const charCount = content.length;
-
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="info-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
     >
-      <div className="relative w-full max-w-3xl max-h-[92vh] flex flex-col rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden text-slate-100">
+      <div className="relative w-full max-w-4xl max-h-[94vh] flex flex-col rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden text-slate-100">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/80 sticky top-0 z-10">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90 sticky top-0 z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-blue-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-inner">
               <Megaphone className="w-5 h-5" />
@@ -386,20 +364,20 @@ export function InformationEditorModal({
                 )}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                انتشار اطلاعیه‌ها، بخشنامه‌های سازمانی، راهنماها و پایگاه دانش (با ذخیره خودکار هر ۱۰ ثانیه)
+                ثبت و ویرایش اطلاعیه‌ها، بخشنامه‌ها و راهنماها با ادیتور غنی HTML و ذخیره خودکار هر ۱۰ ثانیه
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={(e) => { e.preventDefault(); handleSaveOperation({ isDraft: false }); }} className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+        <form onSubmit={(e) => { e.preventDefault(); handleSaveOperation({ isDraft: false }); }} className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
           {errorMessage && (
             <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
@@ -451,7 +429,7 @@ export function InformationEditorModal({
                 type="text"
                 value={title}
                 onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder="مثال: بخشنامه تغییر سامانه ثبت نمرات و فرآیند ارزشیابی"
+                placeholder="مثال: بخشنامه جامع تغییر سامانه ثبت نمرات و فرآیند ارزشیابی"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700/80 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 required
               />
@@ -510,7 +488,7 @@ export function InformationEditorModal({
                     setIsPinned(e.target.checked);
                     setIsDirty(true);
                   }}
-                  className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+                  className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900 cursor-pointer"
                 />
                 <div className="flex items-center gap-1.5 text-xs font-medium text-slate-300">
                   <Pin className={`w-3.5 h-3.5 ${isPinned ? 'text-indigo-400 fill-indigo-400' : 'text-slate-500'}`} />
@@ -607,101 +585,28 @@ export function InformationEditorModal({
             />
           </div>
 
-          {/* Full Content (Markdown / Multiline) - Focused Enhanced Description Editor */}
-          <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-4 space-y-2.5">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+          {/* Full Content (WordPad / Word Rich Text WYSIWYG Editor with Full-Screen Mode) */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
               <div>
                 <label className="block text-xs font-bold text-slate-200">
                   متن کامل توضیحات و محتوا <span className="text-rose-400">*</span>
                 </label>
                 <p className="text-[11px] text-slate-400 mt-0.5">
-                  پشتیبانی کامل از مارک‌داون، تیتربندی، لیست‌ها و نقل‌قول‌ها
+                  ویرایشگر پیشرفته با خروجی استاندارد HTML، جداول، تراز متن، لیست‌ها و حالت تمام‌صفحه
                 </p>
               </div>
-
-              {/* Formatting Quick Toolbar */}
-              <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg p-1">
-                <button
-                  type="button"
-                  title="متن برجسته (Bold)"
-                  onClick={() => insertFormatting('**', '**')}
-                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                >
-                  <Bold className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  title="سرتیتر (Heading)"
-                  onClick={() => insertFormatting('### ')}
-                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                >
-                  <Heading className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  title="لیست بالت‌دار"
-                  onClick={() => insertFormatting('\n- ')}
-                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                >
-                  <List className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  title="لیست شماره‌دار"
-                  onClick={() => insertFormatting('\n1. ')}
-                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                >
-                  <ListOrdered className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  title="نقل قول (Quote)"
-                  onClick={() => insertFormatting('\n> ')}
-                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                >
-                  <Quote className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  title="پیوند (Link)"
-                  onClick={() => insertFormatting('[عنوان لینک](', ')') }
-                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                >
-                  <LinkIcon className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  title="بلاک کد"
-                  onClick={() => insertFormatting('```\n', '\n```')}
-                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                >
-                  <Code className="w-3.5 h-3.5" />
-                </button>
-              </div>
             </div>
 
-            <textarea
-              ref={contentTextareaRef}
-              rows={9}
+            <RichTextEditor
               value={content}
-              onChange={(e) => {
-                setContent(e.target.value);
+              onChange={(html) => {
+                setContent(html);
                 setIsDirty(true);
               }}
-              placeholder={`متن کامل اطلاعیه، شرایط، مواد قانونی و مراحل اقدام را اینجا بنویسید...\n\n- بند اول: نکات اجرایی\n- بند دوم: مهلت اقدام\n- آدرس ورود به سامانه`}
-              className="w-full px-3.5 py-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 placeholder-slate-600 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 leading-relaxed font-sans min-h-[180px] resize-y"
-              required
+              placeholder="متن کامل بخشنامه یا راهنما را اینجا بنویسید..."
+              minHeight="260px"
             />
-
-            {/* Metrics & Counter */}
-            <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-              <div className="flex items-center gap-2">
-                <span>تعداد واژه‌ها: <strong className="text-slate-300 font-mono">{'\u200E' + wordCount}</strong></span>
-                <span>•</span>
-                <span>تعداد کاراکتر: <strong className="text-slate-300 font-mono">{'\u200E' + charCount}</strong></span>
-              </div>
-              <span className="text-[10px] text-slate-500">ذخیره خودکار پیش‌نویس هر ۱۰ ثانیه فعال است</span>
-            </div>
           </div>
         </form>
 

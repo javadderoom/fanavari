@@ -234,18 +234,26 @@ export default async function InformationDetailPage({ params }: Props) {
 
           {/* Main Content Body */}
           <div
-            className="glass-panel rounded-3xl p-6 sm:p-8 border shadow-sm prose dark:prose-invert max-w-none"
+            className="glass-panel rounded-3xl p-6 sm:p-8 border shadow-sm max-w-none"
             style={{
               borderColor: 'var(--border-glass)',
               background: 'var(--bg-surface)',
             }}
           >
-            <div
-              className="text-sm sm:text-base leading-relaxed whitespace-pre-line text-slate-800 dark:text-slate-200 selection:bg-indigo-500/20"
-              style={{ fontFamily: 'var(--font-sans)' }}
-            >
-              {post.content}
-            </div>
+            {/<[a-z][\s\S]*>/i.test(post.content) ? (
+              <div
+                className="rendered-document-content text-sm sm:text-base leading-relaxed text-slate-800 dark:text-slate-200 selection:bg-indigo-500/20"
+                style={{ fontFamily: 'var(--font-sans)' }}
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+            ) : (
+              <div
+                className="rendered-document-content text-sm sm:text-base leading-relaxed whitespace-pre-line text-slate-800 dark:text-slate-200 selection:bg-indigo-500/20"
+                style={{ fontFamily: 'var(--font-sans)' }}
+              >
+                {post.content}
+              </div>
+            )}
           </div>
 
           {/* External Reference / Download Link (if present) */}
