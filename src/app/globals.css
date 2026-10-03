@@ -165,16 +165,18 @@ mark.search-highlight {
 .rendered-document-content {
   outline: none;
   line-height: 1.8;
+  color: var(--text-primary);
 }
 
 .tiptap p,
 .rendered-document-content p {
   margin-bottom: 0.85rem;
   line-height: 1.85;
+  color: inherit;
 }
 
 .tiptap p.is-editor-empty:first-child::before {
-  color: #64748b;
+  color: var(--text-muted);
   content: attr(data-placeholder);
   float: right;
   height: 0;
@@ -188,7 +190,7 @@ mark.search-highlight {
   margin-top: 1.5rem;
   margin-bottom: 0.85rem;
   line-height: 1.4;
-  color: #f8fafc;
+  color: var(--text-primary);
 }
 
 .tiptap h2,
@@ -198,7 +200,7 @@ mark.search-highlight {
   margin-top: 1.25rem;
   margin-bottom: 0.65rem;
   line-height: 1.4;
-  color: #f1f5f9;
+  color: var(--text-primary);
 }
 
 .tiptap h3,
@@ -208,7 +210,7 @@ mark.search-highlight {
   margin-top: 1rem;
   margin-bottom: 0.5rem;
   line-height: 1.4;
-  color: #e2e8f0;
+  color: var(--text-secondary);
 }
 
 .tiptap ul,
@@ -216,6 +218,7 @@ mark.search-highlight {
   list-style-type: disc;
   padding-right: 1.5rem;
   margin-bottom: 0.85rem;
+  color: inherit;
 }
 
 .tiptap ol,
@@ -223,24 +226,26 @@ mark.search-highlight {
   list-style-type: decimal;
   padding-right: 1.5rem;
   margin-bottom: 0.85rem;
+  color: inherit;
 }
 
 .tiptap li,
 .rendered-document-content li {
   margin-bottom: 0.35rem;
   line-height: 1.75;
+  color: inherit;
 }
 
 .tiptap blockquote,
 .rendered-document-content blockquote {
-  border-right: 4px solid #6366f1;
+  border-right: 4px solid var(--accent-primary);
   padding-right: 1rem;
   margin-right: 0;
   margin-top: 1rem;
   margin-bottom: 1rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-style: italic;
-  background: rgba(99, 102, 241, 0.05);
+  background: var(--accent-soft);
   border-radius: 0 0.5rem 0.5rem 0;
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
@@ -249,26 +254,34 @@ mark.search-highlight {
 .tiptap hr,
 .rendered-document-content hr {
   border: none;
-  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  border-top: 1px solid var(--border-subtle);
   margin: 1.5rem 0;
 }
 
 .tiptap pre,
 .rendered-document-content pre {
-  background: #020617;
-  color: #e2e8f0;
+  background: #0f172a;
+  color: #f8fafc;
   padding: 0.85rem 1rem;
   border-radius: 0.75rem;
   font-family: monospace;
   direction: ltr;
   text-align: left;
   margin: 1rem 0;
-  border: 1px solid #1e293b;
+  border: 1px solid var(--border-glass);
+}
+
+[data-theme="dark"] .tiptap pre,
+[data-theme="dark"] .rendered-document-content pre {
+  background: #020617;
+  color: #e2e8f0;
+  border-color: #1e293b;
 }
 
 .tiptap code,
 .rendered-document-content code {
   background: rgba(148, 163, 184, 0.15);
+  color: var(--accent-primary);
   padding: 0.15rem 0.35rem;
   border-radius: 0.35rem;
   font-family: monospace;
@@ -287,14 +300,14 @@ mark.search-highlight {
 
 .tiptap a,
 .rendered-document-content a {
-  color: #818cf8;
+  color: var(--accent-primary);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 .tiptap a:hover,
 .rendered-document-content a:hover {
-  color: #a5b4fc;
+  color: var(--accent-primary-hover);
 }
 
 .tiptap table,
@@ -305,7 +318,7 @@ mark.search-highlight {
   table-layout: auto;
   border-radius: 0.5rem;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  border: 1px solid var(--border-subtle);
 }
 
 .tiptap table td,
@@ -313,7 +326,7 @@ mark.search-highlight {
 .rendered-document-content table td,
 .rendered-document-content table th {
   min-width: 1.5em;
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  border: 1px solid var(--border-subtle);
   padding: 0.65rem 0.85rem;
   vertical-align: top;
   box-sizing: border-box;
@@ -323,8 +336,8 @@ mark.search-highlight {
 .rendered-document-content table th {
   font-weight: 700;
   text-align: right;
-  background-color: rgba(99, 102, 241, 0.12);
-  color: #e2e8f0;
+  background-color: var(--accent-soft);
+  color: var(--text-primary);
 }
 
 .tiptap table .selectedCell:after {
@@ -332,7 +345,7 @@ mark.search-highlight {
   position: absolute;
   content: "";
   left: 0; right: 0; top: 0; bottom: 0;
-  background: rgba(99, 102, 241, 0.2);
+  background: var(--accent-soft);
   pointer-events: none;
 }
 
