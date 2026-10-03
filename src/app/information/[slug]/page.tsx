@@ -19,7 +19,8 @@ import {
   Share2,
   Clock,
   AlertTriangle,
-  UserCheck
+  UserCheck,
+  FileEdit
 } from 'lucide-react';
 import type { Metadata } from 'next';
 
@@ -144,6 +145,13 @@ export default async function InformationDetailPage({ params }: Props) {
 
         {/* Article Container */}
         <article className="space-y-6">
+          {post.isPublished === false && (
+            <div className="flex items-center gap-2.5 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold">
+              <FileEdit className="w-4 h-4 shrink-0 text-amber-500" />
+              <span>این مطلب در وضعیت «پیش‌نویس» قرار دارد و هنوز به‌صورت عمومی منتشر نشده است.</span>
+            </div>
+          )}
+
           {/* Header Card */}
           <div
             className="glass-panel-strong rounded-3xl p-6 sm:p-8 border shadow-xl relative overflow-hidden"

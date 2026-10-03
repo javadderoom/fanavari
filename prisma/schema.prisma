@@ -116,6 +116,7 @@ model InformationPost {
   type         String      @default("announcement") // announcement, circular, guide, article
   priority     String      @default("normal")       // urgent, high, normal
   isPinned     Boolean     @default(false)
+  isPublished  Boolean     @default(true)
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id])
   systemToolId String?

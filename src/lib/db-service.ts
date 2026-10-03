@@ -270,6 +270,7 @@ export function mapPrismaInformationPost(p: any): InformationPost {
     type: p.type || 'announcement',
     priority: p.priority || 'normal',
     isPinned: Boolean(p.isPinned),
+    isPublished: p.isPublished !== undefined ? Boolean(p.isPublished) : true,
     departmentId: p.departmentId || null,
     departmentName: p.department?.name || null,
     departmentSlug: p.department?.slug || null,
@@ -294,9 +295,13 @@ export async function getDbInformationPosts(options?: {
   departmentSlug?: string;
   systemSlug?: string;
   limit?: number;
+  includeDrafts?: boolean;
 }): Promise<InformationPost[]> {
   try {
     const where: any = {};
+    if (!options?.includeDrafts) {
+      where.isPublished = true;
+    }
     if (options?.type) where.type = options.type;
     if (options?.priority) where.priority = options.priority;
     if (options?.departmentSlug) where.department = { slug: options.departmentSlug };

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useUserSession } from './user-session-provider';
+import { notify } from '@/lib/notify';
 import {
   X,
   Save,
@@ -18,7 +19,16 @@ import {
   HelpCircle,
   Clock,
   Sparkles,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Bold,
+  Heading,
+  List,
+  ListOrdered,
+  Quote,
+  Code,
+  FileEdit,
+  Send,
+  Check,
 } from 'lucide-react';
 import { InformationPost, InformationType, InformationPriority, OrganizationEntity, SystemTool } from '@/types/process';
 import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
@@ -29,7 +39,7 @@ interface InformationEditorModalProps {
   departments: OrganizationEntity[];
   systems: SystemTool[];
   onClose: () => void;
-  onSuccess: (post: InformationPost) => void;
+  onSuccess: (post: InformationPost, isAutoSave?: boolean) => void;
 }
 
 const POST_TYPES: { key: InformationType; label: string; icon: any; color: string; desc: string }[] = [
@@ -88,11 +98,62 @@ export function InformationEditorModal({
   const [type, setType] = useState<InformationType>('announcement');
   const [priority, setPriority] = useState<InformationPriority>('normal');
   const [isPinned, setIsPinned] = useState(false);
+  const [isPublished, setIsPublished] = useState(true);
   const [departmentId, setDepartmentId] = useState<string>('none');
   const [systemToolId, setSystemToolId] = useState<string>('none');
   const [targetUrl, setTargetUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Auto-save and dirty tracking
+  const [isDirty, setIsDirty] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+
+  // Textarea reference for inserting formatting
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Keep saved item reference so subsequent auto-saves update rather than re-create
+  const savedPostRef = useRef<{ id: string | null; slug: string | null; isPublished: boolean }>({
+    id: null,
+    slug: null,
+    isPublished: true,
+  });
+
+  // State ref for interval callback without stale closure
+  const stateRef = useRef({
+    title,
+    slug,
+    summary,
+    content,
+    type,
+    priority,
+    isPinned,
+    isPublished,
+    departmentId,
+    systemToolId,
+    targetUrl,
+    isDirty,
+    isSubmitting,
+  });
+
+  useEffect(() => {
+    stateRef.current = {
+      title,
+      slug,
+      summary,
+      content,
+      type,
+      priority,
+      isPinned,
+      isPublished,
+      departmentId,
+      systemToolId,
+      targetUrl,
+      isDirty,
+      isSubmitting,
+    };
+  });
 
   useEffect(() => {
     if (postToEdit) {
@@ -103,10 +164,16 @@ export function InformationEditorModal({
       setType(postToEdit.type || 'announcement');
       setPriority(postToEdit.priority || 'normal');
       setIsPinned(Boolean(postToEdit.isPinned));
+      setIsPublished(postToEdit.isPublished !== undefined ? postToEdit.isPublished : true);
       setDepartmentId(postToEdit.departmentId || 'none');
       setSystemToolId(postToEdit.systemToolId || 'none');
       setTargetUrl(postToEdit.targetUrl || '');
       setIsSlugManuallyEdited(true);
+      savedPostRef.current = {
+        id: postToEdit.id,
+        slug: postToEdit.slug,
+        isPublished: postToEdit.isPublished !== undefined ? postToEdit.isPublished : true,
+      };
     } else {
       setTitle('');
       setSlug('');
@@ -115,61 +182,124 @@ export function InformationEditorModal({
       setType('announcement');
       setPriority('normal');
       setIsPinned(false);
+      setIsPublished(true);
       setDepartmentId('none');
       setSystemToolId('none');
       setTargetUrl('');
       setIsSlugManuallyEdited(false);
+      savedPostRef.current = {
+        id: null,
+        slug: null,
+        isPublished: true,
+      };
     }
+    setIsDirty(false);
+    setAutoSaveStatus('idle');
+    setLastSavedAt(null);
     setErrorMessage(null);
   }, [postToEdit, isOpen]);
+
+  // Periodic 10-second auto-save
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const intervalId = setInterval(async () => {
+      const cur = stateRef.current;
+      // Auto-save only when dirty, not currently busy, and either title or content is present
+      if (!cur.isDirty || cur.isSubmitting) return;
+      if (!cur.title.trim() && !cur.content.trim()) return;
+
+      await handleSaveOperation({ isDraft: true, isAutoSave: true });
+    }, 10000); // exactly 10 seconds
+
+    return () => clearInterval(intervalId);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const handleTitleChange = (val: string) => {
     setTitle(val);
+    setIsDirty(true);
     if (!isSlugManuallyEdited) {
       setSlug(formatToSlug(val));
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
+  const insertFormatting = (prefix: string, suffix: string = '') => {
+    const el = contentTextareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const selectedText = content.substring(start, end);
+    const replacement = `${prefix}${selectedText || 'متن نمونه'}${suffix}`;
+    const newContent = content.substring(0, start) + replacement + content.substring(end);
+    setContent(newContent);
+    setIsDirty(true);
+    setTimeout(() => {
+      el.focus();
+      const newCursorStart = start + prefix.length;
+      const newCursorEnd = newCursorStart + (selectedText ? selectedText.length : 'متن نمونه'.length);
+      el.setSelectionRange(newCursorStart, newCursorEnd);
+    }, 0);
+  };
 
-    if (!title.trim()) {
-      setErrorMessage('عنوان مطلب الزامی است.');
+  const handleSaveOperation = async ({
+    isDraft,
+    isAutoSave = false,
+  }: {
+    isDraft: boolean;
+    isAutoSave?: boolean;
+  }) => {
+    const cur = stateRef.current;
+    if (cur.isSubmitting && !isAutoSave) return;
+
+    const effectiveTitle = cur.title.trim() || (isDraft ? 'پیش‌نویس بدون عنوان' : '');
+    if (!effectiveTitle) {
+      if (!isAutoSave) setErrorMessage('عنوان مطلب الزامی است.');
       return;
     }
 
-    if (!content.trim()) {
-      setErrorMessage('متن کامل محتوا الزامی است.');
+    if (!isDraft && !cur.content.trim()) {
+      setErrorMessage('متن کامل محتوا برای انتشار الزامی است.');
       return;
     }
 
-    const cleanedSlug = cleanSlugForSubmit(slug, title) || `info-${Date.now()}`;
+    if (isAutoSave) {
+      setAutoSaveStatus('saving');
+    } else {
+      setIsSubmitting(true);
+      setErrorMessage(null);
+    }
 
-    setIsSubmitting(true);
     try {
+      const currentId = savedPostRef.current.id;
+      const currentSlug = savedPostRef.current.slug;
+      const isExisting = Boolean(currentId || currentSlug);
+
+      const cleanedSlug = cleanSlugForSubmit(cur.slug, effectiveTitle) || `info-${Date.now()}`;
+      const targetIsPublished = !isDraft;
+
       const payload: any = {
-        title: title.trim(),
+        title: effectiveTitle,
         slug: cleanedSlug,
-        summary: summary.trim() || null,
-        content: content.trim(),
-        type,
-        priority,
-        isPinned,
-        departmentId: departmentId === 'none' ? null : departmentId,
-        systemToolId: systemToolId === 'none' ? null : systemToolId,
-        targetUrl: targetUrl.trim() || null,
+        summary: cur.summary.trim() || null,
+        content: cur.content.trim(),
+        type: cur.type,
+        priority: cur.priority,
+        isPinned: cur.isPinned,
+        isPublished: targetIsPublished,
+        departmentId: cur.departmentId === 'none' ? null : cur.departmentId,
+        systemToolId: cur.systemToolId === 'none' ? null : cur.systemToolId,
+        targetUrl: cur.targetUrl.trim() || null,
       };
 
-      if (isEditing && postToEdit) {
-        payload.id = postToEdit.id;
-        payload.currentSlug = postToEdit.slug;
+      if (isExisting) {
+        if (currentId) payload.id = currentId;
+        if (currentSlug) payload.currentSlug = currentSlug;
       }
 
       const res = await fetch('/api/information', {
-        method: isEditing ? 'PUT' : 'POST',
+        method: isExisting ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-user-permissions': String(currentUser.permissions),
@@ -182,15 +312,47 @@ export function InformationEditorModal({
         throw new Error(data.error || 'خطا در ثبت اطلاعات.');
       }
 
-      onSuccess(data);
-      onClose();
+      // Update refs with returned persistent entity
+      savedPostRef.current = {
+        id: data.id,
+        slug: data.slug,
+        isPublished: data.isPublished,
+      };
+      if (!slug) setSlug(data.slug);
+      setIsPublished(targetIsPublished);
+      setIsDirty(false);
+
+      const now = new Date();
+      const timeStr = '\u200E' + now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setLastSavedAt(timeStr);
+      setAutoSaveStatus('saved');
+
+      onSuccess(data, isAutoSave);
+
+      if (!isAutoSave) {
+        if (isDraft) {
+          notify.success('پیش‌نویس با موفقیت ذخیره شد.');
+        } else {
+          notify.success(isEditing ? 'مطلب با موفقیت بروزرسانی شد.' : 'اطلاعیه با موفقیت منتشر گردید.');
+          onClose();
+        }
+      }
     } catch (err: any) {
-      console.error('Error saving information post:', err);
-      setErrorMessage(err.message || 'خطا در برقراری ارتباط با سرور.');
+      console.error('Error in handleSaveOperation:', err);
+      if (!isAutoSave) {
+        setErrorMessage(err.message || 'خطا در برقراری ارتباط با سرور.');
+      } else {
+        setAutoSaveStatus('idle');
+      }
     } finally {
-      setIsSubmitting(false);
+      if (!isAutoSave) {
+        setIsSubmitting(false);
+      }
     }
   };
+
+  const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
+  const charCount = content.length;
 
   return (
     <div
@@ -207,11 +369,24 @@ export function InformationEditorModal({
               <Megaphone className="w-5 h-5" />
             </div>
             <div>
-              <h2 id="info-modal-title" className="text-lg font-bold text-white">
-                {isEditing ? 'ویرایش اطلاعیه / مطلب اطلاعاتی' : 'ثبت مطلب و اطلاعیه جدید'}
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 id="info-modal-title" className="text-lg font-bold text-white">
+                  {isEditing ? 'ویرایش اطلاعیه / مطلب اطلاعاتی' : 'ثبت مطلب و اطلاعیه جدید'}
+                </h2>
+                {!isPublished ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    <FileEdit className="w-3 h-3" />
+                    <span>پیش‌نویس</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <CheckCircle2 className="w-3 h-3" />
+                    <span>منتشر شده</span>
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                انتشار اطلاعیه‌ها، بخشنامه‌های سازمانی، راهنماها و پایگاه دانش
+                انتشار اطلاعیه‌ها، بخشنامه‌های سازمانی، راهنماها و پایگاه دانش (با ذخیره خودکار هر ۱۰ ثانیه)
               </p>
             </div>
           </div>
@@ -224,7 +399,7 @@ export function InformationEditorModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+        <form onSubmit={(e) => { e.preventDefault(); handleSaveOperation({ isDraft: false }); }} className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
           {errorMessage && (
             <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
@@ -243,8 +418,11 @@ export function InformationEditorModal({
                   <button
                     key={t.key}
                     type="button"
-                    onClick={() => setType(t.key)}
-                    className={`flex items-start gap-3 p-3 rounded-xl border text-right transition-all ${
+                    onClick={() => {
+                      setType(t.key);
+                      setIsDirty(true);
+                    }}
+                    className={`flex items-start gap-3 p-3 rounded-xl border text-right transition-all cursor-pointer ${
                       isSelected
                         ? `${t.color} ring-1 ring-current shadow-sm`
                         : 'border-slate-800 bg-slate-900/60 hover:bg-slate-800/80 text-slate-300'
@@ -290,6 +468,7 @@ export function InformationEditorModal({
                 onChange={(e) => {
                   setSlug(e.target.value);
                   setIsSlugManuallyEdited(true);
+                  setIsDirty(true);
                 }}
                 placeholder="grading-system-circular"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700/80 text-slate-200 placeholder-slate-600 text-sm focus:outline-none focus:border-indigo-500 font-mono text-left"
@@ -306,8 +485,11 @@ export function InformationEditorModal({
                   <button
                     key={p.key}
                     type="button"
-                    onClick={() => setPriority(p.key)}
-                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-medium border transition-all ${
+                    onClick={() => {
+                      setPriority(p.key);
+                      setIsDirty(true);
+                    }}
+                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
                       priority === p.key
                         ? `${p.color} ring-1 ring-current shadow-sm`
                         : 'border-slate-800 text-slate-400 hover:bg-slate-800'
@@ -324,7 +506,10 @@ export function InformationEditorModal({
                 <input
                   type="checkbox"
                   checked={isPinned}
-                  onChange={(e) => setIsPinned(e.target.checked)}
+                  onChange={(e) => {
+                    setIsPinned(e.target.checked);
+                    setIsDirty(true);
+                  }}
                   className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
                 />
                 <div className="flex items-center gap-1.5 text-xs font-medium text-slate-300">
@@ -344,7 +529,10 @@ export function InformationEditorModal({
               <div className="relative">
                 <select
                   value={departmentId}
-                  onChange={(e) => setDepartmentId(e.target.value)}
+                  onChange={(e) => {
+                    setDepartmentId(e.target.value);
+                    setIsDirty(true);
+                  }}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700/80 text-slate-200 text-sm focus:outline-none focus:border-indigo-500"
                 >
                   <option value="none">عمومی / بدون اتصال به سازمان خاص</option>
@@ -364,7 +552,10 @@ export function InformationEditorModal({
               <div className="relative">
                 <select
                   value={systemToolId}
-                  onChange={(e) => setSystemToolId(e.target.value)}
+                  onChange={(e) => {
+                    setSystemToolId(e.target.value);
+                    setIsDirty(true);
+                  }}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700/80 text-slate-200 text-sm focus:outline-none focus:border-indigo-500"
                 >
                   <option value="none">عمومی / بدون اتصال به سامانه</option>
@@ -388,7 +579,10 @@ export function InformationEditorModal({
                 type="url"
                 dir="ltr"
                 value={targetUrl}
-                onChange={(e) => setTargetUrl(e.target.value)}
+                onChange={(e) => {
+                  setTargetUrl(e.target.value);
+                  setIsDirty(true);
+                }}
                 placeholder="https://example.gov.ir/circulars/123.pdf"
                 className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700/80 text-slate-200 placeholder-slate-600 text-sm focus:outline-none focus:border-indigo-500 text-left font-mono"
               />
@@ -404,59 +598,186 @@ export function InformationEditorModal({
             <textarea
               rows={2}
               value={summary}
-              onChange={(e) => setSummary(e.target.value)}
+              onChange={(e) => {
+                setSummary(e.target.value);
+                setIsDirty(true);
+              }}
               placeholder="یک یا دو جمله برای معرفی اجمالی بخشنامه یا راهنما..."
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700/80 text-slate-200 placeholder-slate-600 text-sm focus:outline-none focus:border-indigo-500 leading-relaxed"
             />
           </div>
 
-          {/* Full Content (Markdown / Multiline) */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-slate-300">
-                متن کامل محتوا <span className="text-rose-400">*</span>
-              </label>
-              <span className="text-[11px] text-slate-500">پشتیبانی از فاصله‌گذاری خطوط و مارک‌داون</span>
+          {/* Full Content (Markdown / Multiline) - Focused Enhanced Description Editor */}
+          <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-4 space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-200">
+                  متن کامل توضیحات و محتوا <span className="text-rose-400">*</span>
+                </label>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  پشتیبانی کامل از مارک‌داون، تیتربندی، لیست‌ها و نقل‌قول‌ها
+                </p>
+              </div>
+
+              {/* Formatting Quick Toolbar */}
+              <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg p-1">
+                <button
+                  type="button"
+                  title="متن برجسته (Bold)"
+                  onClick={() => insertFormatting('**', '**')}
+                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <Bold className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  title="سرتیتر (Heading)"
+                  onClick={() => insertFormatting('### ')}
+                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <Heading className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  title="لیست بالت‌دار"
+                  onClick={() => insertFormatting('\n- ')}
+                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <List className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  title="لیست شماره‌دار"
+                  onClick={() => insertFormatting('\n1. ')}
+                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <ListOrdered className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  title="نقل قول (Quote)"
+                  onClick={() => insertFormatting('\n> ')}
+                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <Quote className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  title="پیوند (Link)"
+                  onClick={() => insertFormatting('[عنوان لینک](', ')') }
+                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <LinkIcon className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  title="بلاک کد"
+                  onClick={() => insertFormatting('```\n', '\n```')}
+                  className="p-1.5 rounded text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <Code className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
+
             <textarea
-              rows={8}
+              ref={contentTextareaRef}
+              rows={9}
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={(e) => {
+                setContent(e.target.value);
+                setIsDirty(true);
+              }}
               placeholder={`متن کامل اطلاعیه، شرایط، مواد قانونی و مراحل اقدام را اینجا بنویسید...\n\n- بند اول: نکات اجرایی\n- بند دوم: مهلت اقدام\n- آدرس ورود به سامانه`}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700/80 text-slate-200 placeholder-slate-600 text-sm focus:outline-none focus:border-indigo-500 leading-relaxed font-sans"
+              className="w-full px-3.5 py-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 placeholder-slate-600 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 leading-relaxed font-sans min-h-[180px] resize-y"
               required
             />
+
+            {/* Metrics & Counter */}
+            <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+              <div className="flex items-center gap-2">
+                <span>تعداد واژه‌ها: <strong className="text-slate-300 font-mono">{'\u200E' + wordCount}</strong></span>
+                <span>•</span>
+                <span>تعداد کاراکتر: <strong className="text-slate-300 font-mono">{'\u200E' + charCount}</strong></span>
+              </div>
+              <span className="text-[10px] text-slate-500">ذخیره خودکار پیش‌نویس هر ۱۰ ثانیه فعال است</span>
+            </div>
           </div>
         </form>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-800 bg-slate-900/90">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 text-sm font-medium transition-colors"
-          >
-            انصراف
-          </button>
-
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-sm shadow-lg shadow-indigo-600/20 transition-all cursor-pointer"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>در حال ذخیره‌سازی...</span>
-              </>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 border-t border-slate-800 bg-slate-900/95">
+          {/* Status Indicator */}
+          <div className="flex items-center gap-2 text-xs">
+            {autoSaveStatus === 'saving' ? (
+              <span className="flex items-center gap-1.5 text-amber-400 font-medium animate-pulse">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>در حال ذخیره خودکار پیش‌نویس...</span>
+              </span>
+            ) : autoSaveStatus === 'saved' && lastSavedAt ? (
+              <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
+                <Check className="w-3.5 h-3.5" />
+                <span>پیش‌نویس ذخیره شد ({lastSavedAt})</span>
+              </span>
+            ) : isDirty ? (
+              <span className="flex items-center gap-1.5 text-amber-300/80">
+                <Clock className="w-3.5 h-3.5" />
+                <span>تغییرات ذخیره‌نشده (ذخیره خودکار هر ۱۰ ثانیه)</span>
+              </span>
             ) : (
-              <>
-                <Save className="w-4 h-4" />
-                <span>{isEditing ? 'بروزرسانی مطلب' : 'انتشار اطلاعیه'}</span>
-              </>
+              <span className="flex items-center gap-1.5 text-slate-500">
+                <Sparkles className="w-3.5 h-3.5 text-slate-600" />
+                <span>سیستم ذخیره خودکار پیش‌نویس فعال است</span>
+              </span>
             )}
-          </button>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 text-xs font-medium transition-colors cursor-pointer"
+            >
+              انصراف
+            </button>
+
+            {/* Save as Draft Button */}
+            <button
+              type="button"
+              onClick={() => handleSaveOperation({ isDraft: true })}
+              disabled={isSubmitting}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white font-medium text-xs transition-all cursor-pointer disabled:opacity-50"
+            >
+              {isSubmitting && autoSaveStatus !== 'saving' ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <FileEdit className="w-3.5 h-3.5 text-amber-400" />
+              )}
+              <span>ذخیره پیش‌نویس</span>
+            </button>
+
+            {/* Publish Button */}
+            <button
+              type="button"
+              onClick={() => handleSaveOperation({ isDraft: false })}
+              disabled={isSubmitting}
+              className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium text-xs shadow-lg shadow-indigo-600/20 transition-all cursor-pointer"
+            >
+              {isSubmitting && autoSaveStatus !== 'saving' ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>در حال انتشار...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{isEditing ? 'بروزرسانی و انتشار' : 'انتشار اطلاعیه'}</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

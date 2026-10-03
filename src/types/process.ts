@@ -111,6 +111,7 @@ export interface InformationPost {
   type: InformationType;
   priority: InformationPriority;
   isPinned: boolean;
+  isPublished?: boolean;
   departmentId?: string | null;
   departmentName?: string | null;
   departmentSlug?: string | null;

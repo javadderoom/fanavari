@@ -15,8 +15,15 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search') || undefined;
     const pinnedOnly = searchParams.get('pinned') === 'true';
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : undefined;
+    const statusParam = searchParams.get('status'); // 'published' | 'draft' | 'all'
+    const isPublishedParam = searchParams.get('isPublished');
 
     const where: any = {};
+    if (statusParam === 'draft' || isPublishedParam === 'false') {
+      where.isPublished = false;
+    } else if (statusParam === 'published' || isPublishedParam === 'true') {
+      where.isPublished = true;
+    }
     if (type) where.type = type;
     if (priority) where.priority = priority;
     if (pinnedOnly) where.isPinned = true;
@@ -81,6 +88,7 @@ export async function POST(req: NextRequest) {
       type = 'announcement',
       priority = 'normal',
       isPinned = false,
+      isPublished = true,
       departmentId,
       systemToolId,
       targetUrl,
@@ -120,6 +128,7 @@ export async function POST(req: NextRequest) {
         type: ['announcement', 'circular', 'guide', 'article'].includes(type) ? type : 'announcement',
         priority: ['urgent', 'high', 'normal'].includes(priority) ? priority : 'normal',
         isPinned: Boolean(isPinned),
+        isPublished: isPublished !== undefined ? Boolean(isPublished) : true,
         departmentId: departmentId && departmentId !== 'none' ? departmentId : null,
         systemToolId: systemToolId && systemToolId !== 'none' ? systemToolId : null,
         targetUrl: targetUrl ? targetUrl.trim() : null,
@@ -169,6 +178,7 @@ export async function PUT(req: NextRequest) {
       type,
       priority,
       isPinned,
+      isPublished,
       departmentId,
       systemToolId,
       targetUrl,
@@ -219,6 +229,7 @@ export async function PUT(req: NextRequest) {
         type: type && ['announcement', 'circular', 'guide', 'article'].includes(type) ? type : target.type,
         priority: priority && ['urgent', 'high', 'normal'].includes(priority) ? priority : target.priority,
         isPinned: isPinned !== undefined ? Boolean(isPinned) : target.isPinned,
+        isPublished: isPublished !== undefined ? Boolean(isPublished) : target.isPublished,
         departmentId: departmentId !== undefined ? (departmentId && departmentId !== 'none' ? departmentId : null) : target.departmentId,
         systemToolId: systemToolId !== undefined ? (systemToolId && systemToolId !== 'none' ? systemToolId : null) : target.systemToolId,
         targetUrl: targetUrl !== undefined ? (targetUrl ? targetUrl.trim() : null) : target.targetUrl,
