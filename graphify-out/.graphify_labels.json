@@ -133,7 +133,6 @@
   "131": "CSS Transform Mastery",
   "132": "The Sonner Principles (Building Loved Components)",
   "133": "Spring Animations",
-  "134": "4. Plan three variants: identity first, then mode, then axes",
   "135": "Handle fallback",
   "136": "Agentation Setup",
   "137": "Core Philosophy",
@@ -152,15 +151,12 @@
   "150": "@prisma/client",
   "151": "react-dom",
   "152": "@tiptap/extension-link",
-  "153": "@tiptap/extension-table-cell",
   "154": "@tiptap/extension-table-header",
   "155": "@tiptap/react",
   "156": "postcss.config.mjs",
   "157": "migrate-deploy.js",
   "158": "CLAUDE.md",
   "159": "prisma.config.ts",
-  "160": "The Toolkit",
   "161": "live-target.mjs",
-  "162": "checkHeroEyebrow",
   "163": "@tiptap/extension-highlight"
 }

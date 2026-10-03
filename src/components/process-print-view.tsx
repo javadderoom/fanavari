@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Process } from '@/types/process';
+import { MenuPathDisplay } from './menu-path-display';
 import { 
   Printer, 
   ArrowRight, 
@@ -284,15 +285,9 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                     </div>
                   </div>
 
-                  {/* Menu Access Path / Software Route (High-contrast breadcrumb) */}
+                  {/* Menu Access Path / Software Route (Boxed Breadcrumbs) */}
                   {step.targetMenuPath && (
-                    <div className="my-4 p-3 bg-blue-50/80 border border-blue-200 rounded-xl flex items-center gap-2 text-xs sm:text-sm text-blue-950 font-bold">
-                      <Navigation className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span>مسیر منو / کلیک در سامانه:</span>
-                      <span className="font-mono text-blue-900 bg-white px-2.5 py-0.5 rounded-md border border-blue-200 shadow-xs">
-                        {step.targetMenuPath}
-                      </span>
-                    </div>
+                    <MenuPathDisplay path={step.targetMenuPath} variant="print" />
                   )}
 
                   {/* Step Narrative Instructions */}

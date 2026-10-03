@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Process, ProcessStep } from '@/types/process';
+import { MenuPathDisplay } from './menu-path-display';
 import { 
   X, 
   Clock, 
@@ -252,27 +253,22 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
                   style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)' }}
                 >
                   {/* Step Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-4 border-b"
+                  <div className="pb-3 mb-4 border-b"
                     style={{ borderColor: 'var(--border-subtle)' }}
                   >
-                    <div>
-                      <span className="text-xs font-bold text-blue-600">
-                        جزئیات گام {currentStep.orderIndex} از {process.totalSteps}
-                      </span>
-                      <h3 className="text-lg font-black mt-0.5" style={{ color: 'var(--text-primary)' }}>
-                        {currentStep.title}
-                      </h3>
-                    </div>
-
-                    {currentStep.targetMenuPath && (
-                      <div className="text-xs px-3 py-1.5 rounded-xl font-medium"
-                        style={{ background: 'var(--bg-input)', color: 'var(--text-secondary)' }}
-                      >
-                        <span className="font-bold ml-1">مسیر کلیک منو:</span>
-                        <span>{currentStep.targetMenuPath}</span>
-                      </div>
-                    )}
+                    <span className="text-xs font-bold text-blue-600">
+                      جزئیات گام {currentStep.orderIndex} از {process.totalSteps}
+                    </span>
+                    <h3 className="text-lg font-black mt-0.5" style={{ color: 'var(--text-primary)' }}>
+                      {currentStep.title}
+                    </h3>
                   </div>
+
+                  {currentStep.targetMenuPath && (
+                    <div className="mb-4">
+                      <MenuPathDisplay path={currentStep.targetMenuPath} variant="modal" />
+                    </div>
+                  )}
 
                   {/* Step Markdown / Instructions */}
                   <div className="text-sm font-medium leading-relaxed mb-5 whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>

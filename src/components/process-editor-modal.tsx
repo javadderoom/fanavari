@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { notify } from '@/lib/notify';
 import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
+import { MenuPathEditor } from './menu-path-editor';
 
 interface ProcessEditorModalProps {
   isOpen: boolean;
@@ -959,15 +960,11 @@ export function ProcessEditorModal({
                     </div>
                   </div>
 
-                  {/* Menu path input */}
-                  <div className="mb-2">
-                    <input
-                      type="text"
+                  {/* Interactive Menu Path Editor (Tags / Boxes) */}
+                  <div className="mb-3">
+                    <MenuPathEditor
                       value={step.targetMenuPath || ''}
-                      onChange={(e) => handleUpdateStep(idx, { targetMenuPath: e.target.value })}
-                      placeholder="مسیر کلیک منوها (مثلاً: منوی اصلی > تنظیمات > خروجی)"
-                      className="w-full p-2 text-xs rounded-lg border outline-none font-mono"
-                      style={{ background: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}
+                      onChange={(newPath) => handleUpdateStep(idx, { targetMenuPath: newPath })}
                     />
                   </div>
 
