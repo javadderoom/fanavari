@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   /* Default: Light Theme */
   --font-vazirmatn: 'Vazirmatn', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Tahoma, sans-serif;
