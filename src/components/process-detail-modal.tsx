@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Process, ProcessStep } from '@/types/process';
 import { 
   X, 
@@ -17,7 +18,8 @@ import {
   StickyNote, 
   Save, 
   ArrowRight, 
-  ArrowLeft 
+  ArrowLeft,
+  Printer
 } from 'lucide-react';
 
 interface ProcessDetailModalProps {
@@ -122,14 +124,28 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
             )}
           </div>
 
-          <button
-            onClick={onClose}
-            type="button"
-            className="p-2 rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-            title="بستن پنجره (Esc)"
-          >
-            <X className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href={`/process/${process.slug}/print`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer hover:scale-105"
+              style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-secondary)' }}
+              title="مشاهده نسخه چاپی رسمی، خوانا و بدون منو (A4 / PDF)"
+            >
+              <Printer className="w-3.5 h-3.5 text-blue-600" />
+              <span className="hidden sm:inline">نسخه چاپی / PDF</span>
+            </Link>
+
+            <button
+              onClick={onClose}
+              type="button"
+              className="p-2 rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              title="بستن پنجره (Esc)"
+            >
+              <X className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
+            </button>
+          </div>
         </div>
 
         {/* Navigation Tabs */}

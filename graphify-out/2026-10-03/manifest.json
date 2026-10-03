@@ -530,13 +530,13 @@
     "semantic_hash": ""
   },
   "src/components/process-detail-modal.tsx": {
-    "mtime": 1791054972.6916244,
-    "ast_hash": "17de2628c8664c95e5bb17783180098e",
+    "mtime": 1790963243.0576434,
+    "ast_hash": "dd283b628eb12cea6db7b96615365041",
     "semantic_hash": ""
   },
   "src/components/process-detail-view.tsx": {
-    "mtime": 1791054320.689293,
-    "ast_hash": "3235e7c773a4f2032c87dd665a9fb130",
+    "mtime": 1790963201.4502194,
+    "ast_hash": "2cf60191d7162f1637c4b0ceca2335ed",
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
@@ -842,16 +842,6 @@
   "docs/ROADMAP_AND_PHASING.md": {
     "mtime": 1790932115.2902875,
     "ast_hash": "d18988d389bea4f27ec4346f8f94fc71",
-    "semantic_hash": ""
-  },
-  "src/app/process/[slug]/print/page.tsx": {
-    "mtime": 1791054213.2634723,
-    "ast_hash": "477043eb06c27621cf6f2cb7f081e79a",
-    "semantic_hash": ""
-  },
-  "src/components/process-print-view.tsx": {
-    "mtime": 1791054185.1450052,
-    "ast_hash": "372cea03389fbc574d0569887c18840d",
     "semantic_hash": ""
   }
 }

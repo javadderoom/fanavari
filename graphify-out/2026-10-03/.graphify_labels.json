@@ -158,9 +158,5 @@
   "156": "postcss.config.mjs",
   "157": "migrate-deploy.js",
   "158": "CLAUDE.md",
-  "159": "prisma.config.ts",
-  "160": "The Toolkit",
-  "161": "live-target.mjs",
-  "162": "checkHeroEyebrow",
-  "163": "@tiptap/extension-highlight"
+  "159": "prisma.config.ts"
 }

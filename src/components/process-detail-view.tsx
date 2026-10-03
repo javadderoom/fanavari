@@ -136,16 +136,17 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
               <span>{copiedLink ? 'لینک کپی شد' : 'اشتراک‌گذاری'}</span>
             </button>
 
-            <button
-              onClick={handlePrint}
-              type="button"
+            <Link
+              href={`/process/${process.slug}/print`}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer hover:scale-105"
               style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-secondary)' }}
-              title="چاپ یا ذخیره نسخه PDF"
+              title="مشاهده نسخه چاپی رسمی، خوانا و بدون منو (A4 / PDF)"
             >
-              <Printer className="w-4 h-4" />
-              <span>چاپ / PDF</span>
-            </button>
+              <Printer className="w-4 h-4 text-blue-600" />
+              <span>نسخه چاپی / PDF</span>
+            </Link>
 
             {process.targetUrl && (
               <a
