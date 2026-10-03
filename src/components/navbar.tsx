@@ -32,6 +32,8 @@ export function Navbar({ onSearchClick }: NavbarProps) {
       label: 'اعلامیه‌ها و اطلاعیه‌ها',
       icon: Megaphone,
       iconColor: 'text-indigo-500',
+      activeClass: 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 dark:bg-indigo-400/15 font-black shadow-xs',
+      hoverClass: 'hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-500/10 dark:hover:bg-indigo-400/15',
       isActive: pathname.startsWith('/information'),
     },
     {
@@ -39,6 +41,8 @@ export function Navbar({ onSearchClick }: NavbarProps) {
       label: 'سامانه‌ها و ابزارها',
       icon: Laptop,
       iconColor: 'text-purple-500',
+      activeClass: 'text-purple-600 dark:text-purple-400 bg-purple-500/10 dark:bg-purple-400/15 font-black shadow-xs',
+      hoverClass: 'hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-500/10 dark:hover:bg-purple-400/15',
       isActive: pathname.startsWith('/system'),
     },
     {
@@ -46,6 +50,8 @@ export function Navbar({ onSearchClick }: NavbarProps) {
       label: 'سازمان‌ها',
       icon: Building2,
       iconColor: 'text-blue-500',
+      activeClass: 'text-blue-600 dark:text-blue-400 bg-blue-500/10 dark:bg-blue-400/15 font-black shadow-xs',
+      hoverClass: 'hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-400/15',
       isActive: pathname.startsWith('/organization'),
     },
     {
@@ -53,6 +59,8 @@ export function Navbar({ onSearchClick }: NavbarProps) {
       label: 'داشبورد مدیریت',
       icon: LayoutDashboard,
       iconColor: 'text-indigo-600 dark:text-indigo-400',
+      activeClass: 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 dark:bg-indigo-400/15 font-black shadow-xs',
+      hoverClass: 'hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-500/10 dark:hover:bg-indigo-400/15',
       isActive: pathname.startsWith('/dashboard'),
     },
   ];
@@ -95,7 +103,7 @@ export function Navbar({ onSearchClick }: NavbarProps) {
           </Link>
 
           {/* Center Navigation Links (Visible on desktop & tablet screens) */}
-          <nav className="hidden md:flex items-center gap-2 lg:gap-4 text-xs xl:text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>
+          <nav className="hidden md:flex items-center gap-1.5 lg:gap-3 text-xs xl:text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>
             {navLinks.map((link) => {
               const Icon = link.icon;
               return (
@@ -104,8 +112,8 @@ export function Navbar({ onSearchClick }: NavbarProps) {
                   href={link.href}
                   className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl transition-all duration-150 ${
                     link.isActive
-                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 font-black shadow-xs'
-                      : 'hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                      ? link.activeClass
+                      : `text-slate-600 dark:text-slate-300 ${link.hoverClass}`
                   }`}
                 >
                   <Icon className={`w-4 h-4 ${link.iconColor}`} />
@@ -177,8 +185,8 @@ export function Navbar({ onSearchClick }: NavbarProps) {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
                   pathname === '/'
-                    ? 'text-blue-600 bg-blue-500/10 font-black'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    ? 'text-blue-600 dark:text-blue-400 bg-blue-500/10 dark:bg-blue-400/15 font-black'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-400/15'
                 }`}
               >
                 <Home className="w-4 h-4 text-blue-500" />
@@ -194,8 +202,8 @@ export function Navbar({ onSearchClick }: NavbarProps) {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
                       link.isActive
-                        ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 font-black'
-                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        ? link.activeClass
+                        : `text-slate-600 dark:text-slate-300 ${link.hoverClass}`
                     }`}
                   >
                     <Icon className={`w-4 h-4 ${link.iconColor}`} />
