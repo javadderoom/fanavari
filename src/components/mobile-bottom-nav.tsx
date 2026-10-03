@@ -21,7 +21,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'خانه', icon: Home, exact: true },
-  { href: '/information', label: 'اطلاعات', icon: Megaphone, matchPrefix: '/information' },
+  { href: '/information', label: 'اعلامیه‌ها', icon: Megaphone, matchPrefix: '/information' },
   { href: '/systems', label: 'سامانه‌ها', icon: Laptop, matchPrefix: '/system' },
   { href: '/organizations', label: 'سازمان‌ها', icon: Building2, matchPrefix: '/organization' },
   { href: '/dashboard', label: 'داشبورد', icon: LayoutDashboard, matchPrefix: '/dashboard' },

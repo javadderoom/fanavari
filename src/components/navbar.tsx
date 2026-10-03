@@ -1,19 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ThemeToggle } from './theme-toggle';
 import { UserSwitcher } from './user-switcher';
 import { MobileBottomNav } from './mobile-bottom-nav';
-import { useUserSession } from './user-session-provider';
-import { Permissions } from '@/lib/permissions';
 import { 
   Search, 
   GitBranch, 
   Laptop, 
   Building2, 
   LayoutDashboard,
-  Megaphone
+  Megaphone,
+  Menu,
+  X,
+  Home
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -21,6 +23,40 @@ interface NavbarProps {
 }
 
 export function Navbar({ onSearchClick }: NavbarProps) {
+  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navLinks = [
+    {
+      href: '/information',
+      label: 'اعلامیه‌ها و اطلاعیه‌ها',
+      icon: Megaphone,
+      iconColor: 'text-indigo-500',
+      isActive: pathname.startsWith('/information'),
+    },
+    {
+      href: '/systems',
+      label: 'سامانه‌ها و ابزارها',
+      icon: Laptop,
+      iconColor: 'text-purple-500',
+      isActive: pathname.startsWith('/system'),
+    },
+    {
+      href: '/organizations',
+      label: 'سازمان‌ها',
+      icon: Building2,
+      iconColor: 'text-blue-500',
+      isActive: pathname.startsWith('/organization'),
+    },
+    {
+      href: '/dashboard',
+      label: 'داشبورد مدیریت',
+      icon: LayoutDashboard,
+      iconColor: 'text-indigo-600 dark:text-indigo-400',
+      isActive: pathname.startsWith('/dashboard'),
+    },
+  ];
+
   return (
     <>
       <header className="sticky top-0 z-40 w-full glass-panel border-b transition-colors duration-200"
@@ -58,27 +94,25 @@ export function Navbar({ onSearchClick }: NavbarProps) {
             </div>
           </Link>
 
-          {/* Center Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-5 text-xs xl:text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>
-            <Link href="/information" className="hover:text-blue-600 transition-colors flex items-center gap-1">
-              <Megaphone className="w-3.5 h-3.5 text-indigo-500" />
-              <span>اطلاعات و بخشنامه‌ها</span>
-            </Link>
-
-            <Link href="/systems" className="hover:text-blue-600 transition-colors flex items-center gap-1">
-              <Laptop className="w-3.5 h-3.5 text-purple-500" />
-              <span>نرم‌افزارها و ابزارها</span>
-            </Link>
-
-            <Link href="/organizations" className="hover:text-blue-600 transition-colors flex items-center gap-1">
-              <Building2 className="w-3.5 h-3.5 text-blue-500" />
-              <span>سازمان‌ها</span>
-            </Link>
-
-            <Link href="/dashboard" className="hover:text-blue-600 transition-colors flex items-center gap-1 text-indigo-600 dark:text-indigo-400">
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>داشبورد مدیریت</span>
-            </Link>
+          {/* Center Navigation Links (Visible on desktop & tablet screens) */}
+          <nav className="hidden md:flex items-center gap-2 lg:gap-4 text-xs xl:text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl transition-all duration-150 ${
+                    link.isActive
+                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 font-black shadow-xs'
+                      : 'hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${link.iconColor}`} />
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Action Controls */}
@@ -110,8 +144,68 @@ export function Navbar({ onSearchClick }: NavbarProps) {
 
             {/* Theme Toggle Button (Light by default) */}
             <ThemeToggle />
+
+            {/* Mobile Header Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              type="button"
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl border transition-colors cursor-pointer"
+              style={{
+                background: isMobileMenuOpen ? 'var(--accent-soft)' : 'var(--bg-input)',
+                borderColor: 'var(--border-glass)',
+                color: isMobileMenuOpen ? 'var(--accent-primary)' : 'var(--text-secondary)',
+              }}
+              aria-label={isMobileMenuOpen ? 'بستن منو' : 'باز کردن منو'}
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Panel */}
+        {isMobileMenuOpen && (
+          <div
+            className="md:hidden border-t px-4 py-4 space-y-2 animate-in slide-in-from-top-2 duration-200 shadow-xl"
+            style={{
+              borderColor: 'var(--border-subtle)',
+              backgroundColor: 'var(--bg-surface-elevated)',
+            }}
+          >
+            <div className="flex flex-col gap-1">
+              <Link
+                href="/"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  pathname === '/'
+                    ? 'text-blue-600 bg-blue-500/10 font-black'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                <Home className="w-4 h-4 text-blue-500" />
+                <span>صفحه اصلی</span>
+              </Link>
+
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                      link.isActive
+                        ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 font-black'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${link.iconColor}`} />
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Floating Mobile Bottom Navigation Bar (Visible only on < lg screens) */}

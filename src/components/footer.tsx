@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { GitBranch, Heart, Database, ShieldCheck, ArrowUp } from 'lucide-react';
 
 export function Footer() {
@@ -71,7 +72,28 @@ export function Footer() {
           </button>
         </div>
 
-        <div className="mt-8 pt-6 border-t flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3"
+        {/* Quick Navigation Links */}
+        <div className="mt-8 pt-6 border-t flex flex-wrap items-center justify-between gap-4 text-xs font-bold"
+          style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}
+        >
+          <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
+            <span className="text-slate-400 font-normal">دسترسی سریع:</span>
+            <Link href="/information" className="hover:text-blue-600 transition-colors">
+              اعلامیه‌ها و اطلاعیه‌ها
+            </Link>
+            <Link href="/systems" className="hover:text-blue-600 transition-colors">
+              سامانه‌ها و نرم‌افزارها
+            </Link>
+            <Link href="/organizations" className="hover:text-blue-600 transition-colors">
+              سازمان‌ها
+            </Link>
+            <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
+              داشبورد مدیریت
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-4 pt-4 border-t flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3"
           style={{ borderColor: 'var(--border-subtle)' }}
         >
           <p>© {new Date().getFullYear()} سامانه فناوری. تمامی حقوق برای سازمان محفوظ است.</p>
