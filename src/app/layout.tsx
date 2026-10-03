@@ -3,6 +3,7 @@ import { Vazirmatn } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { UserSessionProvider } from "@/components/user-session-provider";
 import { Toaster } from "@/lib/notify";
+import { Agentation } from "agentation";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -29,6 +30,7 @@ export default function RootLayout({
           <UserSessionProvider>
             {children}
             <Toaster />
+            {process.env.NODE_ENV === "development" && <Agentation />}
           </UserSessionProvider>
         </ThemeProvider>
       </body>
