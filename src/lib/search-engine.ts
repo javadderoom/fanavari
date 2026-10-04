@@ -1,4 +1,4 @@
-import { Process, SearchResult, SearchMatchDetail } from '@/types/process';
+import { Process, SearchResult, SearchMatchDetail, InformationPost } from '@/types/process';
 
 /**
  * Normalizes Persian and English search queries:
@@ -241,6 +241,29 @@ export function searchProcesses(processes: Process[], rawQuery: string): SearchR
         }
       });
 
+      // Step Tips & Pro-Tips
+      if (step.tips && step.tips.length > 0) {
+        step.tips.forEach(tip => {
+          const normTip = normalizeText(tip);
+          tokens.forEach(tok => {
+            if (normTip.includes(tok)) {
+              score += 35;
+              matchCount++;
+              matchCandidates.push({
+                score: 35,
+                detail: {
+                  type: 'tip',
+                  locationLabel: `نکته در گام ${step.orderIndex}: ${step.title}`,
+                  snippet: createSnippet(tip, tok),
+                  matchedText: tok,
+                  stepIndex,
+                }
+              });
+            }
+          });
+        });
+      }
+
       // Copyable Fields (e.g. "شماره شبا", "کد ملی", "کلید SSH")
       if (step.copyableFields) {
         step.copyableFields.forEach(field => {
@@ -331,6 +354,7 @@ export function searchProcesses(processes: Process[], rawQuery: string): SearchR
     if (score > 0 && matchCandidates.length > 0) {
       matchCandidates.sort((a, b) => b.score - a.score);
       results.push({
+        itemType: 'process',
         process,
         score,
         bestMatch: matchCandidates[0].detail,
@@ -342,6 +366,199 @@ export function searchProcesses(processes: Process[], rawQuery: string): SearchR
   // Sort by final score descending (highest relevance first)
   results.sort((a, b) => b.score - a.score);
   return results;
+}
+
+/**
+ * Strips HTML tags and excessive whitespace for clean text analysis
+ */
+export function stripHtml(html: string): string {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Searches information posts (circulars, announcements, guides)
+ */
+export function searchAnnouncements(announcements: InformationPost[], rawQuery: string): SearchResult[] {
+  const trimmed = rawQuery.trim();
+  if (!trimmed) {
+    return announcements.map(post => ({
+      itemType: 'information',
+      post,
+      score: post.isPinned ? 10 : 1,
+      bestMatch: {
+        type: post.type === 'circular' ? 'circular' : 'announcement',
+        locationLabel: post.type === 'circular' ? 'بخشنامه اداری' : 'اطلاعیه رسمی',
+        snippet: post.summary || stripHtml(post.content).slice(0, 100),
+        matchedText: post.title,
+      },
+      allMatchesCount: 0,
+    }));
+  }
+
+  const tokens = tokenize(trimmed);
+  const normQuery = normalizeText(trimmed);
+  const results: SearchResult[] = [];
+
+  for (const post of announcements) {
+    let score = 0;
+    let matchCount = 0;
+    const matchCandidates: { score: number; detail: SearchMatchDetail }[] = [];
+
+    const normTitle = normalizeText(post.title);
+    const normSummary = normalizeText(post.summary || '');
+    const cleanContent = stripHtml(post.content);
+    const normContent = normalizeText(cleanContent);
+    const normDept = normalizeText(post.departmentName || '');
+    const normSystem = normalizeText(post.systemToolName || '');
+
+    // Priority and Pinned boost
+    let baseBoost = 0;
+    if (post.priority === 'urgent') baseBoost += 25;
+    if (post.isPinned) baseBoost += 20;
+
+    // 1. Title Match (High Priority)
+    if (normTitle.includes(normQuery)) {
+      const matchScore = 170 + baseBoost;
+      score += matchScore;
+      matchCount++;
+      matchCandidates.push({
+        score: matchScore,
+        detail: {
+          type: post.type === 'circular' ? 'circular' : 'announcement',
+          locationLabel: post.type === 'circular' 
+            ? `بخشنامه اداری: ${post.title}` 
+            : post.type === 'guide' 
+            ? `راهنمای سامانه: ${post.title}` 
+            : `اطلاعیه رسمی: ${post.title}`,
+          snippet: post.title,
+          matchedText: trimmed,
+        }
+      });
+    } else {
+      tokens.forEach(tok => {
+        if (normTitle.includes(tok)) {
+          const matchScore = 55 + baseBoost;
+          score += matchScore;
+          matchCount++;
+          matchCandidates.push({
+            score: matchScore,
+            detail: {
+              type: post.type === 'circular' ? 'circular' : 'announcement',
+              locationLabel: post.type === 'circular' 
+                ? `بخشنامه: ${post.title}` 
+                : `اطلاعیه: ${post.title}`,
+              snippet: post.title,
+              matchedText: tok,
+            }
+          });
+        }
+      });
+    }
+
+    // 2. Summary Match
+    if (normSummary) {
+      if (normSummary.includes(normQuery)) {
+        score += 85;
+        matchCount++;
+        matchCandidates.push({
+          score: 85,
+          detail: {
+            type: 'description',
+            locationLabel: 'خلاصه اجرایی اطلاعیه',
+            snippet: post.summary!,
+            matchedText: trimmed,
+          }
+        });
+      } else {
+        tokens.forEach(tok => {
+          if (normSummary.includes(tok)) {
+            score += 35;
+            matchCount++;
+            matchCandidates.push({
+              score: 35,
+              detail: {
+                type: 'description',
+                locationLabel: 'خلاصه اطلاعیه',
+                snippet: createSnippet(post.summary!, tok),
+                matchedText: tok,
+              }
+            });
+          }
+        });
+      }
+    }
+
+    // 3. Body Content Match
+    tokens.forEach(tok => {
+      if (normContent.includes(tok)) {
+        score += 30;
+        matchCount++;
+        matchCandidates.push({
+          score: 30,
+          detail: {
+            type: 'description',
+            locationLabel: 'متن اطلاعیه / بخشنامه',
+            snippet: createSnippet(cleanContent, tok),
+            matchedText: tok,
+          }
+        });
+      }
+    });
+
+    // 4. Department / System
+    tokens.forEach(tok => {
+      if ((normDept && normDept.includes(tok)) || (normSystem && normSystem.includes(tok))) {
+        score += 25;
+        matchCount++;
+        matchCandidates.push({
+          score: 25,
+          detail: {
+            type: 'system',
+            locationLabel: normSystem ? `سامانه مرتبط: ${post.systemToolName}` : `دپارتمان: ${post.departmentName}`,
+            snippet: `${post.systemToolName || ''} ${post.departmentName || ''}`.trim(),
+            matchedText: tok,
+          }
+        });
+      }
+    });
+
+    if (score > 0 && matchCandidates.length > 0) {
+      matchCandidates.sort((a, b) => b.score - a.score);
+      results.push({
+        itemType: 'information',
+        post,
+        score,
+        bestMatch: matchCandidates[0].detail,
+        allMatchesCount: matchCount,
+      });
+    }
+  }
+
+  results.sort((a, b) => b.score - a.score);
+  return results;
+}
+
+/**
+ * Omni-Search engine: searches across both processes and information circulars/posts
+ */
+export function searchOmni(
+  processes: Process[],
+  announcements: InformationPost[] = [],
+  rawQuery: string
+): SearchResult[] {
+  const processResults = searchProcesses(processes, rawQuery).map(r => ({
+    ...r,
+    itemType: 'process' as const,
+  }));
+
+  const announcementResults = announcements && announcements.length > 0
+    ? searchAnnouncements(announcements, rawQuery)
+    : [];
+
+  const combined = [...processResults, ...announcementResults];
+  combined.sort((a, b) => b.score - a.score);
+  return combined;
 }
 
 /**

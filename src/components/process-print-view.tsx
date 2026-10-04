@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Process } from '@/types/process';
 import { MenuPathDisplay } from './menu-path-display';
+import { StepContentRenderer } from './step-content-renderer';
 import { 
   Printer, 
   ArrowRight, 
@@ -290,11 +291,14 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                     <MenuPathDisplay path={step.targetMenuPath} variant="print" />
                   )}
 
-                  {/* Step Narrative Instructions */}
+                  {/* Step Narrative Instructions & Callouts */}
                   <div className="my-4">
                     <h5 className="text-xs font-black text-slate-500 mb-1.5">اقدامات لازم در این مرحله:</h5>
-                    <div className={`${fontSizeClasses.body} text-slate-900 font-medium leading-relaxed whitespace-pre-line`}>
-                      {step.contentMarkdown}
+                    <div className={`${fontSizeClasses.body} text-slate-900 font-medium leading-relaxed`}>
+                      <StepContentRenderer 
+                        content={step.contentMarkdown} 
+                        isPrintView={true}
+                      />
                     </div>
                   </div>
 

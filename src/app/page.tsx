@@ -53,7 +53,7 @@ function HomePageContent() {
     let isMounted = true;
     Promise.all([
       fetch('/api/processes').then((res) => res.json()).catch(() => []),
-      fetch('/api/information?limit=5').then((res) => res.json()).catch(() => []),
+      fetch('/api/information?limit=50').then((res) => res.json()).catch(() => []),
     ])
       .then(([procData, infoData]) => {
         if (!isMounted) return;
@@ -175,6 +175,7 @@ function HomePageContent() {
             <div className="mb-8">
               <OmniSearch 
                 processes={processes} 
+                announcements={announcements}
                 onSelectProcess={handleSelectProcess} 
                 inputRef={searchInputRef}
               />

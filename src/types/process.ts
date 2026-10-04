@@ -82,7 +82,18 @@ export interface Process {
   updatedAt: string;
 }
 
-export type MatchLocationType = 'overview' | 'title' | 'step' | 'error' | 'field' | 'system' | 'description' | 'tag';
+export type MatchLocationType = 
+  | 'overview' 
+  | 'title' 
+  | 'step' 
+  | 'error' 
+  | 'field' 
+  | 'system' 
+  | 'description' 
+  | 'tag'
+  | 'announcement'
+  | 'circular'
+  | 'tip';
 
 export interface SearchMatchDetail {
   type: MatchLocationType;
@@ -93,7 +104,9 @@ export interface SearchMatchDetail {
 }
 
 export interface SearchResult {
-  process: Process;
+  itemType?: 'process' | 'information';
+  process?: Process;
+  post?: InformationPost;
   score: number;
   bestMatch: SearchMatchDetail;
   allMatchesCount: number;

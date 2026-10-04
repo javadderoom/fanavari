@@ -20,11 +20,16 @@ import {
   FileText,
   Sparkles,
   Building2,
-  Loader2
+  Loader2,
+  Lightbulb,
+  Pin,
+  Link2,
+  Image as ImageIcon
 } from 'lucide-react';
 import { notify } from '@/lib/notify';
 import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
 import { MenuPathEditor } from './menu-path-editor';
+import { StepContentRenderer } from './step-content-renderer';
 
 interface ProcessEditorModalProps {
   isOpen: boolean;
@@ -968,19 +973,83 @@ export function ProcessEditorModal({
                     />
                   </div>
 
-                  {/* Step Description */}
+                  {/* Step Description & Callout Helpers */}
                   <div className="mb-3">
-                    <label className="block text-[10px] font-bold text-slate-500 mb-1">
-                      دستورالعمل اجرایی و شرح تفصیلی گام
-                    </label>
+                    <div className="flex items-center justify-between flex-wrap gap-2 mb-1.5">
+                      <label className="text-[10px] font-bold text-slate-500">
+                        دستورالعمل اجرایی و شرح تفصیلی گام
+                      </label>
+                      {/* Formatting & Callout Quick Toolbar */}
+                      <div className="flex items-center gap-1 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const cur = step.contentMarkdown || '';
+                            const toAppend = cur ? `\n💡 نکته: ` : `💡 نکته: `;
+                            handleUpdateStep(idx, { contentMarkdown: cur + toAppend });
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 transition-colors border border-amber-500/20 cursor-pointer"
+                          title="افزودن کادر نکته کاربردی"
+                        >
+                          <Lightbulb className="w-2.5 h-2.5" />
+                          <span>+ نکته</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const cur = step.contentMarkdown || '';
+                            const toAppend = cur ? `\n⚠️ هشدار: ` : `⚠️ هشدار: `;
+                            handleUpdateStep(idx, { contentMarkdown: cur + toAppend });
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 transition-colors border border-rose-500/20 cursor-pointer"
+                          title="افزودن کادر هشدار مهم"
+                        >
+                          <AlertTriangle className="w-2.5 h-2.5" />
+                          <span>+ هشدار</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const cur = step.contentMarkdown || '';
+                            const toAppend = cur ? `\n📌 توجه: ` : `📌 توجه: `;
+                            handleUpdateStep(idx, { contentMarkdown: cur + toAppend });
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 transition-colors border border-indigo-500/20 cursor-pointer"
+                          title="افزودن کادر توجه و الزام"
+                        >
+                          <Pin className="w-2.5 h-2.5" />
+                          <span>+ توجه</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const cur = step.contentMarkdown || '';
+                            const toAppend = ` [عنوان فرایند](/process/نام-فرایند) `;
+                            handleUpdateStep(idx, { contentMarkdown: cur + toAppend });
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 transition-colors border border-blue-500/20 cursor-pointer"
+                          title="افزودن لینک داخلی به فرایند دیگر"
+                        >
+                          <Link2 className="w-2.5 h-2.5" />
+                          <span>+ لینک فرایند</span>
+                        </button>
+                      </div>
+                    </div>
                     <textarea
-                      rows={2}
+                      rows={3}
                       value={step.contentMarkdown}
                       onChange={(e) => handleUpdateStep(idx, { contentMarkdown: e.target.value })}
-                      placeholder="دستورالعمل اجرایی، پیش‌نیازها و نکات کلیدی این مرحله را بنویسید..."
+                      placeholder="دستورالعمل اجرایی، پیش‌نیازها و نکات کلیدی این مرحله را بنویسید (پشتیبانی از لینک‌های داخلی و کادرهای 💡 نکته و ⚠️ هشدار)..."
                       className="w-full p-2.5 text-xs rounded-xl border outline-none leading-relaxed transition-all focus:ring-2 focus:ring-blue-500"
                       style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
                     />
+                    {/* Live Preview if contains callouts or markdown links */}
+                    {step.contentMarkdown && (step.contentMarkdown.includes('💡') || step.contentMarkdown.includes('⚠️') || step.contentMarkdown.includes('📌') || step.contentMarkdown.includes('[')) && (
+                      <div className="mt-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
+                        <span className="text-[10px] font-bold text-slate-400 block mb-1">پیش‌نمایش زنده قالب‌بندی و کادرها:</span>
+                        <StepContentRenderer content={step.contentMarkdown} className="text-xs" />
+                      </div>
+                    )}
                   </div>
 
                   {/* Step Copyable Helper Fields */}

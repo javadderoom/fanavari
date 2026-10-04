@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Process, ProcessStep } from '@/types/process';
 import { MenuPathDisplay } from './menu-path-display';
+import { StepContentRenderer } from './step-content-renderer';
 import { 
   X, 
   Clock, 
@@ -270,9 +271,12 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
                     </div>
                   )}
 
-                  {/* Step Markdown / Instructions */}
-                  <div className="text-sm font-medium leading-relaxed mb-5 whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>
-                    {currentStep.contentMarkdown}
+                  {/* Step Markdown / Instructions & Interactive Callouts */}
+                  <div className="mb-5 font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    <StepContentRenderer 
+                      content={currentStep.contentMarkdown} 
+                      tips={currentStep.tips}
+                    />
                   </div>
 
                   {/* Copyable Fields Helper (High Productivity!) */}
