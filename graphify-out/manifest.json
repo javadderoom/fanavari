@@ -545,8 +545,8 @@
     "semantic_hash": ""
   },
   "src/components/rich-text-editor.tsx": {
-    "mtime": 1791127727.887504,
-    "ast_hash": "2e2aff0a5ae97d61a2204cbce0f86f57",
+    "mtime": 1791129256.1522505,
+    "ast_hash": "dbb7cfa198e0b87a4fef40583ba9fe15",
     "semantic_hash": ""
   },
   "src/components/system-editor-modal.tsx": {

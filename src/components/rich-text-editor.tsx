@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { StarterKit } from '@tiptap/starter-kit';
 import { Underline } from '@tiptap/extension-underline';
@@ -59,6 +60,22 @@ export function RichTextEditor({
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock body scroll when fullscreen is open
+  useEffect(() => {
+    if (isFullScreen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isFullScreen]);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -517,155 +534,163 @@ export function RichTextEditor({
     </div>
   );
 
+  const fullScreenContent = isFullScreen && (
+    <div className="fixed inset-0 z-[9999] bg-slate-100 dark:bg-slate-950 flex flex-col animate-in fade-in duration-150">
+      {/* Top Sticky Ribbon: Header & Word Toolbar Ribbon (Always stays on top of viewport when scrolling) */}
+      <div className="sticky top-0 z-30 shrink-0 flex flex-col bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-md">
+        {/* Top Fullscreen Header */}
+        <div className="flex items-center justify-between px-6 py-2.5 border-b border-slate-100 dark:border-slate-800/80">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 dark:bg-indigo-600/20 border border-indigo-500/20 dark:border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                ویرایشگر تمام‌صفحه محتوا (مشابه Microsoft Word / WordPad)
+              </h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                منوی ابزار بالا همراه اسکرول ثابت می‌ماند و همیشه در دسترس است • برای خروج دکمه Esc را بزنید
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsFullScreen(false)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-bold border border-slate-300 dark:border-slate-700 transition-all cursor-pointer shadow-xs"
+          >
+            <Minimize2 className="w-4 h-4" />
+            <span>خروج از تمام‌صفحه (Esc)</span>
+          </button>
+        </div>
+
+        {/* Fullscreen Word Toolbar Ribbon */}
+        <div className="shadow-xs">{toolbarContent}</div>
+      </div>
+
+      {/* Document Work Area: Centered Paper Canvas */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-8 pb-32 bg-slate-200/60 dark:bg-slate-950 flex justify-center items-start">
+        <div
+          className="w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl shadow-xl p-6 sm:p-12 md:p-16 min-h-[85vh] h-auto my-4 cursor-text flex flex-col text-slate-900 dark:text-slate-100 transition-all shrink-0"
+          onClick={() => editor.commands.focus()}
+        >
+          <EditorContent editor={editor} className="w-full focus:outline-none" />
+        </div>
+      </div>
+
+      {/* Fullscreen Bottom Status Bar */}
+      <div className="shrink-0 flex items-center justify-between px-8 py-2.5 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
+        <div className="flex items-center gap-4">
+          <span>
+            تعداد کلمات: <strong className="text-slate-900 dark:text-white font-mono">{'\u200E' + wordCount}</strong>
+          </span>
+          <span>•</span>
+          <span>
+            کاراکترها: <strong className="text-slate-900 dark:text-white font-mono">{'\u200E' + charCount}</strong>
+          </span>
+        </div>
+        <div className="hidden sm:flex items-center gap-3 text-[11px] text-slate-500">
+          <span>میانبرها: Ctrl+B (بولد) | Ctrl+I (ایتالیک) | Ctrl+U (زیرخط) | Ctrl+Z (بازگشت)</span>
+          <span>•</span>
+          <button
+            type="button"
+            onClick={() => setIsFullScreen(false)}
+            className="text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer font-bold"
+          >
+            تایید و بازگشت به فرم
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const linkModalContent = isLinkModalOpen && (
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl text-slate-900 dark:text-slate-100">
+        <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-2">درج یا ویرایش پیوند اینترنتی</h4>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+          آدرس وب‌سایت یا فایل مورد نظر را وارد نمایید (مثال: https://example.gov.ir)
+        </p>
+        <input
+          type="url"
+          dir="ltr"
+          value={linkUrl}
+          onChange={(e) => setLinkUrl(e.target.value)}
+          placeholder="https://..."
+          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono mb-5"
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleSetLink();
+            }
+          }}
+        />
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setIsLinkModalOpen(false)}
+            className="px-4 py-2 rounded-xl text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          >
+            انصراف
+          </button>
+          <button
+            type="button"
+            onClick={handleSetLink}
+            className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-colors shadow-xs cursor-pointer"
+          >
+            ثبت پیوند
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       {/* NORMAL EMBEDDED MODE */}
-      {!isFullScreen ? (
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden shadow-xs flex flex-col focus-within:border-indigo-500 transition-colors">
-          {toolbarContent}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden shadow-xs flex flex-col focus-within:border-indigo-500 transition-colors">
+        {/* Sticky Toolbar in embedded mode */}
+        <div className="sticky top-0 z-20 shadow-xs">{toolbarContent}</div>
 
-          {/* Editable Canvas */}
-          <div
-            className="overflow-y-auto cursor-text bg-white dark:bg-slate-950"
-            style={{ minHeight }}
-            onClick={() => editor.commands.focus()}
-          >
-            <EditorContent editor={editor} />
-          </div>
-
-          {/* Metrics Footer */}
-          <div className="flex items-center justify-between px-4 py-2 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50/90 dark:bg-slate-950/90 text-[11px] text-slate-500">
-            <div className="flex items-center gap-2">
-              <span>
-                تعداد واژه‌ها: <strong className="text-slate-800 dark:text-slate-300 font-mono">{'\u200E' + wordCount}</strong>
-              </span>
-              <span>•</span>
-              <span>
-                کاراکتر: <strong className="text-slate-800 dark:text-slate-300 font-mono">{'\u200E' + charCount}</strong>
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="hidden sm:inline text-slate-400 dark:text-slate-500">پشتیبانی از فرمت‌های WordPad و HTML کامل</span>
-              <button
-                type="button"
-                onClick={() => setIsFullScreen(true)}
-                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium hover:underline text-[11px] cursor-pointer"
-              >
-                باز کردن در پنجره بزرگ تمام‌صفحه ⤢
-              </button>
-            </div>
-          </div>
+        {/* Editable Canvas */}
+        <div
+          className="overflow-y-auto cursor-text bg-white dark:bg-slate-950"
+          style={{ minHeight }}
+          onClick={() => editor.commands.focus()}
+        >
+          <EditorContent editor={editor} />
         </div>
-      ) : (
-        /* FULL-SCREEN IMMERSIVE WORD-LIKE DESKTOP MODE */
-        <div className="fixed inset-0 z-[100] bg-slate-100 dark:bg-slate-950 flex flex-col animate-in fade-in duration-200">
-          {/* Top Fullscreen Header */}
-          <div className="flex items-center justify-between px-6 py-3.5 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 dark:bg-indigo-600/20 border border-indigo-500/20 dark:border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  ویرایشگر تمام‌صفحه محتوا (مشابه Microsoft Word / WordPad)
-                </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  برای خروج از حالت تمام‌صفحه دکمه Esc روی کیبورد یا دکمه گوشه چپ را بزنید
-                </p>
-              </div>
-            </div>
 
+        {/* Metrics Footer */}
+        <div className="flex items-center justify-between px-4 py-2 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50/90 dark:bg-slate-950/90 text-[11px] text-slate-500">
+          <div className="flex items-center gap-2">
+            <span>
+              تعداد واژه‌ها: <strong className="text-slate-800 dark:text-slate-300 font-mono">{'\u200E' + wordCount}</strong>
+            </span>
+            <span>•</span>
+            <span>
+              کاراکتر: <strong className="text-slate-800 dark:text-slate-300 font-mono">{'\u200E' + charCount}</strong>
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline text-slate-400 dark:text-slate-500">پشتیبانی از فرمت‌های WordPad و HTML کامل</span>
             <button
               type="button"
-              onClick={() => setIsFullScreen(false)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-bold border border-slate-300 dark:border-slate-700 transition-all cursor-pointer shadow-xs"
+              onClick={() => setIsFullScreen(true)}
+              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium hover:underline text-[11px] cursor-pointer"
             >
-              <Minimize2 className="w-4 h-4" />
-              <span>خروج از تمام‌صفحه (Esc)</span>
+              باز کردن در پنجره بزرگ تمام‌صفحه ⤢
             </button>
           </div>
-
-          {/* Fullscreen Word Toolbar Ribbon */}
-          <div className="shadow-xs">{toolbarContent}</div>
-
-          {/* Document Work Area: Centered Paper Canvas */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-8 pb-32 bg-slate-200/60 dark:bg-slate-950 flex justify-center items-start">
-            <div
-              className="w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl shadow-xl p-6 sm:p-12 md:p-16 min-h-[85vh] h-auto my-4 cursor-text flex flex-col text-slate-900 dark:text-slate-100 transition-all shrink-0"
-              onClick={() => editor.commands.focus()}
-            >
-              <EditorContent editor={editor} className="w-full focus:outline-none" />
-            </div>
-          </div>
-
-          {/* Fullscreen Bottom Status Bar */}
-          <div className="flex items-center justify-between px-8 py-2.5 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
-            <div className="flex items-center gap-4">
-              <span>
-                تعداد کلمات: <strong className="text-slate-900 dark:text-white font-mono">{'\u200E' + wordCount}</strong>
-              </span>
-              <span>•</span>
-              <span>
-                کاراکترها: <strong className="text-slate-900 dark:text-white font-mono">{'\u200E' + charCount}</strong>
-              </span>
-            </div>
-            <div className="hidden sm:flex items-center gap-3 text-[11px] text-slate-500">
-              <span>میانبرها: Ctrl+B (بولد) | Ctrl+I (ایتالیک) | Ctrl+U (زیرخط) | Ctrl+Z (بازگشت)</span>
-              <span>•</span>
-              <button
-                type="button"
-                onClick={() => setIsFullScreen(false)}
-                className="text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer font-bold"
-              >
-                تایید و بازگشت به فرم
-              </button>
-            </div>
-          </div>
         </div>
-      )}
+      </div>
 
-      {/* Link Dialog Modal */}
-      {isLinkModalOpen && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl text-slate-900 dark:text-slate-100">
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-2">درج یا ویرایش پیوند اینترنتی</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-              آدرس وب‌سایت یا فایل مورد نظر را وارد نمایید (مثال: https://example.gov.ir)
-            </p>
-            <input
-              type="url"
-              dir="ltr"
-              value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-              placeholder="https://..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono mb-5"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleSetLink();
-                }
-              }}
-            />
-            <div className="flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setIsLinkModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              >
-                انصراف
-              </button>
-              <button
-                type="button"
-                onClick={handleSetLink}
-                className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-colors shadow-xs cursor-pointer"
-              >
-                ثبت پیوند
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* FULL-SCREEN IMMERSIVE WORD-LIKE DESKTOP MODE (Portaled directly to document.body) */}
+      {isFullScreen && mounted && typeof document !== 'undefined' && createPortal(fullScreenContent, document.body)}
+
+      {/* LINK MODAL (Portaled directly to document.body) */}
+      {isLinkModalOpen && mounted && typeof document !== 'undefined' && createPortal(linkModalContent, document.body)}
     </>
   );
 }
