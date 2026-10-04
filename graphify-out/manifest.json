@@ -420,8 +420,8 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/page.tsx": {
-    "mtime": 1791037019.1539247,
-    "ast_hash": "a2bcbe20e3835872ca95bf4387e0bb0b",
+    "mtime": 1791144411.78996,
+    "ast_hash": "40f686a57189659b8f8e7d73c47c7c86",
     "semantic_hash": ""
   },
   "src/app/dev/page.tsx": {
@@ -525,8 +525,8 @@
     "semantic_hash": ""
   },
   "src/components/process-card.tsx": {
-    "mtime": 1790933471.8911676,
-    "ast_hash": "f747327fefcd370e17c815ebf6a08532",
+    "mtime": 1791144457.1415994,
+    "ast_hash": "7edf91e63cdbc69d35f806199dec270c",
     "semantic_hash": ""
   },
   "src/components/process-detail-modal.tsx": {
@@ -540,8 +540,8 @@
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
-    "mtime": 1791139423.0278106,
-    "ast_hash": "d65b9515169c520656579ebab6653ab5",
+    "mtime": 1791144263.2304287,
+    "ast_hash": "2f467ef93da1c6917e22a203efb12950",
     "semantic_hash": ""
   },
   "src/components/rich-text-editor.tsx": {
@@ -580,8 +580,8 @@
     "semantic_hash": ""
   },
   "src/lib/db-service.ts": {
-    "mtime": 1791136797.4044235,
-    "ast_hash": "85cab16563f83a54701762c6a62428b7",
+    "mtime": 1791144125.1879096,
+    "ast_hash": "8c366db71a0a4a0bb44f925feffaba02",
     "semantic_hash": ""
   },
   "src/lib/notify.tsx": {
@@ -610,8 +610,8 @@
     "semantic_hash": ""
   },
   "src/types/process.ts": {
-    "mtime": 1791136654.1799865,
-    "ast_hash": "a2e933e2281754594d5c70d723f47cce",
+    "mtime": 1791144506.4209168,
+    "ast_hash": "ae4a6d6ce68e4b01eea05a11cddca198",
     "semantic_hash": ""
   },
   "tsconfig.json": {
@@ -887,6 +887,26 @@
   "src/components/administrative-timeline-view.tsx": {
     "mtime": 1791139604.0076468,
     "ast_hash": "4cbb891927b6d1950848850cc44247cc",
+    "semantic_hash": ""
+  },
+  "prisma/migrations/20261004195958_add_process_scopes_and_categories/migration.sql": {
+    "mtime": 1791143998.7750695,
+    "ast_hash": "8dcb592a3bfa587c2d9344dc75d4f3b6",
+    "semantic_hash": ""
+  },
+  "src/app/api/categories/route.ts": {
+    "mtime": 1791144096.8984787,
+    "ast_hash": "5c93214e0bad1b42b2a10e0c4e972a7d",
+    "semantic_hash": ""
+  },
+  "src/app/api/scopes/route.ts": {
+    "mtime": 1791144084.2505658,
+    "ast_hash": "48efed84b6a3a95c06086efea797c0bb",
+    "semantic_hash": ""
+  },
+  "src/components/scopes-categories-management.tsx": {
+    "mtime": 1791144308.4820328,
+    "ast_hash": "8cb2636d78e32a17f4863330b4790e56",
     "semantic_hash": ""
   }
 }

@@ -129,3 +129,29 @@ model InformationPost {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 }
+
+model ProcessScope {
+  id          String            @id @default(uuid())
+  key         String            @unique // e.g. "organization", "software", "portal"
+  name        String            // e.g. "سازمانی و مراجع دولتی"
+  description String?
+  icon        String?
+  orderIndex  Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  categories  ProcessCategory[]
+}
+
+model ProcessCategory {
+  id          String        @id @default(uuid())
+  key         String        // e.g. "hr", "finance", "it"
+  name        String        // e.g. "منابع انسانی و کارگزینی"
+  description String?
+  icon        String?
+  orderIndex  Int           @default(0)
+  scopeId     String?       // null = Applies to ALL scopes (دسته‌بندی عمومی - همه حوزه‌ها)
+  scope       ProcessScope? @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+

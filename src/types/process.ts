@@ -90,13 +90,47 @@ export interface ProcessSchedule {
   notes?: string;
 }
 
+export interface ProcessScopeEntity {
+  id: string;
+  key: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  orderIndex?: number;
+  categories?: ProcessCategoryEntity[];
+  processCount?: number;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface ProcessCategoryEntity {
+  id: string;
+  key: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  orderIndex?: number;
+  scopeId?: string | null;
+  scopeKey?: string | null;
+  scopeName?: string | null;
+  scope?: {
+    id: string;
+    key: string;
+    name: string;
+  } | null;
+  processCount?: number;
+  isGlobal?: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
 export interface Process {
   id: string;
   slug: string;
   title: string;
   description: string;
-  scope: WorkflowScope; // 'organization' | 'software' | 'portal'
-  category: 'hr' | 'finance' | 'it' | 'legal' | 'support' | 'software' | 'design';
+  scope: string; // 'organization' | 'software' | 'portal' or any dynamic scope key
+  category: string; // 'hr' | 'finance' | etc. or any dynamic category key
   departmentName: string;
   departmentSlug?: string;
   estimatedMinutes: number;

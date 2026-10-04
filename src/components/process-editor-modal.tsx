@@ -10,7 +10,9 @@ import {
   CopyableField,
   PersianMonth,
   PersianSeason,
-  ProcessSchedule
+  ProcessSchedule,
+  ProcessScopeEntity,
+  ProcessCategoryEntity
 } from '@/types/process';
 import { useUserSession } from './user-session-provider';
 import { Permissions } from '@/lib/permissions';
@@ -27,18 +29,21 @@ import {
   Clock, 
   Globe, 
   Laptop, 
-  FileText,
-  Sparkles,
-  Building2,
-  Loader2,
-  Lightbulb,
-  Pin,
-  Link2,
-  Calendar,
-  CalendarDays,
-  CalendarClock,
-  Timer,
-  Image as ImageIcon
+  FileText, 
+  Sparkles, 
+  Building2, 
+  Loader2, 
+  Lightbulb, 
+  Pin, 
+  Link2, 
+  Calendar, 
+  CalendarDays, 
+  CalendarClock, 
+  Timer, 
+  FolderTree, 
+  Tag, 
+  FolderPlus, 
+  Image as ImageIcon 
 } from 'lucide-react';
 import { notify } from '@/lib/notify';
 import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
@@ -82,13 +87,31 @@ export function ProcessEditorModal({
   const [slug, setSlug] = useState('');
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
   const [description, setDescription] = useState('');
-  const [scope, setScope] = useState<WorkflowScope>('organization');
-  const [category, setCategory] = useState<Process['category']>('hr');
+  const [scope, setScope] = useState<string>('organization');
+  const [category, setCategory] = useState<string>('hr');
   const [departmentName, setDepartmentName] = useState('وزارت آموزش و پرورش');
   const [targetSystem, setTargetSystem] = useState('');
   const [targetUrl, setTargetUrl] = useState('');
   const [estimatedMinutes, setEstimatedMinutes] = useState(15);
   const [tagsInput, setTagsInput] = useState('');
+
+  // Dynamic Scopes and Categories from database
+  const [scopesList, setScopesList] = useState<ProcessScopeEntity[]>([]);
+  const [categoriesList, setCategoriesList] = useState<ProcessCategoryEntity[]>([]);
+
+  // Quick creation states for scope
+  const [isQuickScopeOpen, setIsQuickScopeOpen] = useState(false);
+  const [quickScopeName, setQuickScopeName] = useState('');
+  const [quickScopeKey, setQuickScopeKey] = useState('');
+  const [quickScopeDesc, setQuickScopeDesc] = useState('');
+  const [isSavingQuickScope, setIsSavingQuickScope] = useState(false);
+
+  // Quick creation states for category
+  const [isQuickCatOpen, setIsQuickCatOpen] = useState(false);
+  const [quickCatName, setQuickCatName] = useState('');
+  const [quickCatKey, setQuickCatKey] = useState('');
+  const [quickCatScopeId, setQuickCatScopeId] = useState<string>('current');
+  const [isSavingQuickCat, setIsSavingQuickCat] = useState(false);
 
   // Schedule state
   const [hasSchedule, setHasSchedule] = useState(false);
@@ -122,14 +145,30 @@ export function ProcessEditorModal({
       Promise.all([
         fetch('/api/departments').then((r) => r.json()).catch(() => []),
         fetch('/api/systems').then((r) => r.json()).catch(() => []),
+        fetch('/api/scopes').then((r) => r.json()).catch(() => []),
       ])
-        .then(([depts, syss]) => {
+        .then(([depts, syss, scopes]) => {
           if (Array.isArray(depts)) setDepartmentsList(depts);
           if (Array.isArray(syss)) setSystemsList(syss);
+          if (Array.isArray(scopes)) setScopesList(scopes);
         })
-        .catch((err) => console.error('Error fetching departments/systems:', err));
+        .catch((err) => console.error('Error fetching initial modal data:', err));
     }
   }, [isOpen]);
+
+  // Dynamically load categories whenever scope changes
+  useEffect(() => {
+    if (isOpen && scope) {
+      fetch(`/api/categories?scopeKey=${encodeURIComponent(scope)}`)
+        .then((r) => r.json())
+        .then((cats) => {
+          if (Array.isArray(cats)) {
+            setCategoriesList(cats);
+          }
+        })
+        .catch((err) => console.error('Error fetching categories for scope:', err));
+    }
+  }, [isOpen, scope]);
 
   // Steps state
   const [steps, setSteps] = useState<ProcessStep[]>([]);
@@ -301,6 +340,83 @@ export function ProcessEditorModal({
       notify.error(err.message || 'خطا در ثبت سازمان');
     } finally {
       setIsSavingQuickDept(false);
+    }
+  };
+
+  const handleQuickSaveScope = async () => {
+    if (!quickScopeName.trim()) {
+      notify.error('نام حوزه الزامی است.');
+      return;
+    }
+    setIsSavingQuickScope(true);
+    try {
+      const res = await fetch('/api/scopes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-permissions': String(currentUser.permissions),
+        },
+        body: JSON.stringify({
+          name: quickScopeName.trim(),
+          key: quickScopeKey.trim() || undefined,
+          description: quickScopeDesc.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'خطا در ثبت حوزه');
+      setScopesList((prev) => [...prev, data]);
+      setScope(data.key);
+      setIsQuickScopeOpen(false);
+      setQuickScopeName('');
+      setQuickScopeKey('');
+      setQuickScopeDesc('');
+      notify.success(`حوزه «${data.name}» ثبت و انتخاب شد.`);
+    } catch (err: any) {
+      notify.error(err.message || 'خطا در ثبت حوزه');
+    } finally {
+      setIsSavingQuickScope(false);
+    }
+  };
+
+  const handleQuickSaveCategory = async () => {
+    if (!quickCatName.trim()) {
+      notify.error('نام دسته‌بندی موضوعی الزامی است.');
+      return;
+    }
+    setIsSavingQuickCat(true);
+    try {
+      let targetScopeId: string | null = null;
+      if (quickCatScopeId === 'current') {
+        const found = scopesList.find((s) => s.key === scope);
+        targetScopeId = found?.id || null;
+      } else if (quickCatScopeId !== 'all' && quickCatScopeId !== 'global') {
+        targetScopeId = quickCatScopeId;
+      }
+
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-permissions': String(currentUser.permissions),
+        },
+        body: JSON.stringify({
+          name: quickCatName.trim(),
+          key: quickCatKey.trim() || undefined,
+          scopeId: targetScopeId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'خطا در ثبت دسته‌بندی');
+      setCategoriesList((prev) => [...prev, data]);
+      setCategory(data.key);
+      setIsQuickCatOpen(false);
+      setQuickCatName('');
+      setQuickCatKey('');
+      notify.success(`دسته‌بندی موضوعی «${data.name}» ثبت و انتخاب شد.`);
+    } catch (err: any) {
+      notify.error(err.message || 'خطا در ثبت دسته‌بندی');
+    } finally {
+      setIsSavingQuickCat(false);
     }
   };
 
@@ -598,39 +714,328 @@ export function ProcessEditorModal({
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                حوزه و ماهیت فرایند
-              </label>
-              <select
-                value={scope}
-                onChange={(e) => setScope(e.target.value as WorkflowScope)}
-                className="w-full p-3 rounded-xl border text-sm font-medium outline-none"
-                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-              >
-                <option value="organization">سازمانی، اداری و مراجع دولتی</option>
-                <option value="software">کار با نرم‌افزارها و ابزارهای مهندسی</option>
-                <option value="portal">پرتال‌های وب و سامانه‌های برخط</option>
-              </select>
+            {/* Dynamic Scope / Workflow Domain Field */}
+            <div className="rounded-2xl p-4 border" style={{ background: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}>
+              <div className="flex items-center justify-between mb-2">
+                <label className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                  <FolderTree className="w-4 h-4 text-blue-600" />
+                  <span>حوزه و ماهیت فرایند</span>
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => setIsQuickScopeOpen((prev) => !prev)}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{isQuickScopeOpen ? 'بستن ثبت حوزه' : 'ثبت حوزه جدید'}</span>
+                </button>
+              </div>
+
+              {/* Quick Scope Creation Sub-form */}
+              {isQuickScopeOpen && (
+                <div className="mb-4 p-4 rounded-xl border border-blue-300 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/30 space-y-3 animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
+                      <FolderPlus className="w-3.5 h-3.5" />
+                      <span>تعریف حوزه و ماهیت جدید در پایگاه داده</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsQuickScopeOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 text-xs font-medium cursor-pointer"
+                    >
+                      بستن
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        عنوان حوزه <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={quickScopeName}
+                        onChange={(e) => setQuickScopeName(e.target.value)}
+                        placeholder="مثلاً: فرایندهای پژوهشی و دانشگاهی"
+                        className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        شناسه لاتین / Key (اختیاری)
+                      </label>
+                      <input
+                        type="text"
+                        value={quickScopeKey}
+                        onChange={(e) => setQuickScopeKey(e.target.value)}
+                        placeholder="مثلاً: research"
+                        dir="ltr"
+                        className="w-full px-3 py-2 rounded-lg text-xs font-mono border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                      شرح و تعریف حوزه
+                    </label>
+                    <input
+                      type="text"
+                      value={quickScopeDesc}
+                      onChange={(e) => setQuickScopeDesc(e.target.value)}
+                      placeholder="توضیح مختصر درباره این حوزه..."
+                      className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsQuickScopeOpen(false)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 cursor-pointer"
+                    >
+                      انصراف
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSavingQuickScope || !quickScopeName.trim()}
+                      onClick={handleQuickSaveScope}
+                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 cursor-pointer shadow-xs"
+                    >
+                      {isSavingQuickScope ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>در حال ذخیره...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-3.5 h-3.5" />
+                          <span>ثبت و انتخاب این حوزه</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Main Scope Selector */}
+              <div className="space-y-2">
+                <select
+                  value={scopesList.some((s) => s.key === scope) ? scope : (scope ? 'custom' : '')}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '__NEW__') {
+                      setIsQuickScopeOpen(true);
+                    } else if (val === 'custom') {
+                      setScope('');
+                    } else {
+                      setScope(val);
+                    }
+                  }}
+                  className="w-full p-3 rounded-xl border text-sm font-medium outline-none cursor-pointer"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                >
+                  <option value="">-- انتخاب حوزه از لیست دیتابیس --</option>
+                  {scopesList.map((s) => (
+                    <option key={s.key} value={s.key}>
+                      {s.name}
+                    </option>
+                  ))}
+                  <option value="__NEW__">+ تعریف و ثبت حوزه جدید در دیتابیس...</option>
+                  <option value="custom">سایر / ورود دستی شناسه حوزه...</option>
+                </select>
+
+                {(!scopesList.some((s) => s.key === scope) || scope === '') && (
+                  <input
+                    type="text"
+                    value={scope}
+                    onChange={(e) => setScope(e.target.value)}
+                    placeholder="شناسه یا عنوان حوزه جدید را تایپ کنید..."
+                    className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none"
+                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                  />
+                )}
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                دسته‌بندی موضوعی
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value as any)}
-                className="w-full p-3 rounded-xl border text-sm font-medium outline-none"
-                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-              >
-                <option value="hr">منابع انسانی و کارگزینی</option>
-                <option value="finance">مالی و مودیان مالیاتی</option>
-                <option value="it">فناوری اطلاعات و زیرساخت</option>
-                <option value="design">طراحی محصول و UI/UX</option>
-                <option value="legal">حقوقی و گواهی الکترونیک</option>
-                <option value="support">پشتیبانی و امور مشتریان</option>
-              </select>
+            {/* Dynamic Subject Category Field (Cascades from Scope) */}
+            <div className="rounded-2xl p-4 border" style={{ background: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}>
+              <div className="flex items-center justify-between mb-2">
+                <label className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                  <Tag className="w-4 h-4 text-indigo-600" />
+                  <span>دسته‌بندی موضوعی</span>
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => setIsQuickCatOpen((prev) => !prev)}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-700 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{isQuickCatOpen ? 'بستن ثبت دسته‌بندی' : 'ثبت دسته‌بندی جدید'}</span>
+                </button>
+              </div>
+
+              {/* Quick Category Creation Sub-form */}
+              {isQuickCatOpen && (
+                <div className="mb-4 p-4 rounded-xl border border-indigo-300 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-950/30 space-y-3 animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>تعریف دسته‌بندی موضوعی جدید</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsQuickCatOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 text-xs font-medium cursor-pointer"
+                    >
+                      بستن
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        عنوان دسته‌بندی <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={quickCatName}
+                        onChange={(e) => setQuickCatName(e.target.value)}
+                        placeholder="مثلاً: بازنشستگی و سنوات"
+                        className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        شناسه لاتین / Key (اختیاری)
+                      </label>
+                      <input
+                        type="text"
+                        value={quickCatKey}
+                        onChange={(e) => setQuickCatKey(e.target.value)}
+                        placeholder="مثلاً: retirement"
+                        dir="ltr"
+                        className="w-full px-3 py-2 rounded-lg text-xs font-mono border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                      حوزه تعلق این دسته‌بندی
+                    </label>
+                    <select
+                      value={quickCatScopeId}
+                      onChange={(e) => setQuickCatScopeId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 cursor-pointer"
+                    >
+                      <option value="current">
+                        اختصاصی برای حوزه فعلی ({scopesList.find((s) => s.key === scope)?.name || scope})
+                      </option>
+                      <option value="all">
+                        عمومی و مشترک در همه حوزه‌ها (همه حوزه‌ها دسترسی دارند)
+                      </option>
+                      {scopesList.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          اختصاصی برای حوزه: {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsQuickCatOpen(false)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 cursor-pointer"
+                    >
+                      انصراف
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSavingQuickCat || !quickCatName.trim()}
+                      onClick={handleQuickSaveCategory}
+                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 cursor-pointer shadow-xs"
+                    >
+                      {isSavingQuickCat ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>در حال ذخیره...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-3.5 h-3.5" />
+                          <span>ثبت و انتخاب این دسته‌بندی</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Main Category Cascading Selector */}
+              <div className="space-y-2">
+                <select
+                  value={categoriesList.some((c) => c.key === category) ? category : (category ? 'custom' : '')}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '__NEW__') {
+                      setIsQuickCatOpen(true);
+                    } else if (val === 'custom') {
+                      setCategory('');
+                    } else {
+                      setCategory(val);
+                    }
+                  }}
+                  className="w-full p-3 rounded-xl border text-sm font-medium outline-none cursor-pointer"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                >
+                  <option value="">-- انتخاب دسته‌بندی موضوعی --</option>
+
+                  {/* Scope Specific Categories */}
+                  {categoriesList.filter((c) => !c.isGlobal).length > 0 && (
+                    <optgroup label={`دسته‌بندی‌های اختصاصی حوزه (${scopesList.find((s) => s.key === scope)?.name || scope})`}>
+                      {categoriesList
+                        .filter((c) => !c.isGlobal)
+                        .map((c) => (
+                          <option key={c.id} value={c.key}>
+                            {c.name}
+                          </option>
+                        ))}
+                    </optgroup>
+                  )}
+
+                  {/* Global Categories available across all scopes */}
+                  {categoriesList.filter((c) => c.isGlobal).length > 0 && (
+                    <optgroup label="دسته‌بندی‌های عمومی (مشترک در همه حوزه‌ها)">
+                      {categoriesList
+                        .filter((c) => c.isGlobal)
+                        .map((c) => (
+                          <option key={c.id} value={c.key}>
+                            {c.name} (عمومی)
+                          </option>
+                        ))}
+                    </optgroup>
+                  )}
+
+                  <option value="__NEW__">+ تعریف و ثبت دسته‌بندی موضوعی جدید در دیتابیس...</option>
+                  <option value="custom">سایر / ورود دستی شناسه دسته‌بندی...</option>
+                </select>
+
+                {(!categoriesList.some((c) => c.key === category) || category === '') && (
+                  <input
+                    type="text"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    placeholder="شناسه یا عنوان دسته‌بندی موضوعی را بنویسید..."
+                    className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none"
+                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                  />
+                )}
+              </div>
             </div>
 
             {/* Department / Organization Field */}

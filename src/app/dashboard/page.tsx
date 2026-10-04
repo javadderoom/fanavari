@@ -10,6 +10,7 @@ import { ProcessEditorModal } from '@/components/process-editor-modal';
 import { DepartmentEditorModal } from '@/components/department-editor-modal';
 import { SystemEditorModal } from '@/components/system-editor-modal';
 import { InformationEditorModal } from '@/components/information-editor-modal';
+import { ScopesCategoriesManagement } from '@/components/scopes-categories-management';
 import { Process, OrganizationEntity, SystemTool, InformationPost } from '@/types/process';
 import { notify } from '@/lib/notify';
 import { 
@@ -48,14 +49,15 @@ import {
   Pin,
   HelpCircle,
   Calendar,
-  FileEdit
+  FileEdit,
+  FolderTree
 } from 'lucide-react';
 
 export default function DashboardPage() {
   const { currentUser, can, isSuperAdmin, switchUser } = useUserSession();
 
   // Active tab state
-  const [activeTab, setActiveTab] = useState<'processes' | 'organizations' | 'systems' | 'information' | 'permissions'>('processes');
+  const [activeTab, setActiveTab] = useState<'processes' | 'organizations' | 'systems' | 'information' | 'scopes_categories' | 'permissions'>('processes');
 
   // Live database data states
   const [processes, setProcesses] = useState<Process[]>([]);
@@ -673,6 +675,19 @@ export default function DashboardPage() {
 
             <button
               type="button"
+              onClick={() => { setActiveTab('scopes_categories'); setSearchQuery(''); }}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'scopes_categories'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-amber-600'
+              }`}
+            >
+              <FolderTree className="w-3.5 h-3.5" />
+              <span>حوزه‌ها و دسته‌بندی‌ها</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => { setActiveTab('permissions'); setSearchQuery(''); }}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'permissions'
@@ -686,7 +701,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Search in active tab */}
-          {activeTab !== 'permissions' && (
+          {activeTab !== 'permissions' && activeTab !== 'scopes_categories' && (
             <div className="relative w-full sm:w-72">
               <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -1520,6 +1535,11 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Tab 6: Scopes & Categories Management */}
+        {activeTab === 'scopes_categories' && (
+          <ScopesCategoriesManagement />
         )}
       </main>
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Process } from '@/types/process';
-import { Clock, Layers, ShieldAlert, ArrowLeft, ExternalLink, Sparkles, Laptop, Building2 } from 'lucide-react';
+import { Clock, Layers, ShieldAlert, ArrowLeft, ExternalLink, Sparkles, Laptop, Building2, Globe } from 'lucide-react';
 
 interface ProcessCardProps {
   process: Process;
@@ -45,10 +45,15 @@ export function ProcessCard({ process, onSelect }: ProcessCardProps) {
                 <Laptop className="w-3 h-3" />
                 <span>نرم‌افزار</span>
               </span>
+            ) : process.scope === 'portal' ? (
+              <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-cyan-500/10 text-cyan-600 border border-cyan-500/20 flex items-center gap-1">
+                <Globe className="w-3 h-3" />
+                <span>سامانه برخط</span>
+              </span>
             ) : (
               <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20 flex items-center gap-1">
                 <Building2 className="w-3 h-3" />
-                <span>اداری</span>
+                <span>سازمانی</span>
               </span>
             )}
             <span className="text-xs px-2.5 py-0.5 rounded-xl font-bold"

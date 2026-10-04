@@ -1,5 +1,14 @@
 import { prisma } from './prisma';
-import { Process, ProcessStep, SystemTool, OrganizationEntity, ErrorGuideItem, InformationPost } from '@/types/process';
+import { 
+  Process, 
+  ProcessStep, 
+  SystemTool, 
+  OrganizationEntity, 
+  ErrorGuideItem, 
+  InformationPost,
+  ProcessScopeEntity,
+  ProcessCategoryEntity
+} from '@/types/process';
 
 /**
  * Maps a Prisma process record to the frontend Process interface.
@@ -366,4 +375,120 @@ export async function getDbInformationPostBySlug(slug: string): Promise<Informat
     return null;
   }
 }
+
+/**
+ * Fetch all process scopes and their categories directly from PostgreSQL database.
+ */
+export async function getDbScopes(): Promise<ProcessScopeEntity[]> {
+  try {
+    const scopes = await prisma.processScope.findMany({
+      orderBy: { orderIndex: 'asc' },
+      include: {
+        categories: {
+          orderBy: { orderIndex: 'asc' },
+        },
+      },
+    });
+
+    const processCounts = await prisma.process.groupBy({
+      by: ['scope'],
+      _count: { id: true },
+    });
+    const countsMap = new Map<string, number>();
+    processCounts.forEach((c) => countsMap.set(c.scope, c._count.id));
+
+    return scopes.map((s) => ({
+      id: s.id,
+      key: s.key,
+      name: s.name,
+      description: s.description || undefined,
+      icon: s.icon || undefined,
+      orderIndex: s.orderIndex,
+      processCount: countsMap.get(s.key) || 0,
+      createdAt: s.createdAt,
+      updatedAt: s.updatedAt,
+      categories: (s.categories || []).map((c) => ({
+        id: c.id,
+        key: c.key,
+        name: c.name,
+        description: c.description || undefined,
+        icon: c.icon || undefined,
+        orderIndex: c.orderIndex,
+        scopeId: c.scopeId,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      })),
+    }));
+  } catch (error) {
+    console.error('Error in getDbScopes:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetch all process categories, optionally filtered by scope key or ID.
+ * Returns both scope-specific categories AND global categories (scopeId: null).
+ */
+export async function getDbCategories(scopeKeyOrId?: string): Promise<ProcessCategoryEntity[]> {
+  try {
+    let targetScopeId: string | null = null;
+    if (scopeKeyOrId && scopeKeyOrId !== 'all') {
+      const scope = await prisma.processScope.findFirst({
+        where: {
+          OR: [
+            { id: scopeKeyOrId },
+            { key: scopeKeyOrId },
+          ],
+        },
+      });
+      if (scope) targetScopeId = scope.id;
+    }
+
+    const whereClause: any = targetScopeId
+      ? {
+          OR: [
+            { scopeId: targetScopeId },
+            { scopeId: null }, // Global category available for all scopes
+          ],
+        }
+      : {};
+
+    const categories = await prisma.processCategory.findMany({
+      where: whereClause,
+      orderBy: [
+        { scopeId: 'asc' },
+        { orderIndex: 'asc' },
+      ],
+      include: {
+        scope: true,
+      },
+    });
+
+    const processCounts = await prisma.process.groupBy({
+      by: ['category'],
+      _count: { id: true },
+    });
+    const countsMap = new Map<string, number>();
+    processCounts.forEach((c) => countsMap.set(c.category, c._count.id));
+
+    return categories.map((c) => ({
+      id: c.id,
+      key: c.key,
+      name: c.name,
+      description: c.description || undefined,
+      icon: c.icon || undefined,
+      orderIndex: c.orderIndex,
+      scopeId: c.scopeId,
+      scopeKey: c.scope?.key || null,
+      scopeName: c.scope?.name || 'عمومی (همه حوزه‌ها)',
+      processCount: countsMap.get(c.key) || 0,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+    }));
+  } catch (error) {
+    console.error('Error in getDbCategories:', error);
+    return [];
+  }
+}
+
 
