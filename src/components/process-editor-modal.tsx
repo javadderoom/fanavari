@@ -1,7 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Process, ProcessStep, StepType, WorkflowScope, ErrorGuideItem, CopyableField } from '@/types/process';
+import { 
+  Process, 
+  ProcessStep, 
+  StepType, 
+  WorkflowScope, 
+  ErrorGuideItem, 
+  CopyableField,
+  PersianMonth,
+  PersianSeason,
+  ProcessSchedule
+} from '@/types/process';
 import { useUserSession } from './user-session-provider';
 import { Permissions } from '@/lib/permissions';
 import { 
@@ -24,12 +34,30 @@ import {
   Lightbulb,
   Pin,
   Link2,
+  Calendar,
+  CalendarDays,
+  CalendarClock,
+  Timer,
   Image as ImageIcon
 } from 'lucide-react';
 import { notify } from '@/lib/notify';
 import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
 import { MenuPathEditor } from './menu-path-editor';
 import { StepContentRenderer } from './step-content-renderer';
+
+export const PERSIAN_MONTHS: PersianMonth[] = [
+  'فروردین', 'اردیبهشت', 'خرداد',
+  'تیر', 'مرداد', 'شهریور',
+  'مهر', 'آبان', 'آذر',
+  'دی', 'بهمن', 'اسفند'
+];
+
+export function getSeasonForMonth(month: PersianMonth): PersianSeason {
+  if (['فروردین', 'اردیبهشت', 'خرداد'].includes(month)) return 'بهار';
+  if (['تیر', 'مرداد', 'شهریور'].includes(month)) return 'تابستان';
+  if (['مهر', 'آبان', 'آذر'].includes(month)) return 'پاییز';
+  return 'زمستان';
+}
 
 interface ProcessEditorModalProps {
   isOpen: boolean;
@@ -61,6 +89,17 @@ export function ProcessEditorModal({
   const [targetUrl, setTargetUrl] = useState('');
   const [estimatedMinutes, setEstimatedMinutes] = useState(15);
   const [tagsInput, setTagsInput] = useState('');
+
+  // Schedule state
+  const [hasSchedule, setHasSchedule] = useState(false);
+  const [scheduleMonth, setScheduleMonth] = useState<PersianMonth>('تیر');
+  const [scheduleSeason, setScheduleSeason] = useState<PersianSeason>('تابستان');
+  const [scheduleStartDay, setScheduleStartDay] = useState<number>(1);
+  const [scheduleEndDay, setScheduleEndDay] = useState<number>(20);
+  const [scheduleDeadlineDays, setScheduleDeadlineDays] = useState<number>(20);
+  const [scheduleRecurrence, setScheduleRecurrence] = useState<'annual' | 'quarterly' | 'monthly' | 'custom'>('annual');
+  const [scheduleNotes, setScheduleNotes] = useState('');
+  const [scheduleIsMandatory, setScheduleIsMandatory] = useState(true);
 
   // Live departments and systems lists from database
   const [departmentsList, setDepartmentsList] = useState<{ id: string; name: string; slug: string }[]>([]);
@@ -107,6 +146,27 @@ export function ProcessEditorModal({
       setTargetUrl(processToEdit.targetUrl || '');
       setEstimatedMinutes(processToEdit.estimatedMinutes);
       setTagsInput(processToEdit.tags.join('، '));
+      if (processToEdit.schedule) {
+        setHasSchedule(true);
+        setScheduleMonth(processToEdit.schedule.month || 'تیر');
+        setScheduleSeason(processToEdit.schedule.season || getSeasonForMonth(processToEdit.schedule.month || 'تیر'));
+        setScheduleStartDay(processToEdit.schedule.startDay ?? 1);
+        setScheduleEndDay(processToEdit.schedule.endDay ?? 20);
+        setScheduleDeadlineDays(processToEdit.schedule.deadlineDays ?? 20);
+        setScheduleRecurrence(processToEdit.schedule.recurrence || 'annual');
+        setScheduleNotes(processToEdit.schedule.notes || '');
+        setScheduleIsMandatory(processToEdit.schedule.isMandatory !== false);
+      } else {
+        setHasSchedule(false);
+        setScheduleMonth('تیر');
+        setScheduleSeason('تابستان');
+        setScheduleStartDay(1);
+        setScheduleEndDay(20);
+        setScheduleDeadlineDays(20);
+        setScheduleRecurrence('annual');
+        setScheduleNotes('');
+        setScheduleIsMandatory(true);
+      }
       setSteps(
         (processToEdit.steps || []).map((s) => ({
           ...s,
@@ -134,6 +194,15 @@ export function ProcessEditorModal({
       setTargetUrl('');
       setEstimatedMinutes(15);
       setTagsInput('فرایند جدید، استاندارد سازمانی');
+      setHasSchedule(false);
+      setScheduleMonth('تیر');
+      setScheduleSeason('تابستان');
+      setScheduleStartDay(1);
+      setScheduleEndDay(20);
+      setScheduleDeadlineDays(20);
+      setScheduleRecurrence('annual');
+      setScheduleNotes('');
+      setScheduleIsMandatory(true);
       setSteps([
         {
           id: `step-${Date.now()}-1`,
@@ -390,6 +459,20 @@ export function ProcessEditorModal({
     const matchedDept = departmentsList.find((d) => d.name === departmentName.trim());
     const matchedSys = systemsList.find((s) => s.name === targetSystem.trim());
 
+    const schedulePayload: ProcessSchedule | undefined = hasSchedule
+      ? {
+          month: scheduleMonth,
+          season: scheduleSeason,
+          startDay: Number(scheduleStartDay) || 1,
+          endDay: Number(scheduleEndDay) || 30,
+          timeframeLabel: `از ${scheduleStartDay || 1} الی ${scheduleEndDay || 30} ${scheduleMonth}`,
+          deadlineDays: Number(scheduleDeadlineDays) || undefined,
+          recurrence: scheduleRecurrence,
+          isMandatory: scheduleIsMandatory,
+          notes: scheduleNotes.trim() || undefined,
+        }
+      : undefined;
+
     const savedProcess: Process = {
       id: processToEdit?.id || `proc-${Date.now()}`,
       slug: finalSlug,
@@ -405,6 +488,7 @@ export function ProcessEditorModal({
       estimatedMinutes: Number(estimatedMinutes) || 10,
       totalSteps: steps.length,
       tags: tagsArray,
+      schedule: schedulePayload,
       steps,
       updatedAt: 'همین الان',
     };
@@ -856,6 +940,216 @@ export function ProcessEditorModal({
                   دقیقه
                 </span>
               </div>
+            </div>
+
+            {/* Administrative Schedule / Annual Operating Calendar Section */}
+            <div 
+              className="md:col-span-2 rounded-2xl p-4 border transition-all"
+              style={{
+                background: hasSchedule ? 'rgba(59, 130, 246, 0.04)' : 'var(--bg-input)',
+                borderColor: hasSchedule ? 'rgba(59, 130, 246, 0.3)' : 'var(--border-subtle)',
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${hasSchedule ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                    <CalendarClock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                      گاه‌شمار اجرایی و تقویم سالانه (Administrative Timeline)
+                    </h4>
+                    <p className="text-[11px] text-slate-500">
+                      تعیین بازه و موعد مقرر سالانه برای سازمان (مثلاً: شروع از ۱ تیر با مهلت ۲۰ روزه در سامانه سیدا)
+                    </p>
+                  </div>
+                </div>
+
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={hasSchedule}
+                    onChange={(e) => setHasSchedule(e.target.checked)}
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                    {hasSchedule ? 'دارای زمان‌بندی اجرایی' : 'بدون زمان‌بندی مشخص'}
+                  </span>
+                </label>
+              </div>
+
+              {hasSchedule && (
+                <div className="mt-4 pt-4 border-t border-blue-200/40 dark:border-blue-900/40 space-y-4 animate-in fade-in">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {/* Month Picker */}
+                    <div>
+                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        ماه اجرایی
+                      </label>
+                      <select
+                        value={scheduleMonth}
+                        onChange={(e) => {
+                          const m = e.target.value as PersianMonth;
+                          setScheduleMonth(m);
+                          setScheduleSeason(getSeasonForMonth(m));
+                        }}
+                        className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none cursor-pointer"
+                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                      >
+                        {PERSIAN_MONTHS.map((m) => (
+                          <option key={m} value={m}>
+                            {m} ({getSeasonForMonth(m)})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Season */}
+                    <div>
+                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        فصل اجرایی
+                      </label>
+                      <select
+                        value={scheduleSeason}
+                        onChange={(e) => setScheduleSeason(e.target.value as PersianSeason)}
+                        className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none cursor-pointer"
+                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                      >
+                        <option value="بهار">بهار</option>
+                        <option value="تابستان">تابستان</option>
+                        <option value="پاییز">پاییز</option>
+                        <option value="زمستان">زمستان</option>
+                      </select>
+                    </div>
+
+                    {/* Start Day */}
+                    <div>
+                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        روز شروع بازه
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="31"
+                        value={scheduleStartDay}
+                        onChange={(e) => setScheduleStartDay(Math.min(31, Math.max(1, Number(e.target.value))))}
+                        className="w-full p-2.5 rounded-xl border text-xs font-mono outline-none"
+                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+
+                    {/* End Day */}
+                    <div>
+                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        روز پایان بازه
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="31"
+                        value={scheduleEndDay}
+                        onChange={(e) => setScheduleEndDay(Math.min(31, Math.max(1, Number(e.target.value))))}
+                        className="w-full p-2.5 rounded-xl border text-xs font-mono outline-none"
+                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* Deadline duration */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        <Timer className="w-3.5 h-3.5 text-blue-500" />
+                        <span>مهلت مجاز اقدام (روز)</span>
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="365"
+                        value={scheduleDeadlineDays}
+                        onChange={(e) => setScheduleDeadlineDays(Math.max(1, Number(e.target.value)))}
+                        placeholder="مثلاً ۲۰"
+                        className="w-full p-2.5 rounded-xl border text-xs font-mono outline-none"
+                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+
+                    {/* Recurrence */}
+                    <div>
+                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        تناوب تکرار
+                      </label>
+                      <select
+                        value={scheduleRecurrence}
+                        onChange={(e) => setScheduleRecurrence(e.target.value as any)}
+                        className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none cursor-pointer"
+                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                      >
+                        <option value="annual">سالیانه (دوره منظم سالانه)</option>
+                        <option value="quarterly">فصلی (هر فصل یک‌بار)</option>
+                        <option value="monthly">ماهانه (دوره‌ای هر ماه)</option>
+                        <option value="custom">موردی و مقطعی</option>
+                      </select>
+                    </div>
+
+                    {/* Mandatory Switch */}
+                    <div className="flex flex-col justify-center">
+                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        فوریت و وضعیت مهلت
+                      </label>
+                      <label className="flex items-center gap-2 p-2 rounded-xl border bg-white/40 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={scheduleIsMandatory}
+                          onChange={(e) => setScheduleIsMandatory(e.target.checked)}
+                          className="w-4 h-4 rounded text-rose-600 focus:ring-rose-500 cursor-pointer"
+                        />
+                        <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
+                          مهلت قطعی و الزامی (مشمول جریمه یا مسدودی)
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                      یادداشت‌ها و شیوه‌نامه تقویم اجرایی
+                    </label>
+                    <input
+                      type="text"
+                      value={scheduleNotes}
+                      onChange={(e) => setScheduleNotes(e.target.value)}
+                      placeholder="مثال: به استناد بخشنامه ۴۵۲/ت، سامانه در پایان روز بیستم مسدود خواهد شد..."
+                      className="w-full p-2.5 rounded-xl border text-xs outline-none"
+                      style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+
+                  {/* Schedule Preview Bar */}
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-xs">
+                    <Calendar className="w-4 h-4 shrink-0" />
+                    <span>
+                      پیش‌نمایش در گاه‌شمار اداری:
+                      {' '}
+                      <strong>{`از ${scheduleStartDay} الی ${scheduleEndDay} ${scheduleMonth} ماه`}</strong>
+                      {' '}
+                      {scheduleDeadlineDays && (
+                        <span>
+                          (مهلت اقدام:{' '}
+                          <span dir="ltr" className="inline-block font-mono">
+                            \u200E{scheduleDeadlineDays}
+                          </span>{' '}
+                          روز)
+                        </span>
+                      )}
+                      {' • '}
+                      <span>{scheduleRecurrence === 'annual' ? 'تکرار سالانه' : scheduleRecurrence === 'quarterly' ? 'تکرار فصلی' : 'دوره‌ای'}</span>
+                      {scheduleIsMandatory && <span className="text-rose-500 font-bold mr-2">• مهلت قطعی</span>}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="md:col-span-2">

@@ -21,6 +21,7 @@ export function mapPrismaProcess(p: any): Process {
     isPopular: true,
     totalSteps: p.steps?.length || 0,
     tags: [p.department?.name, p.department?.slug, p.systemTool?.name, 'ضمن خدمت'].filter(Boolean) as string[],
+    schedule: p.schedule ? (typeof p.schedule === 'string' ? JSON.parse(p.schedule) : p.schedule) : undefined,
     updatedAt: new Date(p.updatedAt).toLocaleDateString('fa-IR'),
     steps: (p.steps || []).map((step: any): ProcessStep => ({
       id: step.id,

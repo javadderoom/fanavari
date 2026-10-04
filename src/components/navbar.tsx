@@ -13,6 +13,7 @@ import {
   Building2, 
   LayoutDashboard,
   Megaphone,
+  CalendarClock,
   Menu,
   X,
   Home
@@ -27,6 +28,15 @@ export function Navbar({ onSearchClick }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
+    {
+      href: '/timeline',
+      label: 'گاه‌شمار اجرایی',
+      icon: CalendarClock,
+      iconColor: 'text-amber-500',
+      activeClass: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-400/15 font-black shadow-xs',
+      hoverClass: 'hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10 dark:hover:bg-amber-400/15',
+      isActive: pathname.startsWith('/timeline'),
+    },
     {
       href: '/information',
       label: 'اعلامیه‌ها و اطلاعیه‌ها',

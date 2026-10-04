@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const { title, description, scope, category, targetSystem, targetUrl, estimatedMinutes } = body;
+    const { title, description, scope, category, targetSystem, targetUrl, estimatedMinutes, schedule } = body;
 
     const updated = await prisma.process.update({
       where: { id },
@@ -32,6 +32,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
         targetSystem,
         targetUrl,
         estimatedMinutes: Number(estimatedMinutes) || 10,
+        ...(schedule !== undefined ? { schedule } : {}),
       },
     });
 

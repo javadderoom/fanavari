@@ -62,6 +62,34 @@ export interface OrganizationEntity {
   processCount: number;
 }
 
+export type PersianMonth = 
+  | 'فروردین'
+  | 'اردیبهشت'
+  | 'خرداد'
+  | 'تیر'
+  | 'مرداد'
+  | 'شهریور'
+  | 'مهر'
+  | 'آبان'
+  | 'آذر'
+  | 'دی'
+  | 'بهمن'
+  | 'اسفند';
+
+export type PersianSeason = 'بهار' | 'تابستان' | 'پاییز' | 'زمستان';
+
+export interface ProcessSchedule {
+  month: PersianMonth;
+  season?: PersianSeason;
+  startDay?: number;
+  endDay?: number;
+  timeframeLabel: string; // e.g. "از ۱ تیر الی ۲۰ تیر"
+  deadlineDays?: number; // e.g. 20
+  recurrence?: 'annual' | 'quarterly' | 'monthly' | 'custom';
+  isMandatory?: boolean;
+  notes?: string;
+}
+
 export interface Process {
   id: string;
   slug: string;
@@ -78,6 +106,7 @@ export interface Process {
   isPopular?: boolean;
   totalSteps: number;
   tags: string[];
+  schedule?: ProcessSchedule;
   steps: ProcessStep[];
   updatedAt: string;
 }

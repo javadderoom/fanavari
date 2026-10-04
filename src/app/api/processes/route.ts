@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
       targetUrl,
       estimatedMinutes,
       steps,
+      schedule,
     } = body;
 
     if (!title || !title.trim()) {
@@ -178,6 +179,7 @@ export async function POST(req: NextRequest) {
             targetSystem: targetSystem?.trim() || existingProcess.targetSystem,
             targetUrl: targetUrl !== undefined ? (targetUrl?.trim() || null) : existingProcess.targetUrl,
             estimatedMinutes: Number(estimatedMinutes) || existingProcess.estimatedMinutes,
+            schedule: schedule !== undefined ? schedule : existingProcess.schedule,
             steps: {
               create: sanitizedSteps,
             },
@@ -215,6 +217,7 @@ export async function POST(req: NextRequest) {
         targetSystem: targetSystem?.trim() || 'سامانه سازمانی',
         targetUrl: targetUrl?.trim() || null,
         estimatedMinutes: Number(estimatedMinutes) || 10,
+        schedule: schedule || null,
         steps: {
           create: sanitizedSteps,
         },

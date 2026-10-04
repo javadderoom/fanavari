@@ -530,18 +530,18 @@
     "semantic_hash": ""
   },
   "src/components/process-detail-modal.tsx": {
-    "mtime": 1791126195.945765,
-    "ast_hash": "77b32ebb0eee4e6cd432e2da660f2f33",
+    "mtime": 1791134942.651394,
+    "ast_hash": "fd2ea3d1a2b32343588481e97d4efe8d",
     "semantic_hash": ""
   },
   "src/components/process-detail-view.tsx": {
-    "mtime": 1791126120.126394,
-    "ast_hash": "449d1baf940990b20f8a858f9a46e960",
+    "mtime": 1791134509.5575144,
+    "ast_hash": "4b6ece95bc0558ea884b28fba41bdb96",
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
-    "mtime": 1791126361.23374,
-    "ast_hash": "224f8292269c7e50b7ab32e331c16af3",
+    "mtime": 1791134995.167303,
+    "ast_hash": "247a5de11572e66494e253e47b981a70",
     "semantic_hash": ""
   },
   "src/components/rich-text-editor.tsx": {
@@ -867,6 +867,11 @@
   "src/components/step-content-renderer.tsx": {
     "mtime": 1791126049.585678,
     "ast_hash": "0d93b0fbdea6390675ac9ccbdcb15dc2",
+    "semantic_hash": ""
+  },
+  "src/components/process-timeline-view.tsx": {
+    "mtime": 1791134264.7600985,
+    "ast_hash": "70c3083d60f7b52df2ede1731e6a5c03",
     "semantic_hash": ""
   }
 }
