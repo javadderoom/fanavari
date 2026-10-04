@@ -1,7 +1,7 @@
 # Fanavari Platform: Comprehensive Feature Specification
 
 ## 1. Overview
-This specification details all functional capabilities, user experiences, and operational components of **Fanavari**—the Intelligent Visual SOP & Flowchart Navigation Platform. It unifies our proprietary innovations with top benchmark capabilities identified from global digital adoption and workflow tools.
+This specification details all functional capabilities, user experiences, and operational components of **Fanavari**—the Intelligent Visual SOP & Flowchart Navigation Platform. It unifies our proprietary innovations with top benchmark capabilities identified from global digital adoption and workflow tools, and incorporates the operational requirements established in the official platform circular (*"آپدیت مورد نیاز در فناوری"*).
 
 ### 1.1. Universal Scope: Organizational Procedures & Software Workflows
 The platform is designed to handle two fundamental classes of procedural knowledge:
@@ -10,143 +10,159 @@ The platform is designed to handle two fundamental classes of procedural knowled
 
 ### 1.2. Strict Multi-Page Architecture (No Single-Page Monolith)
 To ensure optimal SEO, shareability, deep-linking, and focused user context, the application strictly adheres to a multi-page URL hierarchy:
-- `/`: Central Landing Page with Google-style Omni-Search, live flow simulator, and featured catalog.
-- `/process/[slug]`: Dedicated, full-screen procedural workspace for each individual workflow with flowchart stepper, error matrix, copyable field presets, and persistent scratchpad.
+- `/`: Central Landing Page with Google-style Omni-Search, dynamic trending chips, live flow simulator, and featured catalog.
+- `/process/[slug]`: Dedicated procedural workspace with multi-view switcher (Flowchart Canvas / Step Stepper / Timeline), error matrix, copyable field presets, and persistent scratchpad.
+- `/process/[slug]/print`: High-contrast, clean print view without navigation bars, designed specifically for A4 paper and PDF printing.
+- `/information`: Knowledge base of administrative circulars, guidelines, technical announcements, and directives.
+- `/information/[slug]`: Individual announcement/circular reading view with rich markdown/HTML rendering.
 - `/systems`: Directory of all desktop/cloud software tools and government/enterprise portals.
-- `/system/[slug]`: Dedicated hub for a specific software or portal (e.g. `/system/figma`, `/system/git`, `/system/moadian`) listing all related procedures.
+- `/system/[slug]`: Dedicated hub for a specific software or portal listing all related procedures.
 - `/organizations`: Directory of public authorities, ministries, and internal enterprise departments.
-- `/errors`: Global searchable error database & troubleshooting directory for instant reverse-lookup.
+- `/dashboard`: Management dashboard for processes, systems, organizations, and announcements.
 
 ---
 
 ## 2. Core Functional Modules
 
-### Module 1: Dual-Mode Process Visualization
-The core engine provides two complementary views for every organizational procedure:
+### Module 1: Multi-Mode Process Visualization & Node Hierarchy
+The core engine provides three complementary view modes for every organizational procedure:
+
 - **1.1. Interactive Flowchart Canvas (Macro View)**:
   - Built with `@xyflow/react` (React Flow) with customized glassmorphic nodes.
   - Pan, zoom (10% to 200%), fit-to-screen, and interactive mini-map.
-  - Node types:
-    - *Action Nodes* (Blue accent): Standard operational steps with target system URLs and menu paths.
-    - *Decision Nodes* (Amber accent): Branching conditional questions (e.g., *"Is this a permanent employee or a contractor?"* / *"Did error 500 occur?"*).
-    - *Warning Nodes* (Rose accent): Critical compliance alerts, audit cautions, and irreversible actions.
-    - *End Nodes* (Emerald accent): Successful completion checkpoints with hand-off summaries.
+  - **Strict Node Geometries & Differentiation**:
+    - *Action Nodes* (Blue accent): Rectangular cards with target system URLs, step order badge, and software menu click sequence.
+    - *Decision Nodes* (Amber accent): Distinct diamond geometry representing conditional questions (e.g., *"آیا خطا رخ داد؟"* / *"نوع قرارداد چیست؟"*) with dual branching edges (*"بله" / "خیر"* or labeled condition branches).
+    - *Warning / Checkpoint Nodes* (Rose accent): High-contrast alert boxes highlighting mandatory audit checkpoints, security cautions, and irreversible actions.
+    - *End / Terminal Nodes* (Emerald accent): Rounded double-ring pill cards indicating successful completion with hand-off summaries.
   - Animated edge connectors showing flow direction and branch conditions.
   - Path highlighting: selecting an active node illuminates the exact upstream and downstream execution paths.
+
 - **1.2. Guided Step Runner (Micro / Walkthrough View)**:
   - Linear, distraction-free execution mode for active task completion.
-  - Focused step header showing current index, total count, and estimated time remaining.
-  - Step navigation breadcrumb showing the exact menu sequence in target software (e.g., `HRMS > Settings > Employee Master > New`).
+  - Step navigation breadcrumb showing the exact software menu sequence as visual boxed chips (`HRMS > Settings > Employee Master > New`).
   - Next/Previous controls with keyboard navigation (Arrow keys, Space to advance).
+  - Dedicated callouts for Step Tips (`نکات`), Warnings (`هشدارها`), and Prerequisites (`پیش‌نیازها`).
+
+- **1.3. Process Timeline View Mode (Chronological Milestone View)**:
+  - An alternative linear chronological milestone view.
+  - Displays steps sequentially along a vertical or horizontal timeline with estimated durations, dependency markers, and completion status.
+  - Optimized for managers and auditors needing a fast overview of process stages and time allocation.
+
+- **1.4. Hierarchical Sub-Processes (زیر-فرایندها)**:
+  - Any step can be designated as a sub-process parent node linked to another existing process.
+  - Renders with a distinct sub-flow badge on the canvas and in the stepper.
+  - One-click drill-down opens the child procedure in a nested drawer or focused view with persistent back-navigation breadcrumbs.
 
 ---
 
-### Module 2: Google-Grade Omni-Search Engine
-A zero-friction, single-input search architecture that eliminates manual filter dropdowns and indexes the entire procedural universe:
-- **2.1. Deep Facet Scanning**:
-  - Process metadata: Titles, summaries, department names, tags, and category slugs.
-  - Step content: Step titles, markdown instructions, menu click paths, and operational tips.
-  - Data attributes: Copyable field labels (e.g., *«شماره شبا»*, *«کد ملی»*, *«کلید عمومی SSH»*) and sample values.
-  - Error guides: Exact error codes (e.g., `ERR-403`, `TAX-INVALID-ID`, `ERR-500`), error titles, causes, and solutions.
-  - Target systems & domains: Official portal names and external URLs.
-- **2.2. Relevance Scoring Algorithm**:
-  - Match weights: Title exact match (180 pts), Error code exact match (140 pts), Step title match (100 pts), Target system match (80 pts), Copyable field match (75 pts), Tag match (40 pts), Body text match (20 pts).
-  - Normalization: Persian/Arabic character harmonization (ی/ي, ک/ك), numeric unification (۰-۹ to 0-9), and zero-width non-joiner handling.
-- **2.3. Contextual Snippet Extraction**:
-  - Identifies the exact occurrence location with human-readable badges (e.g., `⚠️ یافت شده در خطایابی گام ۲: خطای ۴۰۳ عدم دسترسی`).
-  - Highlights matched tokens with high-contrast glowing `<mark>` tags.
-  - Direct deep-linking: Clicking a search result jumps immediately to the matching step in the flowchart.
+### Module 2: Google-Grade Omni-Search & Real-Time Discovery
+A zero-friction, single-input search architecture indexing the entire procedural and administrative universe:
+
+- **2.1. Deep Facet Scanning Across Multiple Entities**:
+  - **Processes & Steps**: Titles, summaries, department names, step instructions, menu click paths, and operational tips.
+  - **Announcements & Circulars (`InformationPost`)**: Administrative directives, policy updates, technical announcements, and executive summaries.
+  - **Data Attributes**: Copyable field labels (e.g., *«شماره شبا»*, *«کد ملی»*, *«کلید عمومی SSH»*) and sample values.
+  - **Error Guides**: Exact error codes (e.g., `ERR-403`, `TAX-INVALID-ID`), titles, causes, and solutions.
+  - **Target Systems & Domains**: Official portal names and external URLs.
+
+- **2.2. Real-Data Quick Suggestions & Trending Queries**:
+  - Replaces static placeholder chips with dynamic aggregates computed from Neon Postgres.
+  - Surfaces real-time popular categories, most-searched keywords, recently updated portals, and trending circular topics.
+
+- **2.3. Relevance Scoring Algorithm**:
+  - Title exact match (180 pts), Error code match (140 pts), Announcement title match (120 pts), Step title match (100 pts), Target system match (80 pts), Copyable field match (75 pts), Tag match (40 pts), Body text match (20 pts).
+  - Persian/Arabic character harmonization (ی/ي, ک/ك), numeric unification (۰-۹ to 0-9), and zero-width non-joiner (ZWNJ) handling.
+
+- **2.4. Contextual Snippet Badges**:
+  - Highlights exact match locations with human-readable badges (e.g., `⚠️ یافت شده در خطایابی گام ۲`, `📢 یافت شده در بخشنامه‌ها`).
+  - Direct deep-linking: Clicking a search result jumps immediately to the matching step in the flowchart or announcement page.
 
 ---
 
-### Module 3: Operational Scratchpad & Data Helpers
-Designed to eliminate human errors when entering sensitive or formatted information:
-- **3.1. One-Click Field Copy**:
-  - Sample test data, national ID formatting, regex masks, system URLs, and terminal commands can be copied with a single click.
-  - Visual copy feedback: animated checkmark confirmation and toast notifications.
-- **3.2. Contextual Scratchpad Drawer**:
-  - An inline note-taking and temporary value cache available during SOP execution.
-  - Operators can temporarily hold ticket IDs, employee temporary passwords, or tracking numbers.
-  - Persisted automatically to `localStorage` for immediate resume, and synchronized with Neon Postgres when authenticated.
-- **3.3. Check-Off Progress Tracker**:
-  - Interactive checkboxes for each step with a live visual progress indicator (e.g., *"3 of 4 steps completed • 75%"*).
+### Module 3: Operational Helpers, Media & Rich Step Authoring
+Designed to eliminate human errors and provide rich, visual instructions:
+
+- **3.1. Structured Step Callout Boxes (`نکات، هشدارها و میانبرها`)**:
+  - Standardized callout blocks inside step descriptions:
+    - 💡 **نکته کاربردی (Tip)**: Shortcuts and efficiency advice.
+    - ⚠️ **هشدار مهم (Warning)**: Pitfalls and irreversible consequences.
+    - 📌 **توجه و الزام (Note/Mandatory)**: Legal/compliance obligations.
+
+- **3.2. Internal In-Text Cross-Linking**:
+  - Support linking directly to other procedures (`/process/[slug]`), software portals (`/system/[slug]`), or circulars (`/information/[slug]`) directly inside step instructions.
+  - Clean preview chips when hovering over linked internal references.
+
+- **3.3. Inline Single-Line Images & Screenshot Lightbox**:
+  - Support inline micro-images (e.g., small UI button icons like `[📁 دکمه آپلود]`) directly inside markdown text lines.
+  - Full-screen image lightbox with zoom and pan for high-resolution ERP and government portal screenshots.
+
+- **3.4. One-Click Field Copy & Scratchpad**:
+  - Sample test data, national ID formatting, regex masks, system URLs, and terminal commands copyable with one click.
+  - Contextual scratchpad drawer persisted across browser refreshes and synchronized with user sessions.
 
 ---
 
 ### Module 4: Step-by-Step Error & Troubleshooting Matrix
 Prevents employee work-stoppages when unexpected conditions occur:
 - **4.1. Error Documentation on Each Step**:
-  - Error Code & Official Title.
-  - Root Cause Analysis (why the error occurs, e.g., expired token, missing permission, browser cache issue).
-  - Step-by-step resolution instructions with screenshots.
-  - Escalation contact: Internal department, extension number, or ticket queue responsible for resolving this error.
+  - Error Code, Official Title, Root Cause Analysis, step-by-step resolution instructions, and escalation contacts.
 - **4.2. Global Error Matrix Directory**:
-  - Dedicated tab displaying all potential exceptions for an entire workflow in one unified view.
-  - Reverse lookup: Searching an error code across the entire organization displays every workflow where this error might appear.
+  - Reverse lookup: Searching an error code displays every workflow where this error might appear.
 
 ---
 
 ### Module 5: Screenshot Annotation Studio & Privacy Blurring
-*(Benchmark Adoption from Scribe & Folge)*
 - **5.1. Visual Hotspot Pins**:
   - Interactive numbered callouts (1, 2, 3) placed directly over target UI screenshots.
-  - Pulsating focus borders around target buttons and input boxes.
 - **5.2. Privacy Shield (Sensitive Data Blurring)**:
   - Built-in canvas blur/pixelate tool allowing SOP creators to redact confidential national IDs, personal phone numbers, passwords, and banking details prior to publishing.
-- **5.3. Image Lightbox & Zoom**:
-  - High-resolution preview with pan/zoom for viewing dense, complex ERP system screenshots.
 
 ---
 
 ### Module 6: Split-Screen & Sidecar Runner
-*(Benchmark Adoption from Stonly & Tango)*
 - **6.1. Dockable Sidecar Mode**:
-  - Minimizes the SOP guide into a compact 380px vertical sidebar that docks to the right side of the screen.
-  - Allows the operator to work inside their primary business software (e.g., HRMS, Sepidar, CRM) in one window while having the SOP step runner visible in real-time.
-- **6.2. Picture-in-Picture / Always-on-Top Support**:
-  - Browser-native Picture-in-Picture or pop-out window for multi-monitor setups.
+  - Compact 380px vertical sidebar that docks to the right side of the screen.
+  - Allows employees to operate target government/internal portals (e.g., *Moadian*, *HRMS*, *Sepidar*) side-by-side with the SOP guide.
+- **6.2. Picture-in-Picture / Pop-out Window**:
+  - Multi-monitor pop-out support for continuous operation.
 
 ---
 
 ### Module 7: Workflow Runs & Audit Compliance Log
-*(Benchmark Adoption from Process Street)*
 - **7.1. Workflow Run Instances**:
-  - Instead of just reading a guide, an employee can launch an official "Run" (e.g., *"Onboarding Run #1403-102 for New Hire Sarah Ahmadi"*).
-  - Records step completion timestamps, operator ID, and notes.
+  - Launch an official execution run with operator name, start timestamp, and checklist progress.
 - **7.2. Supervisor Approval Gates**:
-  - High-risk steps (e.g., payout above credit limit, server root access) require supervisor sign-off before unlocking subsequent stages.
+  - High-risk compliance steps requiring manager approval before proceeding.
 - **7.3. Audit Trail Reporting**:
-  - Exportable compliance logs fulfilling ISO 9001 quality management audit requirements.
+  - Exportable compliance logs fulfilling ISO 9001 quality management requirements.
 
 ---
 
 ### Module 8: Community Feedback & "Report UI Change"
-*(Benchmark Adoption from Tango)*
 - **8.1. Outdated Step Reporting**:
-  - External websites change frequently. Any employee can click *"گزارش تغییر سامانه"* on a specific step.
-  - Allows quick submission of an updated screenshot and comment for admin review.
+  - Any employee can click *"گزارش تغییر سامانه"* on a specific step to submit an updated screenshot and comment for admin review.
 - **8.2. Suggest an Edit Workflow**:
   - Non-destructive change proposals that administrators can review and merge with one click.
 
 ---
 
-### Module 9: Executive & Print-Ready Export (PDF / Markdown)
-- **9.1. ISO-Compliant Corporate PDF**:
-  - Generates an executive, beautifully styled Persian/English PDF document containing:
-    - Organization header, document code, version number, and approval date.
-    - Full-resolution process flowchart diagram.
-    - Numbered step instructions with high-quality screenshots.
-    - Error handling guide and contact directory.
-- **9.2. Markdown / HTML Embed Snippets**:
-  - Enables embedding individual SOP cards or mini-flows into internal company wikis (Notion, Confluence, SharePoint).
+### Module 9: Executive & Print-Ready Export (PDF / Print)
+- **9.1. Dedicated High-Contrast Print View**:
+  - Clean, dedicated `/process/[slug]/print` route without navigation bars or footers.
+  - Numbered step instructions, boxed menu click routes, and full error matrices optimized for A4 paper.
+- **9.2. ISO-Compliant Corporate PDF**:
+  - Exportable branded PDF with organization headers, document codes, version numbers, and approval signatures.
 
 ---
 
-### Module 10: Visual Process Builder (Admin Studio)
-- **10.1. No-Code Flow Builder**:
+### Module 10: Process Builder & Taxonomy Studio (Admin Mode)
+- **10.1. Visual Process Builder & Step Inspector**:
   - Drag-and-drop node placement on an infinite canvas.
-  - Edge drawing to establish parent-child relationships and conditional branches.
-  - Rich Markdown editor for step text, tip boxes, and copyable parameters.
-- **10.2. Version Control & Rollback**:
-  - Semantic versioning (v1.0, v1.1, v2.0) with change summary logs.
-  - One-click rollback to prior versions in case of circular changes or regulatory rollbacks.
+  - Interactive Menu Path Box Editor (`MenuPathEditor`) with visual tag chips, reordering arrows, and raw text toggle.
+  - Rich Markdown instruction editor with live preview.
+- **10.2. Thematic Category Management (مدیریت دسته‌بندی موضوعی)**:
+  - Admin management interface for creating, editing, and organizing thematic categories (e.g., مالی, منابع انسانی, فناوری اطلاعات, حقوقی).
+  - Real-time categorization of processes and circulars for simplified filtering.
+- **10.3. Version Control & Rollback**:
+  - Semantic versioning (v1.0, v1.1, v2.0) with change summary logs and one-click rollback.

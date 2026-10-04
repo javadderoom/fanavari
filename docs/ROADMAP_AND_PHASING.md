@@ -1,133 +1,134 @@
 # Fanavari: Phased Implementation Roadmap & Execution Plan
 
 ## 1. Roadmap Architecture
-To ensure continuous delivery of demonstrable value while building toward an enterprise-grade digital adoption and SOP platform, development is structured into **six focused, sequential phases**. Each phase delivers high-impact functionality with clear acceptance criteria.
+To ensure continuous delivery of demonstrable value while building toward an enterprise-grade digital adoption and SOP platform, development is structured into **focused, prioritized phases**. This roadmap integrates organizational directives, platform specifications, and direct feedback from the official circular (*"آپدیت مورد نیاز در فناوری"*).
 
 ```mermaid
-flowchart LR
-    P1["Phase 1: MVP Landing & Omni-Search<br/>(COMPLETED)"] --> P2["Phase 2: Visual Canvas & Step Runner"]
-    P2 --> P3["Phase 3: Sidecar & Screenshot Studio"]
-    P3 --> P4["Phase 4: Neon DB & Workflow Runs"]
-    P4 --> P5["Phase 5: No-Code Flow Builder"]
-    P5 --> P6["Phase 6: Governance, PDF & AI"]
+flowchart TD
+    P1["Phase 1: Foundation, Omni-Search & Knowledge Hub<br/>(COMPLETED)"] --> P2["Phase 2: Visual Canvas, Node Differentiation & Timeline<br/>(IN PROGRESS - P0/P1)"]
+    P2 --> P3["Phase 3: Media Studio, Sub-Processes & Taxonomies<br/>(P1/P2)"]
+    P3 --> P4["Phase 4: Sidecar Runner & Operator Tooling"]
+    P4 --> P5["Phase 5: Workflow Runs & Audit Compliance Log"]
+    P5 --> P6["Phase 6: No-Code Flow Builder & Enterprise Governance"]
 ```
 
 ---
 
 ## 2. Phase-by-Phase Execution Plan
 
-### Phase 1: Foundation & Omni-Search Showcase (Status: ✅ COMPLETED)
-- [x] Initialized Next.js 15 + TypeScript architecture with full RTL & Vazirmatn Persian typography.
-- [x] Configured Light & Dark theme system with strict Light Mode default and zero flicker.
-- [x] Implemented Google-style Omni-Search engine with deep facet scanning and relevance scoring.
-- [x] Built contextual match highlighting with exact location badges (Step, Error, Field, System).
-- [x] Created 8 comprehensive, realistic organizational workflows across HR, Finance, IT, Legal, and Support.
-- [x] Built Interactive Flow Simulator and Process Detail Modal with Step Stepper, Error Matrix, and Scratchpad.
-- [x] Configured Prisma 7 with zero-url schema and `prisma.config.ts`.
+### Phase 1: Foundation, Omni-Search & Knowledge Hub (Status: ✅ COMPLETED)
+- [x] Initialized Next.js 15+ & TypeScript architecture with full RTL & Vazirmatn Persian typography.
+- [x] Light & Dark theme system with strict Light Mode default and zero flicker.
+- [x] Google-style Omni-Search engine scanning process titles, steps, error codes, and systems.
+- [x] Neon Postgres connection with Prisma 7 zero-url configuration and migrations.
+- [x] Official Announcements & Directives Knowledge Base (`/information`, `/information/[slug]`).
+- [x] TipTap rich-text WYSIWYG editor for policy and circular creation.
+- [x] Dedicated high-contrast printable process view (`/process/[slug]/print`).
+- [x] Interactive Tag/Box Menu Path Editor (`MenuPathEditor`) and prominent breadcrumbs (`MenuPathDisplay`).
 
 ---
 
-### Phase 2: Full-Screen Visual Canvas Flowchart & Synchronized Runner (Next Step)
-*Objective: Deliver the true visual flowchart experience using `@xyflow/react` with synchronized step execution.*
+### Phase 2: Visual Canvas, Node Differentiation & Timeline (Status: ⏳ NEXT UP / IN PROGRESS)
+*Objective: Deliver high-fidelity visual flowcharting with BPMN-standard node distinction, timeline sequencing, and unified cross-entity search.*
 
-- **Key Deliverables**:
-  1. Dedicated process route: `/process/[slug]`.
-  2. Integration of `@xyflow/react` (React Flow) with customized glassmorphic node types:
-     - `ActionNode`: System URL, step title, menu path, and icon.
-     - `DecisionNode`: Diamond/curved geometry with labeled branch edges (e.g., *"بله" / "خیر"*).
-     - `WarningNode`: High-contrast alert styling for critical compliance steps.
-     - `EndNode`: Terminal node with success checkmark.
-  3. Interactive Canvas Controls:
-     - Zoom (10% - 200%), Pan, Fit View, and Minimap.
-     - Active path tracing: selecting a step highlights the preceding and following edges in radiant blue/cyan glow.
-  4. Synchronized Guided Runner:
-     - Split layout option: Canvas on the left, active step card on the right.
-     - Advancing in the stepper automatically pans the canvas camera to center on the active node.
-- **Estimated Timeline**: 3–4 days.
+#### Sprint 2A: Search & Content Quick Wins (Priority: P0 — Immediate)
+- [ ] **2A.1. Omni-Search Expansion for Announcements & Circulars**:
+  - Index `InformationPost` records alongside processes in the main search bar.
+  - Return dedicated badges (`بخشنامه`, `دستورالعمل`, `اطلاعیه`) with direct deep-links.
+- [ ] **2A.2. Real-Data Quick Suggestions & Trending Queries**:
+  - Replace static suggestion chips with real-time aggregates from the database (active systems, most searched keywords, popular process categories).
+- [ ] **2A.3. Step Pro-Tips & Callouts (`نکات و هشدارها`)**:
+  - Structured callout badges on steps (Tip `نکته`, Warning `هشدار`, Important `توجه`).
+- [ ] **2A.4. In-Text Cross-Linking**:
+  - Support linking directly to other processes (`/process/[slug]`), systems, or circulars inside step markdown instructions.
 
----
-
-### Phase 3: Sidecar Mode & Screenshot Annotation Studio
-*Objective: Maximize operator productivity during real-time work in external software.*
-
-- **Key Deliverables**:
-  1. **Dockable Sidecar Runner Mode**:
-     - Compact 380px vertical sidebar that docks to the side of the screen.
-     - Allows employees to operate target government/internal portals (e.g., *Moadian*, *HRMS*, *Sepidar*) side-by-side with the SOP guide.
-  2. **Screenshot Hotspot Viewer & Privacy Blurring**:
-     - Displays actual system screenshots with numbered glowing pinpoints (1, 2, 3) pointing to exact input fields and buttons.
-     - Canvas blur shader tool for obscuring confidential national IDs, phone numbers, and credentials before publishing.
-  3. **Enhanced Scratchpad Persistence**:
-     - Auto-save across page refreshes with one-click clear and copy-all utilities.
-- **Estimated Timeline**: 3–4 days.
+#### Sprint 2B: Visual Flowchart & Timeline Overhaul (Priority: P1 — High)
+- [ ] **2B.1. Distinct Flowchart Node Geometries (`@xyflow/react`)**:
+  - **Action Node**: Standard rectangular card with menu breadcrumb, system badge, and icon.
+  - **Decision Node**: Amber diamond geometry with conditional exit branches (*"بله" / "خیر"* or labeled logic gates).
+  - **Warning / Checkpoint Node**: Rose-bordered alert node for critical compliance steps.
+  - **End / Terminal Node**: Rounded double-ring emerald pill with completion checkmark.
+- [ ] **2B.2. Process Timeline View Mode (`نمای تایم‌لاین فرایند`)**:
+  - Multi-view switcher on `/process/[slug]` (Flowchart Canvas / Step Stepper / **Timeline**).
+  - Chronological milestone tracker with step order, estimated durations, and completion markers.
+- [ ] **2B.3. Interactive Step Simulator Polish**:
+  - Interactive modal simulator with responsive step jumping, condition choice handling, and keyboard shortcuts.
 
 ---
 
-### Phase 4: Neon Postgres Integration & Actionable Workflow Runs
+### Phase 3: Media Studio, Sub-Processes & Taxonomies (Priority: P1/P2)
+*Objective: Enrich step instructions with inline media and support hierarchical multi-level procedures.*
+
+- [ ] **3.1. Inline Single-Line Images & Lightbox**:
+  - Support inline micro-images (e.g., UI button icons, badges) inside step text lines.
+  - Full-screen lightbox zoom for complex ERP and administrative portal screenshots.
+- [ ] **3.2. Sub-Processes Architecture (`زیر-فرایندها`)**:
+  - Ability for a process step to link to or embed a child sub-process.
+  - Nested sub-flow badge with one-click drill-down and breadcrumb return navigation.
+- [ ] **3.3. Thematic Category & Tag Management (`مدیریت دسته‌بندی موضوعی`)**:
+  - Admin/Manager UI to dynamically create, edit, and organize process categories and organizational tags.
+
+---
+
+### Phase 4: Sidecar Runner & Operator Productivity (Priority: P2)
+*Objective: Maximize employee productivity during live operation inside external software.*
+
+- [ ] **4.1. Dockable Sidecar Runner Mode**:
+  - Compact 380px vertical sidebar that docks to the side of the screen for dual-window operation with ERP/HRMS portals.
+- [ ] **4.2. Screenshot Hotspot Viewer & Privacy Blurring**:
+  - Numbered pins (1, 2, 3) pointing to exact input fields.
+  - Canvas blur shader tool for redacting national IDs, phone numbers, and credentials.
+- [ ] **4.3. Scratchpad Synchronization**:
+  - Auto-saved session scratchpad synchronized across browser reloads.
+
+---
+
+### Phase 5: Workflow Runs & Audit Compliance Log (Priority: P3)
 *Objective: Transform passive documentation into tracked, compliant execution instances.*
 
-- **Key Deliverables**:
-  1. **Neon Serverless Postgres Connection**:
-     - Configure connection pooler URL in `.env` and `prisma.config.ts`.
-     - Execute initial Prisma 7 migration (`prisma migrate dev`).
-     - Seed database with standard organizational SOPs.
-  2. **Tracked Workflow Runs (Execution Engine)**:
-     - Users can click *"شروع اجرای فرایند"* to initiate an official run instance.
-     - Check off steps in real-time, recording timestamps and completion status in Neon.
-     - Session recovery: resume partially completed workflows from any device.
-  3. **Audit Trail & History**:
-     - History dashboard displaying completed runs, operator names, and total duration.
-- **Estimated Timeline**: 4–5 days.
+- [ ] **5.1. Tracked Workflow Run Instances**:
+  - Launch an official execution run with operator name, start timestamp, and checklist progress.
+- [ ] **5.2. Supervisor Approval Gates**:
+  - High-risk compliance steps requiring manager approval before proceeding.
+- [ ] **5.3. Audit Trail Reporting**:
+  - Exportable compliance logs fulfilling ISO 9001 quality management requirements.
 
 ---
 
-### Phase 5: No-Code Flow Builder Studio (Admin Mode)
-*Objective: Enable non-technical department leads to create and modify SOPs visually.*
+### Phase 6: No-Code Flow Builder & Enterprise Governance (Priority: P3)
+*Objective: Empower department leads to author SOPs visually with version control and AI.*
 
-- **Key Deliverables**:
-  1. Visual Drag-and-Drop Node Canvas:
-     - Add, duplicate, delete, and rearrange steps effortlessly.
-     - Connect nodes with condition-labeled edges directly on the canvas.
-  2. Rich Step Inspector:
-     - Markdown instruction editor with live preview.
-     - Copyable fields manager (add label and sample value pairs).
-     - Per-step Error & Troubleshooting matrix authoring (error code, cause, solution, escalation).
-  3. Screenshot Uploader with Crop & Blur:
-     - Upload UI screenshots, add hotspot pins, and blur sensitive regions directly in the browser.
-- **Estimated Timeline**: 5–6 days.
+- [ ] **6.1. Visual Drag-and-Drop Canvas Builder**:
+  - Add, reorder, connect, and branch nodes visually.
+- [ ] **6.2. Executive ISO-Compliant PDF Export**:
+  - Branded executive PDF export with headers, flowchart diagrams, step manuals, and error matrices.
+- [ ] **6.3. AI Flow Assistant**:
+  - Paste raw circular text to automatically generate draft flowchart steps, branches, and error predictions.
 
 ---
 
-### Phase 6: Enterprise Governance, ISO PDF Export & AI Assistant
-*Objective: Institutionalize SOP management with quality assurance, compliance, and AI.*
+## 3. Prioritized Master Task Backlog
 
-- **Key Deliverables**:
-  1. **"Report UI Change" Community Feedback**:
-     - Employees can flag an outdated step with a single click and attach a new screenshot.
-     - Admin moderation inbox to approve or reject suggested updates.
-  2. **Executive & ISO Print-Ready PDF Generator**:
-     - One-click export producing clean, branded corporate PDFs containing document metadata, flowchart diagram, step manuals, and error directories.
-  3. **AI Flow Assistant**:
-     - Natural language processor: paste unstructured circulars, policies, or meeting notes to automatically generate a draft flowchart with steps, branches, and error predictions.
-  4. **Production Deployment to Vercel**:
-     - Edge caching, production environment variables, and CDN asset optimization.
-- **Estimated Timeline**: 4–5 days.
-
----
-
-## 3. Prioritized Task Backlog for Next Sprints
-
-| Item # | Task Description | Phase | Complexity | Status |
-| :---: | :--- | :---: | :---: | :---: |
-| **01** | Landing page with Omni-Search & Light/Dark themes | Phase 1 | Medium | ✅ Complete |
-| **02** | Google-style deep relevance scoring & snippets | Phase 1 | High | ✅ Complete |
-| **03** | Prisma 7 schema & `prisma.config.ts` setup | Phase 1 | Low | ✅ Complete |
-| **04** | Install `@xyflow/react` and design custom glass nodes | Phase 2 | Medium | ⏳ Next Up |
-| **05** | Build dedicated `/process/[slug]` page with dual canvas/stepper | Phase 2 | High | ⏳ Next Up |
-| **06** | Implement camera auto-panning on active step selection | Phase 2 | Medium | Pending |
-| **07** | Build dockable Sidecar mode for side-by-side operation | Phase 3 | Medium | Pending |
-| **08** | Implement image hotspot pins and privacy blur canvas tool | Phase 3 | High | Pending |
-| **09** | Connect Neon Postgres and run Prisma migrations | Phase 4 | Medium | Pending |
-| **10** | Implement persistent Workflow Run instances & checklist logs | Phase 4 | High | Pending |
-| **11** | Build visual No-Code Flow Builder studio | Phase 5 | High | Pending |
-| **12** | Implement ISO corporate PDF export and UI change reporting | Phase 6 | Medium | Pending |
+| Item # | Task Description | Source / Phase | Priority | Complexity | Status |
+| :---: | :--- | :---: | :---: | :---: | :---: |
+| **01** | Landing page with Omni-Search & Light/Dark themes | Phase 1 | P0 | Medium | ✅ Complete |
+| **02** | Neon Postgres & Prisma 7 zero-url setup | Phase 1 | P0 | Low | ✅ Complete |
+| **03** | Announcements & Circulars Knowledge Base (`/information`) | Phase 1 | P0 | Medium | ✅ Complete |
+| **04** | TipTap rich-text WYSIWYG editor | Phase 1 | P0 | Medium | ✅ Complete |
+| **05** | High-contrast dedicated printable process view | Phase 1 | P0 | Low | ✅ Complete |
+| **06** | Interactive Menu Path Box Editor & Breadcrumbs | Circular / Phase 1 | P0 | Medium | ✅ Complete |
+| **07** | **Include Announcements in Omni-Search** | Circular Req #5 | **P0** | Low | ⏳ Next Up |
+| **08** | **Real-Data Quick Suggestions & Popular Searches** | Circular Req #4 | **P0** | Low | ⏳ Next Up |
+| **09** | **Step Notes & Callout Boxes (`نکات و هشدارها`)** | Circular Req | **P0** | Low | ⏳ Next Up |
+| **10** | **In-Text Cross-Linking to other processes/systems** | Circular Req #8 | **P1** | Medium | ⏳ Next Up |
+| **11** | **Distinct Node Types on Flowchart (Decision / End / Action)** | Circular Req / Phase 2 | **P1** | Medium | ⏳ Next Up |
+| **12** | **Process Timeline View Mode (`تایم‌لاین`)** | Circular Req #2 | **P1** | Medium | Pending |
+| **13** | **Interactive Simulator Polish** | Circular Req #6 | **P1** | Medium | Pending |
+| **14** | **Inline Single-Line Images & Screenshot Lightbox** | Circular Req #3 & #9 | **P2** | Medium | Pending |
+| **15** | **Sub-Processes Architecture (`زیر-فرایند`)** | Circular Req #1 | **P2** | High | Pending |
+| **16** | **Thematic Category Management** | Circular Req #7 | **P2** | Medium | Pending |
+| **17** | Dockable Sidecar runner mode | Phase 4 | P2 | Medium | Pending |
+| **18** | Screenshot Hotspot pins & privacy blur | Phase 4 | P2 | High | Pending |
+| **19** | Persistent Workflow Run instances & logs | Phase 5 | P3 | High | Pending |
+| **20** | Visual No-Code Flow Builder studio | Phase 6 | P3 | High | Pending |
+| **21** | ISO corporate PDF export | Phase 6 | P3 | Medium | Pending |
