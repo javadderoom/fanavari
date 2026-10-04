@@ -922,12 +922,31 @@ export function ProcessEditorModal({
                 <div
                   key={step.id}
                   id={`step-card-${step.id}`}
-                  className="p-4 rounded-2xl border transition-all"
-                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)' }}
+                  className={`p-4 rounded-2xl border transition-all ${
+                    step.stepType === 'decision'
+                      ? 'border-amber-400/60 dark:border-amber-600/60 bg-amber-500/5'
+                      : step.stepType === 'end'
+                      ? 'border-emerald-500/60 dark:border-emerald-600/60 ring-1 ring-emerald-500/20 bg-emerald-500/5'
+                      : step.stepType === 'warning'
+                      ? 'border-rose-400/60 dark:border-rose-600/60 bg-rose-500/5'
+                      : ''
+                  }`}
+                  style={{
+                    background: step.stepType === 'action' ? 'var(--bg-surface)' : undefined,
+                    borderColor: step.stepType === 'action' ? 'var(--border-glass)' : undefined
+                  }}
                 >
                   <div className="flex items-center justify-between gap-3 mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-black px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                      <span className={`text-xs font-black px-2 py-0.5 rounded-full ${
+                        step.stepType === 'decision'
+                          ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+                          : step.stepType === 'end'
+                          ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+                          : step.stepType === 'warning'
+                          ? 'bg-rose-500/20 text-rose-700 dark:text-rose-300'
+                          : 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                      }`}>
                         گام {step.orderIndex}
                       </span>
                       <input
@@ -943,13 +962,20 @@ export function ProcessEditorModal({
                       <select
                         value={step.stepType}
                         onChange={(e) => handleUpdateStep(idx, { stepType: e.target.value as StepType })}
-                        className="text-xs p-1.5 rounded-lg border font-medium outline-none"
-                        style={{ background: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}
+                        className={`text-xs p-1.5 rounded-lg border font-bold outline-none cursor-pointer ${
+                          step.stepType === 'decision'
+                            ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950 dark:text-amber-200'
+                            : step.stepType === 'end'
+                            ? 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200'
+                            : step.stepType === 'warning'
+                            ? 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950 dark:text-rose-200'
+                            : 'bg-blue-50 text-blue-900 border-blue-200 dark:bg-blue-950 dark:text-blue-200'
+                        }`}
                       >
-                        <option value="action">نود اقدام (Action)</option>
-                        <option value="decision">نود تصمیم‌گیری (Decision)</option>
-                        <option value="warning">نود هشدار (Warning)</option>
-                        <option value="end">نود پایان (End)</option>
+                        <option value="action">□ اقدام (Action)</option>
+                        <option value="decision">◇ تصمیم‌گیری (Decision)</option>
+                        <option value="warning">⚠ هشدار/ایست (Warning)</option>
+                        <option value="end">◎ پایان/خروجی (End)</option>
                       </select>
 
                       {steps.length > 1 && (

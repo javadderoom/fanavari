@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Process, ProcessStep } from '@/types/process';
 import { MenuPathDisplay } from './menu-path-display';
 import { StepContentRenderer } from './step-content-renderer';
+import { ProcessTimelineView } from './process-timeline-view';
 import { 
   X, 
   Clock, 
@@ -15,13 +16,15 @@ import {
   Lightbulb, 
   Layers, 
   GitFork, 
-  CheckCircle, 
+  CheckCircle,
+  CheckCircle2, 
   ShieldAlert, 
   StickyNote, 
   Save, 
   ArrowRight, 
   ArrowLeft,
-  Printer
+  Printer,
+  CalendarDays
 } from 'lucide-react';
 
 interface ProcessDetailModalProps {
@@ -32,7 +35,7 @@ interface ProcessDetailModalProps {
 
 export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: ProcessDetailModalProps) {
   const [activeStepIndex, setActiveStepIndex] = useState(initialStepIndex);
-  const [activeTab, setActiveTab] = useState<'flow' | 'errors' | 'scratchpad'>('flow');
+  const [activeTab, setActiveTab] = useState<'flow' | 'timeline' | 'errors' | 'scratchpad'>('flow');
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Scratchpad temporary note state with localStorage persistence
@@ -166,7 +169,22 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
             }}
           >
             <Layers className="w-4 h-4" />
-            <span>نقشه فلوچارت و مراحل ({process.totalSteps})</span>
+            <span>نقشه فلوچارت ({process.totalSteps})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('timeline')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'timeline' ? 'shadow-sm' : 'opacity-70 hover:opacity-100'
+            }`}
+            style={{
+              background: activeTab === 'timeline' ? 'var(--accent-primary)' : 'transparent',
+              color: activeTab === 'timeline' ? '#ffffff' : 'var(--text-secondary)',
+            }}
+          >
+            <CalendarDays className="w-4 h-4" />
+            <span>تایم‌لاین ({process.totalSteps} مرحله)</span>
           </button>
 
           <button
@@ -207,41 +225,96 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
               {/* Flowchart Node Stepper Pills */}
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
-                  مسیر فلوچارت (انتخاب گام جهت مشاهده جزئیات):
+                  مسیر فلوچارت (تمایز بصری نودهای تصمیم‌گیری، هشدار و پایان):
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {process.steps.map((step, idx) => {
                     const isSelected = idx === activeStepIndex;
+                    const isDecision = step.stepType === 'decision';
+                    const isEnd = step.stepType === 'end';
+                    const isWarning = step.stepType === 'warning';
+
                     return (
                       <button
                         key={step.id}
                         type="button"
                         onClick={() => setActiveStepIndex(idx)}
                         className={`p-3 rounded-2xl border text-right transition-all cursor-pointer relative overflow-hidden ${
-                          isSelected ? 'shadow-md scale-[1.02]' : 'opacity-80 hover:opacity-100'
+                          isSelected
+                            ? isDecision
+                              ? 'shadow-md scale-[1.02] ring-2 ring-amber-500 border-amber-400'
+                              : isEnd
+                              ? 'shadow-md scale-[1.02] ring-2 ring-emerald-500 border-emerald-500'
+                              : isWarning
+                              ? 'shadow-md scale-[1.02] ring-2 ring-rose-500 border-rose-400'
+                              : 'shadow-md scale-[1.02] ring-2 ring-blue-500 border-blue-400'
+                            : isDecision
+                            ? 'border-amber-400/60 dark:border-amber-600/60 bg-amber-500/5 hover:border-amber-400'
+                            : isEnd
+                            ? 'border-emerald-400/60 dark:border-emerald-600/60 ring-1 ring-emerald-500/20 bg-emerald-500/5 hover:border-emerald-400'
+                            : isWarning
+                            ? 'border-rose-400/60 dark:border-rose-600/60 bg-rose-500/5 hover:border-rose-400'
+                            : 'opacity-80 hover:opacity-100'
                         }`}
                         style={{
-                          background: isSelected ? 'var(--bg-surface)' : 'var(--bg-glass-card)',
-                          borderColor: isSelected ? 'var(--accent-primary)' : 'var(--border-glass)',
+                          background: isSelected ? 'var(--bg-surface)' : undefined,
+                          borderColor: !isSelected && !isDecision && !isEnd && !isWarning ? 'var(--border-glass)' : undefined,
                         }}
                       >
                         <div className="flex items-center justify-between mb-1">
                           <span className={`text-xs font-black px-2 py-0.5 rounded-full ${
-                            isSelected ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                            isDecision
+                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 border border-amber-300 dark:border-amber-700'
+                              : isEnd
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700'
+                              : isWarning
+                              ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200 border border-rose-300 dark:border-rose-700'
+                              : isSelected
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
                           }`}>
                             گام {step.orderIndex}
                           </span>
-                          {step.stepType === 'decision' ? (
-                            <span title="نود تصمیم‌گیری و انشعاب"><GitFork className="w-3.5 h-3.5 text-amber-500" /></span>
-                          ) : step.stepType === 'end' ? (
-                            <span title="نود خاتمه موفق"><CheckCircle className="w-3.5 h-3.5 text-emerald-500" /></span>
+                          {isDecision ? (
+                            <span title="نود تصمیم‌گیری و انشعاب" className="flex items-center gap-1 text-[10px] font-bold text-amber-500">
+                              <GitFork className="w-3.5 h-3.5" />
+                              <span className="hidden sm:inline">شرط</span>
+                            </span>
+                          ) : isEnd ? (
+                            <span title="نود خاتمه موفق" className="flex items-center gap-1 text-[10px] font-bold text-emerald-500">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span className="hidden sm:inline">پایان</span>
+                            </span>
+                          ) : isWarning ? (
+                            <span title="ایست بازرسی و هشدار" className="flex items-center gap-1 text-[10px] font-bold text-rose-500">
+                              <AlertTriangle className="w-3.5 h-3.5" />
+                              <span className="hidden sm:inline">کنترل</span>
+                            </span>
                           ) : (
-                            <span title="نود اقدام"><Layers className="w-3.5 h-3.5 text-blue-500" /></span>
+                            <span title="نود اقدام اجرایی" className="flex items-center gap-1 text-[10px] font-bold text-blue-500">
+                              <Layers className="w-3.5 h-3.5" />
+                              <span className="hidden sm:inline">اقدام</span>
+                            </span>
                           )}
                         </div>
                         <p className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>
                           {step.title}
                         </p>
+                        {isDecision && (
+                          <span className="text-[9px] text-amber-600 dark:text-amber-400 font-semibold block mt-0.5 truncate">
+                            انشعاب شرطی
+                          </span>
+                        )}
+                        {isEnd && (
+                          <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold block mt-0.5 truncate">
+                            خروجی و پایان
+                          </span>
+                        )}
+                        {isWarning && (
+                          <span className="text-[9px] text-rose-600 dark:text-rose-400 font-semibold block mt-0.5 truncate">
+                            ایست حساس
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -250,16 +323,53 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
 
               {/* Active Step Details Card */}
               {currentStep && (
-                <div className="p-5 rounded-2xl border transition-all"
-                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)' }}
+                <div className={`p-5 rounded-2xl border transition-all ${
+                  currentStep.stepType === 'decision'
+                    ? 'border-amber-400/50 dark:border-amber-500/50'
+                    : currentStep.stepType === 'end'
+                    ? 'border-emerald-500/50 dark:border-emerald-600/50 ring-1 ring-emerald-500/20'
+                    : currentStep.stepType === 'warning'
+                    ? 'border-rose-400/50 dark:border-rose-500/50'
+                    : ''
+                }`}
+                  style={{
+                    background: 'var(--bg-surface)',
+                    borderColor: currentStep.stepType === 'action' ? 'var(--border-glass)' : undefined
+                  }}
                 >
-                  {/* Step Header */}
+                  {/* Step Header with semantic badge */}
                   <div className="pb-3 mb-4 border-b"
                     style={{ borderColor: 'var(--border-subtle)' }}
                   >
-                    <span className="text-xs font-bold text-blue-600">
-                      جزئیات گام {currentStep.orderIndex} از {process.totalSteps}
-                    </span>
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-xs font-bold text-blue-600">
+                        جزئیات گام {currentStep.orderIndex} از {process.totalSteps}
+                      </span>
+                      {currentStep.stepType === 'decision' && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                          <GitFork className="w-3 h-3" />
+                          <span>نود تصمیم‌گیری و انشعاب</span>
+                        </span>
+                      )}
+                      {currentStep.stepType === 'end' && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>نود پایان رسمی و خروجی</span>
+                        </span>
+                      )}
+                      {currentStep.stepType === 'warning' && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3" />
+                          <span>ایست بازرسی حساس</span>
+                        </span>
+                      )}
+                      {currentStep.stepType === 'action' && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30 flex items-center gap-1">
+                          <Layers className="w-3 h-3" />
+                          <span>گام اجرایی</span>
+                        </span>
+                      )}
+                    </div>
                     <h3 className="text-lg font-black mt-0.5" style={{ color: 'var(--text-primary)' }}>
                       {currentStep.title}
                     </h3>
@@ -390,6 +500,17 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
                 </div>
               )}
             </div>
+          )}
+
+          {/* Timeline View Mode */}
+          {activeTab === 'timeline' && (
+            <ProcessTimelineView
+              process={process}
+              onStepClick={(idx) => {
+                setActiveStepIndex(idx);
+                setActiveTab('flow');
+              }}
+            />
           )}
 
           {activeTab === 'errors' && (

@@ -117,13 +117,13 @@ flowchart TD
 | **04** | TipTap rich-text WYSIWYG editor | Phase 1 | P0 | Medium | ✅ Complete |
 | **05** | High-contrast dedicated printable process view | Phase 1 | P0 | Low | ✅ Complete |
 | **06** | Interactive Menu Path Box Editor & Breadcrumbs | Circular / Phase 1 | P0 | Medium | ✅ Complete |
-| **07** | **Include Announcements in Omni-Search** | Circular Req #5 | **P0** | Low | ⏳ Next Up |
-| **08** | **Real-Data Quick Suggestions & Popular Searches** | Circular Req #4 | **P0** | Low | ⏳ Next Up |
-| **09** | **Step Notes & Callout Boxes (`نکات و هشدارها`)** | Circular Req | **P0** | Low | ⏳ Next Up |
-| **10** | **In-Text Cross-Linking to other processes/systems** | Circular Req #8 | **P1** | Medium | ⏳ Next Up |
-| **11** | **Distinct Node Types on Flowchart (Decision / End / Action)** | Circular Req / Phase 2 | **P1** | Medium | ⏳ Next Up |
-| **12** | **Process Timeline View Mode (`تایم‌لاین`)** | Circular Req #2 | **P1** | Medium | Pending |
-| **13** | **Interactive Simulator Polish** | Circular Req #6 | **P1** | Medium | Pending |
+| **07** | **Include Announcements in Omni-Search** | Circular Req #5 | **P0** | Low | ✅ Complete |
+| **08** | **Real-Data Quick Suggestions & Popular Searches** | Circular Req #4 | **P0** | Low | ✅ Complete |
+| **09** | **Step Notes & Callout Boxes (`نکات و هشدارها`)** | Circular Req | **P0** | Low | ✅ Complete |
+| **10** | **In-Text Cross-Linking to other processes/systems** | Circular Req #8 | **P1** | Medium | ✅ Complete |
+| **11** | **Distinct Node Types on Flowchart (Decision / End / Action)** | Circular Req / Phase 2 | **P1** | Medium | ✅ Complete |
+| **12** | **Process Timeline View Mode (`تایم‌لاین`)** | Circular Req #2 | **P1** | Medium | ✅ Complete |
+| **13** | **Interactive Simulator Polish** | Circular Req #6 | **P1** | Medium | ⏳ Next Up |
 | **14** | **Inline Single-Line Images & Screenshot Lightbox** | Circular Req #3 & #9 | **P2** | Medium | Pending |
 | **15** | **Sub-Processes Architecture (`زیر-فرایند`)** | Circular Req #1 | **P2** | High | Pending |
 | **16** | **Thematic Category Management** | Circular Req #7 | **P2** | Medium | Pending |
