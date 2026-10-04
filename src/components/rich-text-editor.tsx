@@ -589,12 +589,12 @@ export function RichTextEditor({
           <div className="shadow-xs">{toolbarContent}</div>
 
           {/* Document Work Area: Centered Paper Canvas */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-200/50 dark:bg-slate-950 flex justify-center">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8 pb-32 bg-slate-200/60 dark:bg-slate-950 flex justify-center items-start">
             <div
-              className="w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl shadow-xl p-6 sm:p-12 min-h-[85vh] cursor-text flex flex-col text-slate-900 dark:text-slate-100"
+              className="w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl shadow-xl p-6 sm:p-12 md:p-16 min-h-[85vh] h-auto my-4 cursor-text flex flex-col text-slate-900 dark:text-slate-100 transition-all shrink-0"
               onClick={() => editor.commands.focus()}
             >
-              <EditorContent editor={editor} className="flex-1" />
+              <EditorContent editor={editor} className="w-full focus:outline-none" />
             </div>
           </div>
 
