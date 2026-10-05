@@ -310,7 +310,7 @@ function HomePageContent() {
                       }}
                     >
                       {getCategoryIcon(cat.icon)}
-                      <span>{cat.label}</span>
+                      <span className="whitespace-nowrap">{cat.label}</span>
                     </button>
                   );
                 })}

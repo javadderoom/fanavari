@@ -530,13 +530,13 @@
     "semantic_hash": ""
   },
   "src/components/process-detail-modal.tsx": {
-    "mtime": 1791134942.651394,
-    "ast_hash": "fd2ea3d1a2b32343588481e97d4efe8d",
+    "mtime": 1791205326.7782674,
+    "ast_hash": "f85b0bbc77b27a3439145b23a094f67d",
     "semantic_hash": ""
   },
   "src/components/process-detail-view.tsx": {
-    "mtime": 1791134509.5575144,
-    "ast_hash": "4b6ece95bc0558ea884b28fba41bdb96",
+    "mtime": 1791205309.2575586,
+    "ast_hash": "9baace19b674826d2ef61fb744005d0d",
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
@@ -867,11 +867,6 @@
   "src/components/step-content-renderer.tsx": {
     "mtime": 1791126049.585678,
     "ast_hash": "0d93b0fbdea6390675ac9ccbdcb15dc2",
-    "semantic_hash": ""
-  },
-  "src/components/process-timeline-view.tsx": {
-    "mtime": 1791134264.7600985,
-    "ast_hash": "70c3083d60f7b52df2ede1731e6a5c03",
     "semantic_hash": ""
   },
   "prisma/migrations/20261004175522_add_schedule_to_process/migration.sql": {

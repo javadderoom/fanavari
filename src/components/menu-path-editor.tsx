@@ -148,7 +148,7 @@ export function MenuPathEditor({ value, onChange, placeholder = 'افزودن س
                         {idx + 1}
                       </span>
 
-                      <span>{tag}</span>
+                      <span className="whitespace-nowrap">{tag}</span>
 
                       {/* Reorder Arrows (visible if more than 1 tag) */}
                       {tags.length > 1 && (

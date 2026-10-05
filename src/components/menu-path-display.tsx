@@ -74,7 +74,7 @@ export function MenuPathDisplay({ path, variant = 'interactive', className = '' 
                   >
                     {idx + 1}
                   </span>
-                  <span>{seg}</span>
+                  <span className="whitespace-nowrap">{seg}</span>
                   {isLast && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-700/60 text-white font-normal mr-1 print:bg-black">
                       (کلیک نهایی)
@@ -150,7 +150,7 @@ export function MenuPathDisplay({ path, variant = 'interactive', className = '' 
                   {idx + 1}
                 </span>
 
-                <span className="text-xs sm:text-sm tracking-tight">{seg}</span>
+                <span className="text-xs sm:text-sm tracking-tight whitespace-nowrap">{seg}</span>
 
                 {isLast && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-700 text-white/95 mr-1">

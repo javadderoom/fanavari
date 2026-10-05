@@ -29,11 +29,11 @@ export function UserSwitcher() {
           )}
         </div>
 
-        <span className="hidden sm:inline font-bold">
-          {currentUser.name.split(' ')[0]} ({currentUser.roleName})
+        <span className="hidden sm:inline font-bold whitespace-nowrap">
+          {currentUser.name.split(' ')[0]}
         </span>
 
-        <span className="text-[10px] px-1.5 py-0.5 rounded-md font-mono"
+        <span className="text-[10px] px-1.5 py-0.5 rounded-md font-mono whitespace-nowrap"
           style={{
             background: isSuperAdmin ? 'var(--badge-rose-bg)' : 'var(--accent-soft)',
             color: isSuperAdmin ? 'var(--badge-rose-text)' : 'var(--accent-primary)',
