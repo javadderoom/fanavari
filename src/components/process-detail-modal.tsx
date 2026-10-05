@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Process, ProcessStep } from '@/types/process';
 import { MenuPathDisplay } from './menu-path-display';
 import { StepContentRenderer } from './step-content-renderer';
-import { ProcessTimelineView } from './process-timeline-view';
 import { 
   X, 
   Clock, 
@@ -23,8 +22,7 @@ import {
   Save, 
   ArrowRight, 
   ArrowLeft,
-  Printer,
-  CalendarDays
+  Printer
 } from 'lucide-react';
 
 interface ProcessDetailModalProps {
@@ -35,7 +33,7 @@ interface ProcessDetailModalProps {
 
 export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: ProcessDetailModalProps) {
   const [activeStepIndex, setActiveStepIndex] = useState(initialStepIndex);
-  const [activeTab, setActiveTab] = useState<'flow' | 'timeline' | 'errors' | 'scratchpad'>('flow');
+  const [activeTab, setActiveTab] = useState<'flow' | 'errors' | 'scratchpad'>('flow');
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Scratchpad temporary note state with localStorage persistence
@@ -172,20 +170,6 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
             <span>نقشه فلوچارت ({process.totalSteps})</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => setActiveTab('timeline')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
-              activeTab === 'timeline' ? 'shadow-sm' : 'opacity-70 hover:opacity-100'
-            }`}
-            style={{
-              background: activeTab === 'timeline' ? 'var(--accent-primary)' : 'transparent',
-              color: activeTab === 'timeline' ? '#ffffff' : 'var(--text-secondary)',
-            }}
-          >
-            <CalendarDays className="w-4 h-4" />
-            <span>تایم‌لاین ({process.totalSteps} مرحله)</span>
-          </button>
 
           <button
             type="button"
@@ -502,16 +486,6 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
             </div>
           )}
 
-          {/* Timeline View Mode */}
-          {activeTab === 'timeline' && (
-            <ProcessTimelineView
-              process={process}
-              onStepClick={(idx) => {
-                setActiveStepIndex(idx);
-                setActiveTab('flow');
-              }}
-            />
-          )}
 
           {activeTab === 'errors' && (
             <div className="space-y-4">

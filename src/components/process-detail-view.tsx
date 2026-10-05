@@ -5,7 +5,6 @@ import { Process, ProcessStep } from '@/types/process';
 import Link from 'next/link';
 import { MenuPathDisplay } from './menu-path-display';
 import { StepContentRenderer } from './step-content-renderer';
-import { ProcessTimelineView } from './process-timeline-view';
 import { 
   Clock, 
   ExternalLink, 
@@ -27,8 +26,7 @@ import {
   Printer,
   Laptop,
   Building2,
-  Workflow,
-  CalendarDays
+  Workflow
 } from 'lucide-react';
 
 interface ProcessDetailViewProps {
@@ -37,7 +35,7 @@ interface ProcessDetailViewProps {
 
 export function ProcessDetailView({ process }: ProcessDetailViewProps) {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'flow' | 'timeline' | 'errors' | 'scratchpad'>('flow');
+  const [activeTab, setActiveTab] = useState<'flow' | 'errors' | 'scratchpad'>('flow');
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -189,21 +187,6 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
           <span>نقشه فلوچارت ({process.totalSteps})</span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('timeline')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all cursor-pointer ${
-            activeTab === 'timeline' ? 'shadow-md scale-105' : 'opacity-70 hover:opacity-100'
-          }`}
-          style={{
-            background: activeTab === 'timeline' ? 'var(--accent-primary)' : 'var(--bg-surface)',
-            color: activeTab === 'timeline' ? '#ffffff' : 'var(--text-secondary)',
-            border: '1px solid var(--border-glass)'
-          }}
-        >
-          <CalendarDays className="w-4 h-4" />
-          <span>تایم‌لاین فرایند ({process.totalSteps} مرحله)</span>
-        </button>
 
         <button
           type="button"
@@ -517,16 +500,6 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
         </div>
       )}
 
-      {/* Tab 2: Timeline View Mode */}
-      {activeTab === 'timeline' && (
-        <ProcessTimelineView
-          process={process}
-          onStepClick={(idx) => {
-            setActiveStepIndex(idx);
-            setActiveTab('flow');
-          }}
-        />
-      )}
 
       {/* Tab 3: Global Error Matrix */}
       {activeTab === 'errors' && (
