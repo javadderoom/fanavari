@@ -159,5 +159,12 @@
   "157": "migrate-deploy.js",
   "158": "CLAUDE.md",
   "159": "prisma.config.ts",
-  "163": "@tiptap/extension-highlight"
+  "160": "normalizeIgnoreValueEntries",
+  "161": "craft.md",
+  "162": "resolveProjectRoot",
+  "163": "@tiptap/extension-highlight",
+  "164": "readWorkspacePatterns",
+  "165": "Step 3: Ask strategic questions (for PRODUCT.md)",
+  "166": "resolveLiveInjectionAnchor",
+  "167": "4. Plan three variants: identity first, then mode, then axes"
 }
