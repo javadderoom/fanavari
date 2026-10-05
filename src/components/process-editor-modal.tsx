@@ -43,7 +43,10 @@ import {
   FolderTree, 
   Tag, 
   FolderPlus, 
-  Image as ImageIcon 
+  Image as ImageIcon,
+  Settings2,
+  ChevronDown,
+  Edit3
 } from 'lucide-react';
 import { notify } from '@/lib/notify';
 import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
@@ -82,10 +85,11 @@ export function ProcessEditorModal({
   const isEditing = Boolean(processToEdit);
   const canSave = isEditing ? can(Permissions.EDIT_PROCESSES) : can(Permissions.CREATE_PROCESSES);
 
-  // Form states
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
+  const [isEditingSlug, setIsEditingSlug] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [description, setDescription] = useState('');
   const [scope, setScope] = useState<string>('organization');
   const [category, setCategory] = useState<string>('hr');
@@ -206,6 +210,13 @@ export function ProcessEditorModal({
         setScheduleNotes('');
         setScheduleIsMandatory(true);
       }
+      setIsEditingSlug(false);
+      setShowAdvanced(Boolean(
+        processToEdit.schedule || 
+        (processToEdit.tags && processToEdit.tags.length > 0) || 
+        (processToEdit.estimatedMinutes && processToEdit.estimatedMinutes !== 10) ||
+        processToEdit.targetUrl
+      ));
       setSteps(
         (processToEdit.steps || []).map((s) => ({
           ...s,
@@ -242,6 +253,8 @@ export function ProcessEditorModal({
       setScheduleRecurrence('annual');
       setScheduleNotes('');
       setScheduleIsMandatory(true);
+      setIsEditingSlug(false);
+      setShowAdvanced(false);
       setSteps([
         {
           id: `step-${Date.now()}-1`,
@@ -662,612 +675,114 @@ export function ProcessEditorModal({
             </div>
           )}
 
-          {/* Basic Fields Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Core Fields Section (Streamlined 4 Essential Fields) */}
+          <div className="space-y-4">
+            {/* Field 1: Title with Subtle Auto-Slug Bar */}
             <div>
-              <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                عنوان کامل فرایند *
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>
+                  عنوان کامل فرایند <span className="text-rose-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingSlug(!isEditingSlug)}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
+                >
+                  <Edit3 className="w-3 h-3" />
+                  <span>{isEditingSlug ? 'پنهان کردن ویرایش شناسه' : 'ویرایش شناسه لاتین (Slug)'}</span>
+                </button>
+              </div>
+
               <input
                 type="text"
                 required
                 value={title}
                 onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder="مثلاً: ثبت پرسنل جدید، یا به‌روزرسانی ابلاغ و حکم..."
+                placeholder="مثلاً: ثبت پرسنل جدید، به‌روزرسانی ابلاغ و حکم، صدور فیش حقوقی..."
                 className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-blue-500"
                 style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
               />
-            </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>
-                  شناسه یکتای URL (Slug)
-                </label>
-                {title.trim() && (
+              {/* Quiet URL Preview */}
+              <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1 px-1">
+                <span className="font-mono text-[11px]" dir="ltr">
+                  /process/<span className="text-blue-600 dark:text-blue-400 font-bold">{slug || '...'}</span>
+                </span>
+                {isEditingSlug && (
                   <button
                     type="button"
                     onClick={handleAutoGenerateSlug}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
+                    className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1 hover:underline cursor-pointer"
                   >
-                    <Sparkles className="w-3 h-3 text-amber-500" />
-                    <span>تولید خودکار از عنوان</span>
+                    <Sparkles className="w-3 h-3" />
+                    <span>تولید مجدد خودکار از عنوان</span>
                   </button>
                 )}
               </div>
-              <input
-                type="text"
-                value={slug}
-                onChange={(e) => handleSlugChange(e.target.value)}
-                placeholder="مثال: ltms-decree-update یا بروزرسانی-ابلاغ"
-                dir="auto"
-                className="w-full p-3 rounded-xl border text-sm font-mono outline-none transition-all focus:ring-2 focus:ring-blue-500"
-                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-              />
-              <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1.5 flex-wrap gap-1">
-                <span className="font-mono truncate max-w-xs" dir="ltr">
-                  /process/{slug || '...'}
-                </span>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                  ✓ فاصله‌ها خودکار به خط تیره (-) تبدیل می‌شوند
-                </span>
-              </div>
+
+              {/* Optional Manual Slug Override Input */}
+              {isEditingSlug && (
+                <div className="mt-2 animate-in fade-in">
+                  <input
+                    type="text"
+                    value={slug}
+                    onChange={(e) => handleSlugChange(e.target.value)}
+                    placeholder="شناسه یکتای لاتین یا فارسی URL..."
+                    dir="auto"
+                    className="w-full p-2.5 rounded-xl border text-xs font-mono outline-none"
+                    style={{ background: 'var(--bg-input)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
+                  />
+                </div>
+              )}
             </div>
 
-            {/* Dynamic Scope / Workflow Domain Field */}
-            <div className="rounded-2xl p-4 border" style={{ background: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}>
-              <div className="flex items-center justify-between mb-2">
-                <label className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
-                  <FolderTree className="w-4 h-4 text-blue-600" />
-                  <span>حوزه و ماهیت فرایند</span>
-                </label>
+            {/* Field 2 & 3: Target System & Department (Paired in 1 Row) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Target System */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>
+                    <Laptop className="w-3.5 h-3.5 text-purple-600" />
+                    <span>سامانه یا نرم‌افزار هدف</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsQuickSystemOpen((prev) => !prev)}
+                    className="text-[11px] font-bold text-purple-600 hover:text-purple-700 cursor-pointer"
+                  >
+                    {isQuickSystemOpen ? 'بستن' : '+ سامانه جدید'}
+                  </button>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => setIsQuickScopeOpen((prev) => !prev)}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>{isQuickScopeOpen ? 'بستن ثبت حوزه' : 'ثبت حوزه جدید'}</span>
-                </button>
-              </div>
-
-              {/* Quick Scope Creation Sub-form */}
-              {isQuickScopeOpen && (
-                <div className="mb-4 p-4 rounded-xl border border-blue-300 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/30 space-y-3 animate-in fade-in zoom-in-95">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
-                      <FolderPlus className="w-3.5 h-3.5" />
-                      <span>تعریف حوزه و ماهیت جدید در پایگاه داده</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickScopeOpen(false)}
-                      className="text-slate-400 hover:text-slate-600 text-xs font-medium cursor-pointer"
-                    >
-                      بستن
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                        عنوان حوزه <span className="text-rose-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={quickScopeName}
-                        onChange={(e) => setQuickScopeName(e.target.value)}
-                        placeholder="مثلاً: فرایندهای پژوهشی و دانشگاهی"
-                        className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                        شناسه لاتین / Key (اختیاری)
-                      </label>
-                      <input
-                        type="text"
-                        value={quickScopeKey}
-                        onChange={(e) => setQuickScopeKey(e.target.value)}
-                        placeholder="مثلاً: research"
-                        dir="ltr"
-                        className="w-full px-3 py-2 rounded-lg text-xs font-mono border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                      شرح و تعریف حوزه
-                    </label>
+                {isQuickSystemOpen && (
+                  <div className="mb-2 p-3 rounded-xl border border-purple-300 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30 space-y-2 animate-in fade-in">
                     <input
                       type="text"
-                      value={quickScopeDesc}
-                      onChange={(e) => setQuickScopeDesc(e.target.value)}
-                      placeholder="توضیح مختصر درباره این حوزه..."
-                      className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                      value={quickSystemName}
+                      onChange={(e) => setQuickSystemName(e.target.value)}
+                      placeholder="نام سامانه (مثلاً: سیدا)..."
+                      className="w-full px-2.5 py-1.5 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
                     />
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickScopeOpen(false)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 cursor-pointer"
-                    >
-                      انصراف
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isSavingQuickScope || !quickScopeName.trim()}
-                      onClick={handleQuickSaveScope}
-                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 cursor-pointer shadow-xs"
-                    >
-                      {isSavingQuickScope ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>در حال ذخیره...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-3.5 h-3.5" />
-                          <span>ثبت و انتخاب این حوزه</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Main Scope Selector */}
-              <div className="space-y-2">
-                <select
-                  value={scopesList.some((s) => s.key === scope) ? scope : (scope ? 'custom' : '')}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '__NEW__') {
-                      setIsQuickScopeOpen(true);
-                    } else if (val === 'custom') {
-                      setScope('');
-                    } else {
-                      setScope(val);
-                    }
-                  }}
-                  className="w-full p-3 rounded-xl border text-sm font-medium outline-none cursor-pointer"
-                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                >
-                  <option value="">-- انتخاب حوزه از لیست دیتابیس --</option>
-                  {scopesList.map((s) => (
-                    <option key={s.key} value={s.key}>
-                      {s.name}
-                    </option>
-                  ))}
-                  <option value="__NEW__">+ تعریف و ثبت حوزه جدید در دیتابیس...</option>
-                  <option value="custom">سایر / ورود دستی شناسه حوزه...</option>
-                </select>
-
-                {(!scopesList.some((s) => s.key === scope) || scope === '') && (
-                  <input
-                    type="text"
-                    value={scope}
-                    onChange={(e) => setScope(e.target.value)}
-                    placeholder="شناسه یا عنوان حوزه جدید را تایپ کنید..."
-                    className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none"
-                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Dynamic Subject Category Field (Cascades from Scope) */}
-            <div className="rounded-2xl p-4 border" style={{ background: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}>
-              <div className="flex items-center justify-between mb-2">
-                <label className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
-                  <Tag className="w-4 h-4 text-indigo-600" />
-                  <span>دسته‌بندی موضوعی</span>
-                </label>
-
-                <button
-                  type="button"
-                  onClick={() => setIsQuickCatOpen((prev) => !prev)}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-700 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>{isQuickCatOpen ? 'بستن ثبت دسته‌بندی' : 'ثبت دسته‌بندی جدید'}</span>
-                </button>
-              </div>
-
-              {/* Quick Category Creation Sub-form */}
-              {isQuickCatOpen && (
-                <div className="mb-4 p-4 rounded-xl border border-indigo-300 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-950/30 space-y-3 animate-in fade-in zoom-in-95">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>تعریف دسته‌بندی موضوعی جدید</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickCatOpen(false)}
-                      className="text-slate-400 hover:text-slate-600 text-xs font-medium cursor-pointer"
-                    >
-                      بستن
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                        عنوان دسته‌بندی <span className="text-rose-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={quickCatName}
-                        onChange={(e) => setQuickCatName(e.target.value)}
-                        placeholder="مثلاً: بازنشستگی و سنوات"
-                        className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                        شناسه لاتین / Key (اختیاری)
-                      </label>
-                      <input
-                        type="text"
-                        value={quickCatKey}
-                        onChange={(e) => setQuickCatKey(e.target.value)}
-                        placeholder="مثلاً: retirement"
-                        dir="ltr"
-                        className="w-full px-3 py-2 rounded-lg text-xs font-mono border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                      حوزه تعلق این دسته‌بندی
-                    </label>
-                    <select
-                      value={quickCatScopeId}
-                      onChange={(e) => setQuickCatScopeId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 cursor-pointer"
-                    >
-                      <option value="current">
-                        اختصاصی برای حوزه فعلی ({scopesList.find((s) => s.key === scope)?.name || scope})
-                      </option>
-                      <option value="all">
-                        عمومی و مشترک در همه حوزه‌ها (همه حوزه‌ها دسترسی دارند)
-                      </option>
-                      {scopesList.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          اختصاصی برای حوزه: {s.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickCatOpen(false)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 cursor-pointer"
-                    >
-                      انصراف
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isSavingQuickCat || !quickCatName.trim()}
-                      onClick={handleQuickSaveCategory}
-                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 cursor-pointer shadow-xs"
-                    >
-                      {isSavingQuickCat ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>در حال ذخیره...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-3.5 h-3.5" />
-                          <span>ثبت و انتخاب این دسته‌بندی</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Main Category Cascading Selector */}
-              <div className="space-y-2">
-                <select
-                  value={categoriesList.some((c) => c.key === category) ? category : (category ? 'custom' : '')}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '__NEW__') {
-                      setIsQuickCatOpen(true);
-                    } else if (val === 'custom') {
-                      setCategory('');
-                    } else {
-                      setCategory(val);
-                    }
-                  }}
-                  className="w-full p-3 rounded-xl border text-sm font-medium outline-none cursor-pointer"
-                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                >
-                  <option value="">-- انتخاب دسته‌بندی موضوعی --</option>
-
-                  {/* Scope Specific Categories */}
-                  {categoriesList.filter((c) => !c.isGlobal).length > 0 && (
-                    <optgroup label={`دسته‌بندی‌های اختصاصی حوزه (${scopesList.find((s) => s.key === scope)?.name || scope})`}>
-                      {categoriesList
-                        .filter((c) => !c.isGlobal)
-                        .map((c) => (
-                          <option key={c.id} value={c.key}>
-                            {c.name}
-                          </option>
-                        ))}
-                    </optgroup>
-                  )}
-
-                  {/* Global Categories available across all scopes */}
-                  {categoriesList.filter((c) => c.isGlobal).length > 0 && (
-                    <optgroup label="دسته‌بندی‌های عمومی (مشترک در همه حوزه‌ها)">
-                      {categoriesList
-                        .filter((c) => c.isGlobal)
-                        .map((c) => (
-                          <option key={c.id} value={c.key}>
-                            {c.name} (عمومی)
-                          </option>
-                        ))}
-                    </optgroup>
-                  )}
-
-                  <option value="__NEW__">+ تعریف و ثبت دسته‌بندی موضوعی جدید در دیتابیس...</option>
-                  <option value="custom">سایر / ورود دستی شناسه دسته‌بندی...</option>
-                </select>
-
-                {(!categoriesList.some((c) => c.key === category) || category === '') && (
-                  <input
-                    type="text"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    placeholder="شناسه یا عنوان دسته‌بندی موضوعی را بنویسید..."
-                    className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none"
-                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Department / Organization Field */}
-            <div className="rounded-2xl p-4 border" style={{ background: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}>
-              <div className="flex items-center justify-between mb-2">
-                <label className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
-                  <Building2 className="w-4 h-4 text-emerald-600" />
-                  <span>دپارتمان یا سازمان متولی</span>
-                </label>
-
-                <button
-                  type="button"
-                  onClick={() => setIsQuickDeptOpen((prev) => !prev)}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>{isQuickDeptOpen ? 'بستن ثبت سازمان' : 'ثبت سازمان جدید'}</span>
-                </button>
-              </div>
-
-              {/* Quick Dept Creation Sub-form */}
-              {isQuickDeptOpen && (
-                <div className="mb-4 p-4 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 space-y-3 animate-in fade-in zoom-in-95">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>ثبت فوری سازمان در پایگاه داده</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickDeptOpen(false)}
-                      className="text-slate-400 hover:text-slate-600 text-xs font-medium cursor-pointer"
-                    >
-                      بستن
-                    </button>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                      نام سازمان یا وزارتخانه <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={quickDeptName}
-                      onChange={(e) => setQuickDeptName(e.target.value)}
-                      placeholder="مثلاً: سازمان تامین اجتماعی، وزارت جهاد کشاورزی..."
-                      className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickDeptOpen(false)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 cursor-pointer"
-                    >
-                      انصراف
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isSavingQuickDept || !quickDeptName.trim()}
-                      onClick={handleQuickSaveDept}
-                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 cursor-pointer shadow-xs"
-                    >
-                      {isSavingQuickDept ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>در حال ذخیره...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-3.5 h-3.5" />
-                          <span>ثبت و انتخاب در این فرایند</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Main Selector */}
-              <div className="space-y-2">
-                <select
-                  value={departmentsList.some((d) => d.name === departmentName) ? departmentName : (departmentName ? 'custom' : '')}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '__NEW__') {
-                      setIsQuickDeptOpen(true);
-                    } else if (val === 'custom') {
-                      setDepartmentName('');
-                    } else {
-                      setDepartmentName(val);
-                    }
-                  }}
-                  className="w-full p-3 rounded-xl border text-sm font-medium outline-none cursor-pointer"
-                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                >
-                  <option value="">-- انتخاب سازمان از لیست دیتابیس --</option>
-                  {departmentsList.map((d) => (
-                    <option key={d.slug} value={d.name}>
-                      {d.name}
-                    </option>
-                  ))}
-                  <option value="__NEW__">+ تعریف و ثبت سازمان جدید در دیتابیس...</option>
-                  <option value="custom">سایر / ورود دستی نام سازمان...</option>
-                </select>
-
-                {(!departmentsList.some((d) => d.name === departmentName) || departmentName === '') && (
-                  <input
-                    type="text"
-                    value={departmentName}
-                    onChange={(e) => setDepartmentName(e.target.value)}
-                    placeholder="نام دقیق سازمان یا واحد را بنویسید..."
-                    className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none"
-                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Target Software / System Field */}
-            <div className="rounded-2xl p-4 border" style={{ background: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}>
-              <div className="flex items-center justify-between mb-2">
-                <label className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
-                  <Laptop className="w-4 h-4 text-purple-600" />
-                  <span>نرم‌افزار یا سامانه هدف این فرایند</span>
-                </label>
-
-                <button
-                  type="button"
-                  onClick={() => setIsQuickSystemOpen((prev) => !prev)}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-purple-600 hover:text-purple-700 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>{isQuickSystemOpen ? 'بستن ثبت سامانه' : 'ثبت سامانه جدید'}</span>
-                </button>
-              </div>
-
-              {/* Quick System Creation Sub-form */}
-              {isQuickSystemOpen && (
-                <div className="mb-4 p-4 rounded-xl border border-purple-300 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30 space-y-3 animate-in fade-in zoom-in-95">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>ثبت فوری سامانه در پایگاه داده</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickSystemOpen(false)}
-                      className="text-slate-400 hover:text-slate-600 text-xs font-medium cursor-pointer"
-                    >
-                      بستن
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                        نام سامانه یا نرم‌افزار <span className="text-rose-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={quickSystemName}
-                        onChange={(e) => setQuickSystemName(e.target.value)}
-                        placeholder="مثلاً: سامانه سیدا، ادوبی فتوشاپ..."
-                        className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                        نوع ابزار
-                      </label>
-                      <select
-                        value={quickSystemCategory}
-                        onChange={(e) => setQuickSystemCategory(e.target.value as any)}
-                        className="w-full px-3 py-2 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 cursor-pointer"
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setIsQuickSystemOpen(false)}
+                        className="px-2.5 py-1 text-[11px] text-slate-500 cursor-pointer"
                       >
-                        <option value="portal">سامانه و درگاه تحت وب</option>
-                        <option value="software">نرم‌افزار کاربردی دسکتاپ</option>
-                        <option value="devtools">ابزار فنی و برنامه‌نویسی</option>
-                        <option value="erp">سیستم سازمانی و ERP</option>
-                      </select>
+                        انصراف
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isSavingQuickSystem || !quickSystemName.trim()}
+                        onClick={handleQuickSaveSystem}
+                        className="px-3 py-1 text-[11px] font-bold text-white bg-purple-600 rounded-lg cursor-pointer disabled:opacity-50"
+                      >
+                        {isSavingQuickSystem ? 'ذخیره...' : 'ثبت فوری'}
+                      </button>
                     </div>
                   </div>
+                )}
 
-                  <div>
-                    <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                      آدرس وبگاه رسمی (اختیاری)
-                    </label>
-                    <input
-                      type="url"
-                      dir="ltr"
-                      value={quickSystemUrl}
-                      onChange={(e) => setQuickSystemUrl(e.target.value)}
-                      placeholder="https://sida.medu.ir"
-                      className="w-full px-3 py-2 rounded-lg text-xs font-mono border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickSystemOpen(false)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 cursor-pointer"
-                    >
-                      انصراف
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isSavingQuickSystem || !quickSystemName.trim()}
-                      onClick={handleQuickSaveSystem}
-                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 cursor-pointer shadow-xs"
-                    >
-                      {isSavingQuickSystem ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>در حال ذخیره...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-3.5 h-3.5" />
-                          <span>ثبت و انتخاب در این فرایند</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Main Selector */}
-              <div className="space-y-2">
                 <select
                   value={systemsList.some((s) => s.name === targetSystem) ? targetSystem : (targetSystem ? 'custom' : '')}
                   onChange={(e) => {
@@ -1284,17 +799,17 @@ export function ProcessEditorModal({
                       }
                     }
                   }}
-                  className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all cursor-pointer"
+                  className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none cursor-pointer"
                   style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
                 >
-                  <option value="">-- انتخاب نرم‌افزار یا سامانه از لیست دیتابیس --</option>
+                  <option value="">-- انتخاب نرم‌افزار یا سامانه --</option>
                   {systemsList.map((s) => (
                     <option key={s.slug} value={s.name}>
                       {s.name} ({s.category === 'software' ? 'نرم‌افزار' : s.category === 'devtools' ? 'ابزار' : s.category === 'erp' ? 'ERP سازمانی' : 'سامانه وب'})
                     </option>
                   ))}
-                  <option value="__NEW__">+ تعریف و ثبت نرم‌افزار / سامانه جدید در دیتابیس...</option>
-                  <option value="custom">سایر / تایپ دستی نام نرم‌افزار...</option>
+                  <option value="__NEW__">+ تعریف سامانه جدید در دیتابیس...</option>
+                  <option value="custom">سایر / ورود دستی...</option>
                 </select>
 
                 {(!systemsList.some((s) => s.name === targetSystem) || targetSystem === '') && (
@@ -1302,288 +817,522 @@ export function ProcessEditorModal({
                     type="text"
                     value={targetSystem}
                     onChange={(e) => setTargetSystem(e.target.value)}
-                    placeholder="نام نرم‌افزار یا سامانه را تایپ کنید..."
-                    className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none transition-all focus:ring-2 focus:ring-blue-500"
+                    placeholder="نام سامانه را بنویسید..."
+                    className="w-full mt-1.5 p-2 rounded-xl border text-xs font-medium outline-none"
+                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                  />
+                )}
+              </div>
+
+              {/* Department */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>
+                    <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>سازمان یا دپارتمان متولی</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsQuickDeptOpen((prev) => !prev)}
+                    className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
+                  >
+                    {isQuickDeptOpen ? 'بستن' : '+ سازمان جدید'}
+                  </button>
+                </div>
+
+                {isQuickDeptOpen && (
+                  <div className="mb-2 p-3 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 space-y-2 animate-in fade-in">
+                    <input
+                      type="text"
+                      value={quickDeptName}
+                      onChange={(e) => setQuickDeptName(e.target.value)}
+                      placeholder="نام سازمان (مثلاً: وزارت جهاد کشاورزی)..."
+                      className="w-full px-2.5 py-1.5 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                    />
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setIsQuickDeptOpen(false)}
+                        className="px-2.5 py-1 text-[11px] text-slate-500 cursor-pointer"
+                      >
+                        انصراف
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isSavingQuickDept || !quickDeptName.trim()}
+                        onClick={handleQuickSaveDept}
+                        className="px-3 py-1 text-[11px] font-bold text-white bg-emerald-600 rounded-lg cursor-pointer disabled:opacity-50"
+                      >
+                        {isSavingQuickDept ? 'ذخیره...' : 'ثبت فوری'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <select
+                  value={departmentsList.some((d) => d.name === departmentName) ? departmentName : (departmentName ? 'custom' : '')}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '__NEW__') {
+                      setIsQuickDeptOpen(true);
+                    } else if (val === 'custom') {
+                      setDepartmentName('');
+                    } else {
+                      setDepartmentName(val);
+                    }
+                  }}
+                  className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none cursor-pointer"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                >
+                  <option value="">-- انتخاب سازمان متولی --</option>
+                  {departmentsList.map((d) => (
+                    <option key={d.slug} value={d.name}>
+                      {d.name}
+                    </option>
+                  ))}
+                  <option value="__NEW__">+ تعریف سازمان جدید در دیتابیس...</option>
+                  <option value="custom">سایر / ورود دستی...</option>
+                </select>
+
+                {(!departmentsList.some((d) => d.name === departmentName) || departmentName === '') && (
+                  <input
+                    type="text"
+                    value={departmentName}
+                    onChange={(e) => setDepartmentName(e.target.value)}
+                    placeholder="نام دقیق سازمان را بنویسید..."
+                    className="w-full mt-1.5 p-2 rounded-xl border text-xs font-medium outline-none"
                     style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
                   />
                 )}
               </div>
             </div>
 
+            {/* Field 4 & 5: Scope & Category (Paired in 1 Row) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Scope */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>
+                    <FolderTree className="w-3.5 h-3.5 text-blue-600" />
+                    <span>حوزه فرایند</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsQuickScopeOpen((prev) => !prev)}
+                    className="text-[11px] font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
+                  >
+                    {isQuickScopeOpen ? 'بستن' : '+ حوزه جدید'}
+                  </button>
+                </div>
+
+                {isQuickScopeOpen && (
+                  <div className="mb-2 p-3 rounded-xl border border-blue-300 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/30 space-y-2 animate-in fade-in">
+                    <input
+                      type="text"
+                      value={quickScopeName}
+                      onChange={(e) => setQuickScopeName(e.target.value)}
+                      placeholder="عنوان حوزه (مثلاً: اداری و مالی)..."
+                      className="w-full px-2.5 py-1.5 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                    />
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setIsQuickScopeOpen(false)}
+                        className="px-2.5 py-1 text-[11px] text-slate-500 cursor-pointer"
+                      >
+                        انصراف
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isSavingQuickScope || !quickScopeName.trim()}
+                        onClick={handleQuickSaveScope}
+                        className="px-3 py-1 text-[11px] font-bold text-white bg-blue-600 rounded-lg cursor-pointer disabled:opacity-50"
+                      >
+                        {isSavingQuickScope ? 'ذخیره...' : 'ثبت فوری'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <select
+                  value={scopesList.some((s) => s.key === scope) ? scope : (scope ? 'custom' : '')}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '__NEW__') {
+                      setIsQuickScopeOpen(true);
+                    } else if (val === 'custom') {
+                      setScope('');
+                    } else {
+                      setScope(val);
+                    }
+                  }}
+                  className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none cursor-pointer"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                >
+                  <option value="">-- انتخاب حوزه --</option>
+                  {scopesList.map((s) => (
+                    <option key={s.id} value={s.key}>
+                      {s.name}
+                    </option>
+                  ))}
+                  <option value="__NEW__">+ تعریف حوزه جدید در دیتابیس...</option>
+                  <option value="custom">سایر / ورود دستی...</option>
+                </select>
+
+                {(!scopesList.some((s) => s.key === scope) || scope === '') && (
+                  <input
+                    type="text"
+                    value={scope}
+                    onChange={(e) => setScope(e.target.value)}
+                    placeholder="شناسه حوزه را بنویسید..."
+                    className="w-full mt-1.5 p-2 rounded-xl border text-xs font-medium outline-none"
+                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                  />
+                )}
+              </div>
+
+              {/* Category */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>
+                    <Tag className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>دسته‌بندی موضوعی</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsQuickCatOpen((prev) => !prev)}
+                    className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 cursor-pointer"
+                  >
+                    {isQuickCatOpen ? 'بستن' : '+ دسته‌بندی جدید'}
+                  </button>
+                </div>
+
+                {isQuickCatOpen && (
+                  <div className="mb-2 p-3 rounded-xl border border-indigo-300 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-950/30 space-y-2 animate-in fade-in">
+                    <input
+                      type="text"
+                      value={quickCatName}
+                      onChange={(e) => setQuickCatName(e.target.value)}
+                      placeholder="عنوان دسته‌بندی (مثلاً: بازنشستگی)..."
+                      className="w-full px-2.5 py-1.5 rounded-lg text-xs border outline-none bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                    />
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setIsQuickCatOpen(false)}
+                        className="px-2.5 py-1 text-[11px] text-slate-500 cursor-pointer"
+                      >
+                        انصراف
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isSavingQuickCat || !quickCatName.trim()}
+                        onClick={handleQuickSaveCategory}
+                        className="px-3 py-1 text-[11px] font-bold text-white bg-indigo-600 rounded-lg cursor-pointer disabled:opacity-50"
+                      >
+                        {isSavingQuickCat ? 'ذخیره...' : 'ثبت فوری'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <select
+                  value={categoriesList.some((c) => c.key === category) ? category : (category ? 'custom' : '')}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '__NEW__') {
+                      setIsQuickCatOpen(true);
+                    } else if (val === 'custom') {
+                      setCategory('');
+                    } else {
+                      setCategory(val);
+                    }
+                  }}
+                  className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none cursor-pointer"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                >
+                  <option value="">-- انتخاب دسته‌بندی موضوعی --</option>
+                  {categoriesList.filter((c) => !c.isGlobal).length > 0 && (
+                    <optgroup label="دسته‌بندی‌های اختصاصی این حوزه">
+                      {categoriesList.filter((c) => !c.isGlobal).map((c) => (
+                        <option key={c.id} value={c.key}>{c.name}</option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {categoriesList.filter((c) => c.isGlobal).length > 0 && (
+                    <optgroup label="دسته‌بندی‌های عمومی و مشترک">
+                      {categoriesList.filter((c) => c.isGlobal).map((c) => (
+                        <option key={c.id} value={c.key}>{c.name} (عمومی)</option>
+                      ))}
+                    </optgroup>
+                  )}
+                  <option value="__NEW__">+ تعریف دسته‌بندی جدید در دیتابیس...</option>
+                  <option value="custom">سایر / ورود دستی...</option>
+                </select>
+
+                {(!categoriesList.some((c) => c.key === category) || category === '') && (
+                  <input
+                    type="text"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    placeholder="شناسه یا عنوان دسته‌بندی را بنویسید..."
+                    className="w-full mt-1.5 p-2 rounded-xl border text-xs font-medium outline-none"
+                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Field 4: Short Description */}
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                <Globe className="w-3.5 h-3.5 text-emerald-500" />
-                <span>نشانی اینترنتی سامانه (URL)</span>
+              <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                توضیح کوتاه و هدف فرایند
               </label>
-              <input
-                type="url"
-                value={targetUrl}
-                onChange={(e) => setTargetUrl(e.target.value)}
-                placeholder="https://ltms.medu.ir"
-                dir="ltr"
-                className="w-full p-3 rounded-xl border text-sm font-mono text-left outline-none transition-all focus:ring-2 focus:ring-blue-500"
+              <textarea
+                rows={2}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="خلاصه‌ای از اینکه این فرایند چه کاری انجام می‌دهد و خروجی آن چیست..."
+                className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none"
                 style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
               />
             </div>
 
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                <Clock className="w-3.5 h-3.5 text-amber-500" />
-                <span>مدت زمان تقریبی اجرا (دقیقه)</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  min="1"
-                  max="480"
-                  value={estimatedMinutes}
-                  onChange={(e) => setEstimatedMinutes(Math.max(1, Number(e.target.value)))}
-                  className="w-full p-3 rounded-xl border text-sm font-mono outline-none transition-all focus:ring-2 focus:ring-blue-500"
-                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 select-none">
-                  دقیقه
-                </span>
-              </div>
-            </div>
-
-            {/* Administrative Schedule / Annual Operating Calendar Section */}
+            {/* Progressive Disclosure: Collapsible Advanced Settings & Timeline Section */}
             <div 
-              className="md:col-span-2 rounded-2xl p-4 border transition-all"
+              className="rounded-2xl border overflow-hidden transition-all"
               style={{
-                background: hasSchedule ? 'rgba(59, 130, 246, 0.04)' : 'var(--bg-input)',
-                borderColor: hasSchedule ? 'rgba(59, 130, 246, 0.3)' : 'var(--border-subtle)',
+                borderColor: showAdvanced ? 'var(--border-glass)' : 'var(--border-subtle)',
+                background: 'var(--bg-input)'
               }}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${hasSchedule ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
-                    <CalendarClock className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
-                      گاه‌شمار اجرایی و تقویم سالانه (Administrative Timeline)
-                    </h4>
-                    <p className="text-[11px] text-slate-500">
-                      تعیین بازه و موعد مقرر سالانه برای سازمان (مثلاً: شروع از ۱ تیر با مهلت ۲۰ روزه در سامانه سیدا)
-                    </p>
-                  </div>
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="w-full p-3.5 flex items-center justify-between text-xs font-bold cursor-pointer hover:bg-slate-500/5 transition-colors select-none"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                <div className="flex items-center gap-2">
+                  <Settings2 className="w-4 h-4 text-slate-500" />
+                  <span>تنظیمات تکمیلی، زمان‌بندی و گاه‌شمار سالانه (اختیاری)</span>
+                  {hasSchedule && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                      دارای زمان‌بندی ({scheduleMonth})
+                    </span>
+                  )}
+                  {tagsInput.trim() && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                      تگ‌ها
+                    </span>
+                  )}
                 </div>
+                <div className="flex items-center gap-1.5 text-slate-400 text-[11px]">
+                  <span>{showAdvanced ? 'بستن' : 'نمایش'}</span>
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showAdvanced ? 'rotate-180' : ''}`} />
+                </div>
+              </button>
 
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={hasSchedule}
-                    onChange={(e) => setHasSchedule(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                    {hasSchedule ? 'دارای زمان‌بندی اجرایی' : 'بدون زمان‌بندی مشخص'}
-                  </span>
-                </label>
-              </div>
+              {showAdvanced && (
+                <div className="p-4 border-t space-y-4 animate-in fade-in" style={{ borderColor: 'var(--border-subtle)' }}>
+                  {/* Administrative Timeline Section */}
+                  <div 
+                    className="rounded-xl p-3.5 border transition-all"
+                    style={{
+                      background: hasSchedule ? 'rgba(59, 130, 246, 0.04)' : 'var(--bg-surface)',
+                      borderColor: hasSchedule ? 'rgba(59, 130, 246, 0.3)' : 'var(--border-subtle)',
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CalendarClock className={`w-4 h-4 ${hasSchedule ? 'text-blue-600' : 'text-slate-400'}`} />
+                        <div>
+                          <span className="text-xs font-bold block" style={{ color: 'var(--text-primary)' }}>
+                            گاه‌شمار اجرایی سالانه (Administrative Timeline)
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            تعیین بازه و مهلت اقدام در تقویم اداری ۱۲ ماهه
+                          </span>
+                        </div>
+                      </div>
 
-              {hasSchedule && (
-                <div className="mt-4 pt-4 border-t border-blue-200/40 dark:border-blue-900/40 space-y-4 animate-in fade-in">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {/* Month Picker */}
-                    <div>
-                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                        ماه اجرایی
-                      </label>
-                      <select
-                        value={scheduleMonth}
-                        onChange={(e) => {
-                          const m = e.target.value as PersianMonth;
-                          setScheduleMonth(m);
-                          setScheduleSeason(getSeasonForMonth(m));
-                        }}
-                        className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none cursor-pointer"
-                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                      >
-                        {PERSIAN_MONTHS.map((m) => (
-                          <option key={m} value={m}>
-                            {m} ({getSeasonForMonth(m)})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Season */}
-                    <div>
-                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                        فصل اجرایی
-                      </label>
-                      <select
-                        value={scheduleSeason}
-                        onChange={(e) => setScheduleSeason(e.target.value as PersianSeason)}
-                        className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none cursor-pointer"
-                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                      >
-                        <option value="بهار">بهار</option>
-                        <option value="تابستان">تابستان</option>
-                        <option value="پاییز">پاییز</option>
-                        <option value="زمستان">زمستان</option>
-                      </select>
-                    </div>
-
-                    {/* Start Day */}
-                    <div>
-                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                        روز شروع بازه
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="31"
-                        value={scheduleStartDay}
-                        onChange={(e) => setScheduleStartDay(Math.min(31, Math.max(1, Number(e.target.value))))}
-                        className="w-full p-2.5 rounded-xl border text-xs font-mono outline-none"
-                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                      />
-                    </div>
-
-                    {/* End Day */}
-                    <div>
-                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                        روز پایان بازه
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="31"
-                        value={scheduleEndDay}
-                        onChange={(e) => setScheduleEndDay(Math.min(31, Math.max(1, Number(e.target.value))))}
-                        className="w-full p-2.5 rounded-xl border text-xs font-mono outline-none"
-                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {/* Deadline duration */}
-                    <div>
-                      <label className="flex items-center gap-1.5 text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                        <Timer className="w-3.5 h-3.5 text-blue-500" />
-                        <span>مهلت مجاز اقدام (روز)</span>
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="365"
-                        value={scheduleDeadlineDays}
-                        onChange={(e) => setScheduleDeadlineDays(Math.max(1, Number(e.target.value)))}
-                        placeholder="مثلاً ۲۰"
-                        className="w-full p-2.5 rounded-xl border text-xs font-mono outline-none"
-                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                      />
-                    </div>
-
-                    {/* Recurrence */}
-                    <div>
-                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                        تناوب تکرار
-                      </label>
-                      <select
-                        value={scheduleRecurrence}
-                        onChange={(e) => setScheduleRecurrence(e.target.value as any)}
-                        className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none cursor-pointer"
-                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-                      >
-                        <option value="annual">سالیانه (دوره منظم سالانه)</option>
-                        <option value="quarterly">فصلی (هر فصل یک‌بار)</option>
-                        <option value="monthly">ماهانه (دوره‌ای هر ماه)</option>
-                        <option value="custom">موردی و مقطعی</option>
-                      </select>
-                    </div>
-
-                    {/* Mandatory Switch */}
-                    <div className="flex flex-col justify-center">
-                      <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                        فوریت و وضعیت مهلت
-                      </label>
-                      <label className="flex items-center gap-2 p-2 rounded-xl border bg-white/40 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 cursor-pointer">
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
                         <input
                           type="checkbox"
-                          checked={scheduleIsMandatory}
-                          onChange={(e) => setScheduleIsMandatory(e.target.checked)}
-                          className="w-4 h-4 rounded text-rose-600 focus:ring-rose-500 cursor-pointer"
+                          checked={hasSchedule}
+                          onChange={(e) => setHasSchedule(e.target.checked)}
+                          className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
                         />
-                        <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
-                          مهلت قطعی و الزامی (مشمول جریمه یا مسدودی)
+                        <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                          {hasSchedule ? 'دارای زمان‌بندی' : 'بدون زمان‌بندی'}
                         </span>
                       </label>
                     </div>
+
+                    {hasSchedule && (
+                      <div className="mt-3 pt-3 border-t border-blue-200/40 dark:border-blue-900/40 space-y-3 animate-in fade-in">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          {/* Month Picker */}
+                          <div>
+                            <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                              ماه اجرایی (فصل خودکار تعیین می‌شود)
+                            </label>
+                            <select
+                              value={scheduleMonth}
+                              onChange={(e) => {
+                                const m = e.target.value as PersianMonth;
+                                setScheduleMonth(m);
+                                setScheduleSeason(getSeasonForMonth(m));
+                              }}
+                              className="w-full p-2 rounded-lg border text-xs font-medium outline-none cursor-pointer"
+                              style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                            >
+                              {PERSIAN_MONTHS.map((m) => (
+                                <option key={m} value={m}>
+                                  {m} (فصل {getSeasonForMonth(m)})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Start Day */}
+                          <div>
+                            <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                              روز شروع بازه (از ۱ تا ۳۱)
+                            </label>
+                            <input
+                              type="number"
+                              min="1"
+                              max="31"
+                              value={scheduleStartDay}
+                              onChange={(e) => {
+                                const val = Math.min(31, Math.max(1, Number(e.target.value)));
+                                setScheduleStartDay(val);
+                                setScheduleDeadlineDays(Math.max(1, scheduleEndDay - val + 1));
+                              }}
+                              className="w-full p-2 rounded-lg border text-xs font-mono outline-none"
+                              style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                            />
+                          </div>
+
+                          {/* End Day */}
+                          <div>
+                            <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                              روز پایان بازه (مهلت اقدام)
+                            </label>
+                            <input
+                              type="number"
+                              min="1"
+                              max="31"
+                              value={scheduleEndDay}
+                              onChange={(e) => {
+                                const val = Math.min(31, Math.max(1, Number(e.target.value)));
+                                setScheduleEndDay(val);
+                                setScheduleDeadlineDays(Math.max(1, val - scheduleStartDay + 1));
+                              }}
+                              className="w-full p-2 rounded-lg border text-xs font-mono outline-none"
+                              style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {/* Notes */}
+                          <div>
+                            <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
+                              یادداشت گاه‌شمار
+                            </label>
+                            <input
+                              type="text"
+                              value={scheduleNotes}
+                              onChange={(e) => setScheduleNotes(e.target.value)}
+                              placeholder="مثلاً: طبق بخشنامه شماره ۱۴..."
+                              className="w-full p-2 rounded-lg border text-xs outline-none"
+                              style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                            />
+                          </div>
+
+                          {/* Mandatory Toggle */}
+                          <div className="flex items-center pt-4">
+                            <label className="flex items-center gap-2 cursor-pointer select-none">
+                              <input
+                                type="checkbox"
+                                checked={scheduleIsMandatory}
+                                onChange={(e) => setScheduleIsMandatory(e.target.checked)}
+                                className="w-4 h-4 rounded text-rose-600 focus:ring-rose-500 cursor-pointer"
+                              />
+                              <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
+                                مهلت قطعی و الزامی (مشمول جریمه یا مسدودی)
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Preview */}
+                        <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-xs flex items-center gap-2">
+                          <Calendar className="w-3.5 h-3.5 shrink-0" />
+                          <span>
+                            بازه ثبت در تقویم: <strong>{`از ${scheduleStartDay} الی ${scheduleEndDay} ${scheduleMonth} ماه`}</strong>
+                            {' • '}
+                            <span>مهلت اقدام: <strong>{scheduleDeadlineDays} روز</strong></span>
+                            {scheduleIsMandatory && <span className="text-rose-500 font-bold mr-1">• مهلت قطعی</span>}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Notes */}
+                  {/* URL Override & Estimated Minutes in 1 Row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        <Globe className="w-3.5 h-3.5 text-blue-500" />
+                        <span>نشانی اینترنتی اختصاصی (اختیاری)</span>
+                      </label>
+                      <input
+                        type="url"
+                        value={targetUrl}
+                        onChange={(e) => setTargetUrl(e.target.value)}
+                        placeholder="https://... (پیش‌فرض از سامانه خوانده می‌شود)"
+                        dir="ltr"
+                        className="w-full p-2.5 rounded-xl border text-xs font-mono outline-none"
+                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">
+                        <Clock className="w-3.5 h-3.5 text-amber-500" />
+                        <span>مدت زمان تقریبی اجرا (دقیقه)</span>
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="480"
+                        value={estimatedMinutes}
+                        onChange={(e) => setEstimatedMinutes(Math.max(1, Number(e.target.value)))}
+                        className="w-full p-2.5 rounded-xl border text-xs font-mono outline-none"
+                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Tags */}
                   <div>
-                    <label className="block text-[11px] font-bold mb-1 text-slate-700 dark:text-slate-300">
-                      یادداشت‌ها و شیوه‌نامه تقویم اجرایی
+                    <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">
+                      برچسب‌ها و کلمات کلیدی (با ویرگول جدا کنید)
                     </label>
                     <input
                       type="text"
-                      value={scheduleNotes}
-                      onChange={(e) => setScheduleNotes(e.target.value)}
-                      placeholder="مثال: به استناد بخشنامه ۴۵۲/ت، سامانه در پایان روز بیستم مسدود خواهد شد..."
-                      className="w-full p-2.5 rounded-xl border text-xs outline-none"
+                      value={tagsInput}
+                      onChange={(e) => setTagsInput(e.target.value)}
+                      placeholder="مثلاً: آموزش، فرهنگیان، استعلام حکم..."
+                      className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none"
                       style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
                     />
-                  </div>
-
-                  {/* Schedule Preview Bar */}
-                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-xs">
-                    <Calendar className="w-4 h-4 shrink-0" />
-                    <span>
-                      پیش‌نمایش در گاه‌شمار اداری:
-                      {' '}
-                      <strong>{`از ${scheduleStartDay} الی ${scheduleEndDay} ${scheduleMonth} ماه`}</strong>
-                      {' '}
-                      {scheduleDeadlineDays && (
-                        <span>
-                          (مهلت اقدام:{' '}
-                          <span dir="ltr" className="inline-block font-mono">
-                            \u200E{scheduleDeadlineDays}
-                          </span>{' '}
-                          روز)
-                        </span>
-                      )}
-                      {' • '}
-                      <span>{scheduleRecurrence === 'annual' ? 'تکرار سالانه' : scheduleRecurrence === 'quarterly' ? 'تکرار فصلی' : 'دوره‌ای'}</span>
-                      {scheduleIsMandatory && <span className="text-rose-500 font-bold mr-2">• مهلت قطعی</span>}
-                    </span>
                   </div>
                 </div>
               )}
             </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                برچسب‌ها و کلمات کلیدی (با کاما یا ویرگول جدا کنید)
-              </label>
-              <input
-                type="text"
-                value={tagsInput}
-                onChange={(e) => setTagsInput(e.target.value)}
-                placeholder="مثلاً: آموزش، فرهنگیان، استعلام حکم، سیدا"
-                className="w-full p-3 rounded-xl border text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-blue-500"
-                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-              توضیح کوتاه و هدف فرایند
-            </label>
-            <textarea
-              rows={2}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="خلاصه‌ای از اینکه این فرایند چه کاری انجام می‌دهد و خروجی آن چیست..."
-              className="w-full p-3 rounded-xl border text-sm font-medium outline-none"
-              style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-            />
           </div>
 
           {/* Steps Management Section */}
