@@ -530,13 +530,13 @@
     "semantic_hash": ""
   },
   "src/components/process-detail-modal.tsx": {
-    "mtime": 1791205326.7782674,
-    "ast_hash": "f85b0bbc77b27a3439145b23a094f67d",
+    "mtime": 1791217784.2636645,
+    "ast_hash": "f0de4f43ec01e4d9b2cb7689119e1e89",
     "semantic_hash": ""
   },
   "src/components/process-detail-view.tsx": {
-    "mtime": 1791205309.2575586,
-    "ast_hash": "9baace19b674826d2ef61fb744005d0d",
+    "mtime": 1791212174.5040815,
+    "ast_hash": "e00e4eae5c167aea1a4057c1396633d5",
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
@@ -850,8 +850,8 @@
     "semantic_hash": ""
   },
   "src/components/process-print-view.tsx": {
-    "mtime": 1791126264.9113066,
-    "ast_hash": "ed0eeff8259089d54eb935f100ff4806",
+    "mtime": 1791212076.9237392,
+    "ast_hash": "98916e4b1d7b3f78a7547c4873182143",
     "semantic_hash": ""
   },
   "src/components/menu-path-display.tsx": {
@@ -865,8 +865,8 @@
     "semantic_hash": ""
   },
   "src/components/step-content-renderer.tsx": {
-    "mtime": 1791126049.585678,
-    "ast_hash": "0d93b0fbdea6390675ac9ccbdcb15dc2",
+    "mtime": 1791211566.935382,
+    "ast_hash": "c3fd2d4e60ed35afeff6d95cfdf80543",
     "semantic_hash": ""
   },
   "prisma/migrations/20261004175522_add_schedule_to_process/migration.sql": {

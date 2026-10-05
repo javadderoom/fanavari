@@ -157,6 +157,17 @@ function renderInlineFormattedText(text: string, isPrintView = false): React.Rea
 }
 
 /**
+ * Helper to determine if a step has meaningful, non-empty, non-placeholder content
+ */
+export function hasValidStepContent(text?: string | null): boolean {
+  if (!text) return false;
+  const trimmed = text.trim();
+  if (!trimmed) return false;
+  if (trimmed === 'توضیحات و دستورالعمل اجرایی این گام را اینجا بنویسید...') return false;
+  return true;
+}
+
+/**
  * Dedicated step content & callout renderer
  */
 export function StepContentRenderer({
@@ -165,10 +176,13 @@ export function StepContentRenderer({
   className = '',
   isPrintView = false,
 }: StepContentRendererProps) {
-  if (!content && (!tips || tips.length === 0)) return null;
+  const hasContent = hasValidStepContent(content);
+  const validTips = (tips || []).filter(t => t && t.trim().length > 0);
+
+  if (!hasContent && validTips.length === 0) return null;
 
   // Split content by lines
-  const lines = (content || '').split('\n');
+  const lines = (hasContent ? content : '').split('\n');
   const renderedElements: React.ReactNode[] = [];
 
   let currentParagraphLines: string[] = [];

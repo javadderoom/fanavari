@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Process, ProcessStep } from '@/types/process';
 import Link from 'next/link';
 import { MenuPathDisplay } from './menu-path-display';
-import { StepContentRenderer } from './step-content-renderer';
+import { StepContentRenderer, hasValidStepContent } from './step-content-renderer';
 import { 
   Clock, 
   ExternalLink, 
@@ -379,13 +379,15 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
                 </div>
               )}
 
-              {/* Step Markdown / Instructions & Interactive Callouts */}
-              <div className="mb-6 font-medium" style={{ color: 'var(--text-secondary)' }}>
-                <StepContentRenderer 
-                  content={currentStep.contentMarkdown} 
-                  tips={currentStep.tips}
-                />
-              </div>
+              {/* Step Markdown / Instructions & Interactive Callouts - Omit if empty */}
+              {(hasValidStepContent(currentStep.contentMarkdown) || (currentStep.tips && currentStep.tips.some(t => t && t.trim().length > 0))) && (
+                <div className="mb-6 font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  <StepContentRenderer 
+                    content={currentStep.contentMarkdown} 
+                    tips={currentStep.tips}
+                  />
+                </div>
+              )}
 
               {/* Copyable Fields */}
               {currentStep.copyableFields && currentStep.copyableFields.length > 0 && (

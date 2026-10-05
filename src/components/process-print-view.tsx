@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Process } from '@/types/process';
 import { MenuPathDisplay } from './menu-path-display';
-import { StepContentRenderer } from './step-content-renderer';
+import { StepContentRenderer, hasValidStepContent } from './step-content-renderer';
 import { 
   Printer, 
   ArrowRight, 
@@ -217,20 +217,46 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
               {process.title}
             </h1>
 
-            {process.description && (
+            {/* Operating Schedule / Timeline Banner (Enforces Deadline Accountability) */}
+            {process.schedule && (
+              <div className="mb-4 p-4 rounded-2xl border-2 border-amber-300 bg-amber-50/80 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <Calendar className="w-5 h-5 text-amber-600 print:text-black shrink-0" />
+                  <div>
+                    <span className="text-xs font-black text-amber-900 print:text-black block">گاه‌شمار اجرایی و بازه مجاز انجام فرایند:</span>
+                    <span className="text-sm font-bold text-amber-950 print:text-black">
+                      {process.schedule.timeframeLabel || `از ${process.schedule.startDay} الی ${process.schedule.endDay} ${process.schedule.month} ماه`}
+                      {process.schedule.deadlineDays && (
+                        <span className="mr-2 text-xs font-semibold text-amber-800 print:text-black">
+                          (مهلت اقدام: <span dir="ltr" className="font-mono font-bold">{'\u200E' + process.schedule.deadlineDays}</span> روز)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+                {process.schedule.isMandatory && (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-600 text-white text-xs font-black self-start sm:self-auto shrink-0 shadow-xs print:bg-black print:text-white">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>الزام قانونی: مهلت قطعی و الزامی</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {process.description && process.description.trim() && (
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 text-slate-800">
                 <h4 className="text-xs font-black text-slate-600 mb-1.5">موضوع و شرح فرایند:</h4>
                 <p className={`${fontSizeClasses.body} whitespace-pre-line font-medium leading-relaxed`}>
-                  {process.description}
+                  {process.description.trim()}
                 </p>
               </div>
             )}
 
-            {process.targetUrl && (
+            {process.targetUrl && process.targetUrl.trim() && (
               <div className="mt-3 text-xs sm:text-sm text-slate-600 flex items-center gap-2">
                 <span className="font-bold">نشانی سامانه جهت ورود مستقیم:</span>
                 <span className="font-mono text-blue-700 underline" dir="ltr">
-                  {process.targetUrl}
+                  {process.targetUrl.trim()}
                 </span>
               </div>
             )}
@@ -252,17 +278,25 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
 
             {process.steps.map((step, idx) => {
               const typeInfo = getStepTypeLabel(step.stepType);
+              const hasContent = hasValidStepContent(step.contentMarkdown);
+              const validCopyableFields = (step.copyableFields || []).filter(
+                (f) => (f.label && f.label.trim()) || (f.value && f.value.trim())
+              );
+              const validTips = (step.tips || []).filter((t) => t && t.trim().length > 0);
+              const validErrorGuides = (step.errorGuides || []).filter(
+                (e) => (e.errorTitle && e.errorTitle.trim()) || (e.solution && e.solution.trim())
+              );
 
               return (
                 <section
                   key={step.id || idx}
-                  className="rounded-2xl border-2 border-slate-300 p-5 sm:p-7 bg-white print:border-slate-800 print:break-inside-avoid shadow-xs"
+                  className="rounded-2xl border-2 border-slate-300 p-5 sm:p-7 bg-white print:border-slate-800 print:break-inside-avoid shadow-xs relative"
                   style={{
                     breakInside: 'avoid',
                     pageBreakInside: 'avoid',
                   }}
                 >
-                  {/* Step Top Bar: Step Number + Title + Step Type */}
+                  {/* Step Top Bar: Step Number + Title + Step Type + Checkbox for manual audit tick */}
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-slate-200">
                     <div className="flex items-start gap-3.5">
                       {/* Step Number Round Badge */}
@@ -284,26 +318,36 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                         </h2>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Menu Access Path / Software Route (Boxed Breadcrumbs) */}
-                  {step.targetMenuPath && (
-                    <MenuPathDisplay path={step.targetMenuPath} variant="print" />
-                  )}
-
-                  {/* Step Narrative Instructions & Callouts */}
-                  <div className="my-4">
-                    <h5 className="text-xs font-black text-slate-500 mb-1.5">اقدامات لازم در این مرحله:</h5>
-                    <div className={`${fontSizeClasses.body} text-slate-900 font-medium leading-relaxed`}>
-                      <StepContentRenderer 
-                        content={step.contentMarkdown} 
-                        isPrintView={true}
-                      />
+                    {/* Step Completion Verification Box for Printout Audit */}
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-300 print:border-slate-800 bg-slate-50 print:bg-white text-xs font-bold text-slate-700 self-start sm:self-center shrink-0">
+                      <span className="w-4 h-4 rounded border-2 border-slate-400 print:border-black inline-block bg-white" />
+                      <span>تایید انجام مرحله</span>
                     </div>
                   </div>
 
+                  {/* Menu Access Path / Software Route (Boxed Breadcrumbs) */}
+                  {step.targetMenuPath && step.targetMenuPath.trim() && (
+                    <MenuPathDisplay path={step.targetMenuPath.trim()} variant="print" />
+                  )}
+
+                  {/* Step Narrative Instructions & Callouts - OMITTED ENTIRELY IF EMPTY */}
+                  {hasContent && (
+                    <div className="my-4">
+                      <h5 className="text-xs font-black text-slate-600 mb-1.5">
+                        اقدامات لازم و توضیحات این مرحله:
+                      </h5>
+                      <div className={`${fontSizeClasses.body} text-slate-900 font-medium leading-relaxed`}>
+                        <StepContentRenderer 
+                          content={step.contentMarkdown} 
+                          isPrintView={true}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Copyable Fields / Sample Input Data Table */}
-                  {step.copyableFields && step.copyableFields.length > 0 && (
+                  {validCopyableFields.length > 0 && (
                     <div className="my-4 p-4 rounded-xl border border-slate-300 bg-slate-50">
                       <h5 className="text-xs font-black text-slate-900 mb-2.5 flex items-center gap-1.5">
                         <span>اطلاعات و مقادیر موردنیاز جهت ورود:</span>
@@ -314,19 +358,19 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                             <tr className="border-b border-slate-300 text-slate-600">
                               <th className="py-2 px-3 font-black">عنوان فیلد</th>
                               <th className="py-2 px-3 font-black">مقدار / نمونه ورودی</th>
-                              {step.copyableFields.some(f => f.description) && (
+                              {validCopyableFields.some(f => f.description && f.description.trim()) && (
                                 <th className="py-2 px-3 font-black">توضیحات</th>
                               )}
                             </tr>
                           </thead>
                           <tbody>
-                            {step.copyableFields.map((field, fIdx) => (
+                            {validCopyableFields.map((field, fIdx) => (
                               <tr key={fIdx} className="border-b border-slate-200 last:border-none">
                                 <td className="py-2 px-3 font-bold text-slate-800">{field.label}</td>
                                 <td className="py-2 px-3 font-mono font-black text-blue-700" dir="ltr">
                                   {field.value}
                                 </td>
-                                {step.copyableFields?.some(f => f.description) && (
+                                {validCopyableFields.some(f => f.description && f.description.trim()) && (
                                   <td className="py-2 px-3 text-slate-600">{field.description || '—'}</td>
                                 )}
                               </tr>
@@ -338,14 +382,14 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                   )}
 
                   {/* Important Tips & Advice */}
-                  {step.tips && step.tips.length > 0 && (
+                  {validTips.length > 0 && (
                     <div className="my-4 p-4 rounded-xl border border-amber-300 bg-amber-50 text-amber-950">
                       <div className="flex items-center gap-1.5 text-xs font-black mb-2 text-amber-900">
                         <Lightbulb className="w-4 h-4 text-amber-600 shrink-0" />
                         <span>نکات مهم و راهنمایی اجرایی:</span>
                       </div>
                       <ul className="space-y-1.5 text-xs sm:text-sm font-semibold pr-2">
-                        {step.tips.map((tip, tIdx) => (
+                        {validTips.map((tip, tIdx) => (
                           <li key={tIdx} className="flex items-start gap-2">
                             <span className="text-amber-600 font-bold">•</span>
                             <span>{tip}</span>
@@ -356,14 +400,14 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                   )}
 
                   {/* Error Guides & Rapid Solutions */}
-                  {step.errorGuides && step.errorGuides.length > 0 && (
+                  {validErrorGuides.length > 0 && (
                     <div className="my-4 p-4 rounded-xl border border-rose-300 bg-rose-50 text-rose-950">
                       <div className="flex items-center gap-1.5 text-xs font-black mb-2.5 text-rose-900">
                         <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
                         <span>خطاهای احتمالی این مرحله و نحوه برطرف کردن:</span>
                       </div>
                       <div className="space-y-3">
-                        {step.errorGuides.map((err) => (
+                        {validErrorGuides.map((err) => (
                           <div key={err.id} className="p-3 bg-white rounded-lg border border-rose-200 text-xs sm:text-sm">
                             <div className="flex items-center justify-between gap-2 font-black text-rose-800 mb-1">
                               <span>کد خطا [{err.errorCode}]: {err.errorTitle}</span>
@@ -414,6 +458,26 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
 
         </article>
       </main>
+
+      {/* Global Print Optimization Rules */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 12mm 10mm;
+          }
+          body {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .print\\:break-inside-avoid {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+        }
+      `}} />
     </div>
   );
 }

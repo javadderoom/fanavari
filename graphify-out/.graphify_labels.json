@@ -125,6 +125,8 @@
   "123": "clip-path for Animation",
   "124": "Performance Rules",
   "125": "Gesture and Drag Interactions",
+  "126": "KNOWN_SERIF_FONTS",
+  "127": "@tiptap/extension-table-header",
   "128": "syncEditBadgeHitProxies",
   "129": "isGeneratedFile",
   "130": "StoryForge AI Engine & Oracle Debug Guide",
@@ -158,7 +160,6 @@
   "160": "normalizeIgnoreValueEntries",
   "162": "resolveProjectRoot",
   "163": "@tiptap/extension-highlight",
-  "164": "readWorkspacePatterns",
   "165": "Step 3: Ask strategic questions (for PRODUCT.md)",
   "167": "4. Plan three variants: identity first, then mode, then axes"
 }
