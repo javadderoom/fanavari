@@ -24,6 +24,8 @@ model User {
   createdAccessGrants      ProcessAccessGrant[]     @relation("GrantedByUser")
   receivedInfoAccessGrants InformationAccessGrant[] @relation("InfoGrantedToUser")
   createdInfoAccessGrants  InformationAccessGrant[] @relation("InfoGrantedByUser")
+  operatedRuns             WorkflowRun[]            @relation("RunOperator")
+  supervisedRuns           WorkflowRun[]            @relation("RunSupervisor")
 }
 
 model Department {
@@ -76,6 +78,7 @@ model Process {
   steps            Step[]
   savedSessions    SavedSession[]
   accessGrants     ProcessAccessGrant[]
+  workflowRuns     WorkflowRun[]
 }
 
 model ProcessAccessGrant {
@@ -210,5 +213,60 @@ model InformationAccessGrant {
   @@index([userId])
   @@index([departmentId])
   @@index([roleName])
+}
+
+model WorkflowRun {
+  id                       String            @id @default(uuid())
+  processId                String
+  process                  Process           @relation(fields: [processId], references: [id], onDelete: Cascade)
+  runNumber                Int               @default(1)
+  title                    String
+  status                   String            @default("in_progress") // "in_progress" | "completed" | "paused" | "flagged"
+  operatorId               String?
+  operator                 User?             @relation("RunOperator", fields: [operatorId], references: [id], onDelete: SetNull)
+  operatorName             String
+  operatorRole             String?
+  startedAt                DateTime          @default(now())
+  completedAt              DateTime?
+  totalDurationSeconds     Int?
+  completedStepsCount      Int               @default(0)
+  totalStepsCount          Int               @default(0)
+  notes                    String?
+  supervisorId             String?
+  supervisor               User?             @relation("RunSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
+  supervisorName           String?
+  supervisorApprovalStatus String            @default("none") // "none" | "pending" | "approved" | "rejected"
+  supervisorApprovedAt     DateTime?
+  supervisorNotes          String?
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+  stepLogs                 WorkflowStepLog[]
+
+  @@index([processId])
+  @@index([operatorId])
+  @@index([status])
+}
+
+model WorkflowStepLog {
+  id                 String      @id @default(uuid())
+  runId              String
+  run                WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  stepId             String?
+  stepKey            String
+  stepOrder          Int
+  stepTitle          String
+  status             String      @default("completed") // "completed" | "skipped" | "blocked"
+  startedAt          DateTime?
+  completedAt        DateTime    @default(now())
+  durationSeconds    Int?
+  operatorNotes      String?
+  isCheckpoint       Boolean     @default(false)
+  supervisorSignOff  Boolean     @default(false)
+  supervisorSignedBy String?
+  supervisorSignedAt DateTime?
+  createdAt          DateTime    @default(now())
+
+  @@index([runId])
+  @@index([stepKey])
 }
 

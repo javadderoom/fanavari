@@ -535,8 +535,8 @@
     "semantic_hash": ""
   },
   "src/components/process-detail-view.tsx": {
-    "mtime": 1791307013.4359763,
-    "ast_hash": "e0d3179658e52574b016eb6bd3fc1a08",
+    "mtime": 1791307827.006198,
+    "ast_hash": "053421409624a4bf3bfd836222766fff",
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
@@ -1085,8 +1085,8 @@
     "semantic_hash": ""
   },
   "src/components/process-detail/process-header-banner.tsx": {
-    "mtime": 1791303927.5936363,
-    "ast_hash": "48919e0a1c1ceec4a5ba6eae08757555",
+    "mtime": 1791307658.5232074,
+    "ast_hash": "59a017d4b6ed967eaa1ee098e3e19709",
     "semantic_hash": ""
   },
   "src/components/process-detail/process-scratchpad-tab.tsx": {
@@ -1132,6 +1132,21 @@
   "src/components/process-detail/step-runner-view.tsx": {
     "mtime": 1791307099.0212874,
     "ast_hash": "541387d33c6620c6facbe27435ba09c4",
+    "semantic_hash": ""
+  },
+  "src/app/process/[slug]/sidecar/page.tsx": {
+    "mtime": 1791307574.8186955,
+    "ast_hash": "e93b20c25581dd824c989514a9f17b42",
+    "semantic_hash": ""
+  },
+  "src/components/process-detail/sidecar-popout-view.tsx": {
+    "mtime": 1791307551.2081437,
+    "ast_hash": "e24c0678234f50f879e5313898208553",
+    "semantic_hash": ""
+  },
+  "src/components/process-detail/sidecar-runner.tsx": {
+    "mtime": 1791307942.6757307,
+    "ast_hash": "5c62fe3cbf97b3bcd32b92d27cec888f",
     "semantic_hash": ""
   }
 }

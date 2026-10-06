@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Process, ProcessStep } from '@/types/process';
+import { Process, ProcessStep, WorkflowRun } from '@/types/process';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ScratchpadDrawer } from './scratchpad-drawer';
@@ -12,6 +12,7 @@ import { ProcessScratchpadTab } from './process-detail/process-scratchpad-tab';
 import { FlowchartCanvas } from './process-detail/flowchart-canvas';
 import { StepRunnerView } from './process-detail/step-runner-view';
 import { SidecarRunner } from './process-detail/sidecar-runner';
+import { ProcessRunsTab } from './process-detail/process-runs-tab';
 import { useUserSession } from '@/components/user-session-provider';
 import { Permissions, hasPermission } from '@/lib/permissions';
 import { notify } from '@/lib/notify';
@@ -45,7 +46,8 @@ import {
   Play,
   Lock,
   Globe,
-  Compass
+  Compass,
+  Award
 } from 'lucide-react';
 
 interface ProcessDetailViewProps {
@@ -58,8 +60,9 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
   const [currentProcess, setCurrentProcess] = useState<Process>(process);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'flow' | 'errors' | 'scratchpad'>('flow');
+  const [activeTab, setActiveTab] = useState<'flow' | 'errors' | 'scratchpad' | 'runs'>('flow');
   const [flowViewMode, setFlowViewMode] = useState<'canvas' | 'stepper'>('canvas');
+  const [activeRun, setActiveRun] = useState<WorkflowRun | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isSidecarOpen, setIsSidecarOpen] = useState(false);
@@ -172,6 +175,67 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
   const isAllCompleted = totalCount > 0 && completedCount === totalCount;
   const isCurrentStepCompleted = currentStep ? completedStepKeys.includes(currentStep.stepKey) : false;
 
+  const logStepToActiveRun = async (stepKey: string, isCompleted: boolean) => {
+    if (!activeRun) return;
+    const step = process.steps.find((s) => s.stepKey === stepKey);
+    if (!step) return;
+
+    try {
+      const res = await fetch(`/api/processes/${process.slug}/runs/${activeRun.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUser.id,
+        },
+        body: JSON.stringify({
+          stepLog: {
+            stepKey: step.stepKey,
+            stepOrder: step.orderIndex,
+            stepTitle: step.title,
+            stepId: step.id,
+            status: isCompleted ? 'completed' : 'skipped',
+            isCheckpoint: step.stepType === 'warning',
+          },
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.run) {
+          setActiveRun(data.run);
+        }
+      }
+    } catch (err) {
+      console.error('Error logging step to workflow run:', err);
+    }
+  };
+
+  const completeActiveRunIfDone = async (completedCount: number) => {
+    if (!activeRun || activeRun.status === 'completed') return;
+    if (completedCount === process.steps.length) {
+      try {
+        const res = await fetch(`/api/processes/${process.slug}/runs/${activeRun.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': currentUser.id,
+          },
+          body: JSON.stringify({
+            status: 'completed',
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.run) {
+            setActiveRun(data.run);
+            notify.success('اجرای رسمی با موفقیت خاتمه یافت و لاگ ممیزی ایزو ثبت گردید!');
+          }
+        }
+      } catch (err) {
+        console.error('Error completing workflow run:', err);
+      }
+    }
+  };
+
   const toggleStepCompleted = (stepKey: string) => {
     setCompletedStepKeys((prev) => {
       let next: string[];
@@ -179,12 +243,15 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
       if (isNowDone) {
         next = [...prev, stepKey];
         notify.success('گام به عنوان انجام‌شده علامت‌گذاری شد ✓');
+        logStepToActiveRun(stepKey, true);
         if (next.length === process.steps.length) {
           setShowCelebration(true);
+          completeActiveRunIfDone(next.length);
         }
       } else {
         next = prev.filter((k) => k !== stepKey);
         setShowCelebration(false);
+        logStepToActiveRun(stepKey, false);
       }
       try {
         localStorage.setItem(`fanavari-completed-${process.id}`, JSON.stringify(next));
@@ -379,6 +446,25 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
           <StickyNote className="w-4 h-4" />
           <span>جعبه‌ابزار و یادداشت موقت</span>
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('runs')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'runs' ? 'shadow-md scale-105' : 'opacity-70 hover:opacity-100'
+          }`}
+          style={{
+            background: activeTab === 'runs' ? 'var(--badge-blue-text)' : 'var(--bg-surface)',
+            color: activeTab === 'runs' ? '#ffffff' : 'var(--text-secondary)',
+            border: '1px solid var(--border-glass)'
+          }}
+        >
+          <Award className="w-4 h-4" />
+          <span>سوابق اجرا و ممیزی ISO</span>
+          {activeRun && (
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+          )}
+        </button>
       </div>
 
       {/* Tab 1: Flowchart & Step Walkthrough (Interactive Process Runner Mode) */}
@@ -525,6 +611,11 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
               processSlug={process.slug}
               copiedField={copiedField}
               onCopyField={handleCopy}
+              activeRun={activeRun}
+              onDisconnectRun={() => {
+                setActiveRun(null);
+                notify.info('اتصال به اجرای رسمی قطع گردید.');
+              }}
             />
           )}
         </div>
@@ -543,6 +634,23 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
           onChangeNote={(val) => setScratchpadNote(val)}
           onSave={handleSaveScratchpad}
           isSavedNotice={isSavedNotice}
+        />
+      )}
+
+      {/* Tab 4: Workflow Execution Runs & Compliance Audit Trail */}
+      {activeTab === 'runs' && (
+        <ProcessRunsTab
+          processId={process.id}
+          processSlug={process.slug}
+          processTitle={process.title}
+          totalSteps={process.steps.length}
+          activeRunId={activeRun?.id || null}
+          onActivateRun={(run) => {
+            setActiveRun(run);
+            setActiveTab('flow');
+            setFlowViewMode('stepper');
+            notify.success(`اجرای رسمی #${run.runNumber} در کنسول فعال گردید.`);
+          }}
         />
       )}
 

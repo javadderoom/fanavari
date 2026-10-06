@@ -3,7 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { 
-  ProcessStep 
+  ProcessStep,
+  WorkflowRun
 } from '@/types/process';
 import { MenuPathDisplay } from '../menu-path-display';
 import { StepContentRenderer, hasValidStepContent } from '../step-content-renderer';
@@ -21,7 +22,10 @@ import {
   Copy, 
   Lightbulb, 
   ArrowRight, 
-  ArrowLeft 
+  ArrowLeft,
+  ShieldCheck,
+  Play,
+  LogOut
 } from 'lucide-react';
 
 interface StepRunnerViewProps {
@@ -36,6 +40,8 @@ interface StepRunnerViewProps {
   processSlug: string;
   copiedField: string | null;
   onCopyField: (text: string, label: string) => void;
+  activeRun?: WorkflowRun | null;
+  onDisconnectRun?: () => void;
 }
 
 export function StepRunnerView({
@@ -50,12 +56,49 @@ export function StepRunnerView({
   processSlug,
   copiedField,
   onCopyField,
+  activeRun,
+  onDisconnectRun,
 }: StepRunnerViewProps) {
   const currentStep = steps[activeStepIndex];
   const isCurrentStepCompleted = currentStep ? completedStepKeys.includes(currentStep.stepKey) : false;
 
   return (
     <div className="space-y-6">
+      {/* Official Execution Run HUD Banner */}
+      {activeRun && (
+        <div className="p-4 rounded-2xl border border-blue-500/30 bg-blue-500/10 backdrop-blur-sm flex items-center justify-between gap-4 flex-wrap animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-600 text-white uppercase tracking-wider font-mono" dir="ltr">
+                  OFFICIAL RUN #{activeRun.runNumber}
+                </span>
+                <span className="text-xs font-black text-blue-900 dark:text-blue-100">
+                  {activeRun.title}
+                </span>
+              </div>
+              <p className="text-[11px] text-blue-700/80 dark:text-blue-300/80 mt-0.5">
+                مجری: <strong>{activeRun.operatorName}</strong> • پیشرفت در لاگ ممیزی ISO 9001 ذخیره می‌شود.
+              </p>
+            </div>
+          </div>
+
+          {onDisconnectRun && (
+            <button
+              type="button"
+              onClick={onDisconnectRun}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>خروج از حالت رهگیری رسمی</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Interactive Flow Stepper Nodes */}
       <div>
         <div className="flex items-center justify-between mb-3">

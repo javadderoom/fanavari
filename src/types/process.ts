@@ -176,6 +176,7 @@ export interface Process {
   schedule?: ProcessSchedule;
   steps: ProcessStep[];
   updatedAt: string;
+  workflowRuns?: WorkflowRun[];
 }
 
 export type MatchLocationType = 
@@ -261,5 +262,61 @@ export interface InformationPost {
   createdAt: string | Date;
   updatedAt: string | Date;
   accessGrants?: InformationAccessGrant[];
+}
+
+export type WorkflowRunStatus = 'in_progress' | 'completed' | 'paused' | 'flagged';
+export type SupervisorApprovalStatus = 'none' | 'pending' | 'approved' | 'rejected';
+export type WorkflowStepLogStatus = 'completed' | 'skipped' | 'blocked';
+
+export interface WorkflowStepLog {
+  id: string;
+  runId: string;
+  stepId?: string | null;
+  stepKey: string;
+  stepOrder: number;
+  stepTitle: string;
+  status: WorkflowStepLogStatus;
+  startedAt?: string | Date | null;
+  completedAt: string | Date;
+  durationSeconds?: number | null;
+  operatorNotes?: string | null;
+  isCheckpoint: boolean;
+  supervisorSignOff: boolean;
+  supervisorSignedBy?: string | null;
+  supervisorSignedAt?: string | Date | null;
+  createdAt: string | Date;
+}
+
+export interface WorkflowRun {
+  id: string;
+  processId: string;
+  process?: {
+    id: string;
+    title: string;
+    slug: string;
+    systemTool?: {
+      name: string;
+    } | null;
+  };
+  runNumber: number;
+  title: string;
+  status: WorkflowRunStatus;
+  operatorId?: string | null;
+  operatorName: string;
+  operatorRole?: string | null;
+  startedAt: string | Date;
+  completedAt?: string | Date | null;
+  totalDurationSeconds?: number | null;
+  completedStepsCount: number;
+  totalStepsCount: number;
+  notes?: string | null;
+  supervisorId?: string | null;
+  supervisorName?: string | null;
+  supervisorApprovalStatus: SupervisorApprovalStatus;
+  supervisorApprovedAt?: string | Date | null;
+  supervisorNotes?: string | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  stepLogs?: WorkflowStepLog[];
 }
 

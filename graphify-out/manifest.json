@@ -535,8 +535,8 @@
     "semantic_hash": ""
   },
   "src/components/process-detail-view.tsx": {
-    "mtime": 1791307827.006198,
-    "ast_hash": "053421409624a4bf3bfd836222766fff",
+    "mtime": 1791310155.3556356,
+    "ast_hash": "601fcf0812b17ce1c2e7231733394eca",
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
@@ -610,8 +610,8 @@
     "semantic_hash": ""
   },
   "src/types/process.ts": {
-    "mtime": 1791302471.8317578,
-    "ast_hash": "ec3fdce1ba52a74f3d35ce280a81c42d",
+    "mtime": 1791309577.8932633,
+    "ast_hash": "fa53f00fd86bfd718e589e8a908353c5",
     "semantic_hash": ""
   },
   "tsconfig.json": {
@@ -1130,8 +1130,8 @@
     "semantic_hash": ""
   },
   "src/components/process-detail/step-runner-view.tsx": {
-    "mtime": 1791307099.0212874,
-    "ast_hash": "541387d33c6620c6facbe27435ba09c4",
+    "mtime": 1791309823.9336054,
+    "ast_hash": "0904e6f7a20b1c6a2a988a16057fcf20",
     "semantic_hash": ""
   },
   "src/app/process/[slug]/sidecar/page.tsx": {
@@ -1147,6 +1147,31 @@
   "src/components/process-detail/sidecar-runner.tsx": {
     "mtime": 1791307942.6757307,
     "ast_hash": "5c62fe3cbf97b3bcd32b92d27cec888f",
+    "semantic_hash": ""
+  },
+  "prisma/migrations/20261006213000_add_workflow_runs_and_audit_logs/migration.sql": {
+    "mtime": 1791309388.3056078,
+    "ast_hash": "a714ff6442876d4caa3b1f9f5d1f180f",
+    "semantic_hash": ""
+  },
+  "src/app/api/processes/[id]/runs/[runId]/route.ts": {
+    "mtime": 1791310299.994594,
+    "ast_hash": "1588e9709f45042eb810a34734251f24",
+    "semantic_hash": ""
+  },
+  "src/app/api/processes/[id]/runs/route.ts": {
+    "mtime": 1791309598.7066865,
+    "ast_hash": "d9653ef23c8441cfa86dec74321ab8e6",
+    "semantic_hash": ""
+  },
+  "src/components/process-detail/process-run-audit-modal.tsx": {
+    "mtime": 1791310183.1550448,
+    "ast_hash": "e179043a37469ac1326ac058c99593ba",
+    "semantic_hash": ""
+  },
+  "src/components/process-detail/process-runs-tab.tsx": {
+    "mtime": 1791310213.24312,
+    "ast_hash": "dd346f249b0b57004e0c7d36edd31563",
     "semantic_hash": ""
   }
 }
