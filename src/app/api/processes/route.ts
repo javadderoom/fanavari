@@ -8,11 +8,32 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get('q') || '';
     const scope = searchParams.get('scope');
+    const userId = req.headers.get('x-user-id');
+    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+
+    const isSuperAdmin = hasPermission(userPermissions, Permissions.ADMINISTRATOR);
+
+    // Privacy-preserving zero-leak filter:
+    // If not super admin, non-public processes are completely hidden unless user is the author or has an explicit grant
+    const aclFilter = isSuperAdmin
+      ? {}
+      : {
+          OR: [
+            { visibility: 'public' },
+            ...(userId
+              ? [
+                  { authorId: userId },
+                  { accessGrants: { some: { userId } } },
+                ]
+              : []),
+          ],
+        };
 
     const processes = await prisma.process.findMany({
       where: {
         AND: [
           scope ? { scope } : {},
+          aclFilter,
           query
             ? {
                 OR: [
@@ -33,6 +54,11 @@ export async function GET(req: NextRequest) {
         },
         department: true,
         systemTool: true,
+        accessGrants: {
+          include: {
+            user: true,
+          },
+        },
       },
       orderBy: { updatedAt: 'desc' },
     });
@@ -68,6 +94,7 @@ export async function POST(req: NextRequest) {
       description,
       scope,
       category,
+      visibility,
       departmentName,
       departmentId,
       targetSystem,
@@ -76,6 +103,7 @@ export async function POST(req: NextRequest) {
       steps,
       schedule,
     } = body;
+    const currentUserId = req.headers.get('x-user-id');
 
     if (!title || !title.trim()) {
       return NextResponse.json({ error: 'Process title is required' }, { status: 400 });
@@ -174,6 +202,7 @@ export async function POST(req: NextRequest) {
             description: description?.trim() || '',
             scope: scope || existingProcess.scope,
             category: category || existingProcess.category,
+            visibility: visibility || existingProcess.visibility,
             departmentId: resolvedDeptId !== undefined ? resolvedDeptId : existingProcess.departmentId,
             systemToolId: resolvedSystemToolId !== undefined ? resolvedSystemToolId : existingProcess.systemToolId,
             targetSystem: targetSystem?.trim() || existingProcess.targetSystem,
@@ -191,6 +220,9 @@ export async function POST(req: NextRequest) {
             },
             department: true,
             systemTool: true,
+            accessGrants: {
+              include: { user: true },
+            },
           },
         });
       });
@@ -212,6 +244,8 @@ export async function POST(req: NextRequest) {
         description: description?.trim() || '',
         scope: scope || 'organization',
         category: category || 'hr',
+        visibility: visibility || 'public',
+        authorId: currentUserId || null,
         departmentId: resolvedDeptId,
         systemToolId: resolvedSystemToolId,
         targetSystem: targetSystem?.trim() || 'سامانه سازمانی',
@@ -229,6 +263,9 @@ export async function POST(req: NextRequest) {
         },
         department: true,
         systemTool: true,
+        accessGrants: {
+          include: { user: true },
+        },
       },
     });
 

@@ -21,6 +21,27 @@ export function mapPrismaProcess(p: any): Process {
     description: p.description,
     scope: (p.scope as any) || 'portal',
     category: (p.category as any) || 'hr',
+    visibility: (p.visibility as any) || 'public',
+    authorId: p.authorId || null,
+    accessGrants: Array.isArray(p.accessGrants)
+      ? p.accessGrants.map((g: any) => ({
+          id: g.id,
+          processId: g.processId,
+          userId: g.userId,
+          user: g.user
+            ? {
+                id: g.user.id,
+                name: g.user.name,
+                email: g.user.email,
+                roleName: g.user.roleName,
+                avatarUrl: g.user.avatarUrl,
+              }
+            : undefined,
+          permission: (g.permission as any) || 'view',
+          grantedById: g.grantedById || null,
+          createdAt: g.createdAt,
+        }))
+      : [],
     departmentName: p.department?.name || 'سازمان نامشخص',
     departmentSlug: p.department?.slug || undefined,
     estimatedMinutes: p.estimatedMinutes || 10,
@@ -70,6 +91,11 @@ export async function getDbProcesses(): Promise<Process[]> {
         },
         department: true,
         systemTool: true,
+        accessGrants: {
+          include: {
+            user: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -112,6 +138,11 @@ export async function getDbProcessBySlug(slug: string): Promise<Process | null> 
         },
         department: true,
         systemTool: true,
+        accessGrants: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
 

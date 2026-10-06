@@ -32,6 +32,23 @@ export async function GET(req: NextRequest) {
     if (systemToolId) where.systemToolId = systemToolId;
     else if (systemSlug) where.systemTool = { slug: systemSlug };
 
+    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const userId = req.headers.get('x-user-id');
+    const isSuperAdmin = hasPermission(userPermissions, Permissions.ADMINISTRATOR);
+
+    // Filter restricted posts unless Super Admin or author
+    if (!isSuperAdmin) {
+      where.AND = [
+        ...(where.AND || []),
+        {
+          OR: [
+            { visibility: 'public' },
+            ...(userId ? [{ authorId: userId }] : []),
+          ],
+        },
+      ];
+    }
+
     if (search && search.trim()) {
       const q = search.trim();
       where.OR = [

@@ -7,6 +7,9 @@ import { MenuPathDisplay } from './menu-path-display';
 import { StepContentRenderer, hasValidStepContent } from './step-content-renderer';
 import { ImageHotspotViewer } from './image-hotspot-viewer';
 import { ScratchpadDrawer } from './scratchpad-drawer';
+import { ProcessAccessModal } from './process-access-modal';
+import { useUserSession } from '@/components/user-session-provider';
+import { Permissions, hasPermission } from '@/lib/permissions';
 import { notify } from '@/lib/notify';
 import { 
   Clock, 
@@ -35,7 +38,9 @@ import {
   CheckSquare,
   Square,
   Trophy,
-  Play
+  Play,
+  Lock,
+  Globe
 } from 'lucide-react';
 
 interface ProcessDetailViewProps {
@@ -43,6 +48,9 @@ interface ProcessDetailViewProps {
 }
 
 export function ProcessDetailView({ process }: ProcessDetailViewProps) {
+  const { currentUser } = useUserSession();
+  const [currentProcess, setCurrentProcess] = useState<Process>(process);
+  const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<'flow' | 'errors' | 'scratchpad'>('flow');
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -179,6 +187,43 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
     (step.errorGuides || []).map(err => ({ ...err, stepTitle: step.title, stepIndex: step.orderIndex }))
   );
 
+  const isSuperAdmin = hasPermission(currentUser.permissions, Permissions.ADMINISTRATOR);
+  const isAuthor = Boolean(currentProcess.authorId && currentProcess.authorId === currentUser.id);
+  const hasGrant = Boolean((currentProcess.accessGrants || []).some((g) => g.userId === currentUser.id));
+  const isRestricted = currentProcess.visibility === 'restricted';
+  const hasAccess = !isRestricted || isSuperAdmin || isAuthor || hasGrant;
+
+  if (!hasAccess) {
+    return (
+      <div className="max-w-2xl mx-auto my-16 p-8 rounded-3xl border text-center space-y-6 glass-panel-strong shadow-2xl" dir="rtl"
+        style={{ borderColor: 'var(--border-glass)' }}
+      >
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
+          <Lock className="w-8 h-8" />
+        </div>
+        <div className="space-y-2">
+          <span className="text-xs px-3 py-1 rounded-full font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 inline-block">
+            محتوای اختصاصی و محرمانه
+          </span>
+          <h2 className="text-xl sm:text-2xl font-black text-[var(--text-primary)]">
+            دسترسی به این فرایند محدود است
+          </h2>
+          <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed max-w-md mx-auto">
+            این دستورالعمل به صورت اختصاصی تنظیم گردیده و شما در حال حاضر مجوز مشاهده آن را ندارید. جهت دریافت دسترسی، می‌توانید با سازنده فرایند یا مدیر ارشد سامانه ارتباط برقرار فرمایید.
+          </p>
+        </div>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <Link
+            href="/"
+            className="px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-md"
+          >
+            بازگشت به فهرست فرایندها
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in">
       {/* Header Banner */}
@@ -199,6 +244,25 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
                   <span>فرایند سازمانی و اداری</span>
                 </span>
               )}
+
+              <span className="text-xs px-2.5 py-1 rounded-xl font-bold flex items-center gap-1"
+                style={currentProcess.visibility === 'restricted'
+                  ? { background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' }
+                  : { background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.2)' }
+                }
+              >
+                {currentProcess.visibility === 'restricted' ? (
+                  <>
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>محدود و محرمانه</span>
+                  </>
+                ) : (
+                  <>
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>عمومی</span>
+                  </>
+                )}
+              </span>
 
               <span className="text-xs px-2.5 py-1 rounded-xl font-bold"
                 style={{ background: 'var(--accent-soft)', color: 'var(--accent-primary)', border: '1px solid var(--accent-border)' }}
@@ -230,14 +294,14 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
           {/* Action Buttons */}
           <div className="flex items-center flex-wrap gap-2.5 self-start lg:self-center">
             <button
-              onClick={handleShare}
+              onClick={() => setIsAccessModalOpen(true)}
               type="button"
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer hover:scale-105"
               style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-secondary)' }}
-              title="کپی لینک مستقیم این فرایند"
+              title="مدیریت دسترسی‌ها و اشتراک‌گذاری"
             >
-              {copiedLink ? <Check className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
-              <span>{copiedLink ? 'لینک کپی شد' : 'اشتراک‌گذاری'}</span>
+              <Share2 className="w-4 h-4 text-blue-500" />
+              <span>اشتراک‌گذاری و دسترسی</span>
             </button>
 
             <Link
@@ -898,6 +962,14 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
         processId={process.id}
         isOpen={isScratchpadDrawerOpen}
         onToggle={() => setIsScratchpadDrawerOpen((prev) => !prev)}
+      />
+
+      {/* Process Granular Access & Sharing Modal */}
+      <ProcessAccessModal
+        process={currentProcess}
+        isOpen={isAccessModalOpen}
+        onClose={() => setIsAccessModalOpen(false)}
+        onUpdate={(updated) => setCurrentProcess(updated)}
       />
     </div>
   );

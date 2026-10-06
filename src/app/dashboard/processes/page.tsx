@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useUserSession } from '@/components/user-session-provider';
 import { Permissions } from '@/lib/permissions';
 import { ProcessEditorModal } from '@/components/process-editor-modal';
+import { ProcessAccessModal } from '@/components/process-access-modal';
 import { Process } from '@/types/process';
 import { notify } from '@/lib/notify';
 import { 
@@ -17,7 +18,10 @@ import {
   Filter,
   Layers,
   Building2,
-  Laptop
+  Laptop,
+  ShieldCheck,
+  Lock,
+  Globe
 } from 'lucide-react';
 
 export default function DashboardProcessesPage() {
@@ -31,6 +35,7 @@ export default function DashboardProcessesPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [processToEdit, setProcessToEdit] = useState<Process | null>(null);
+  const [accessModalProcess, setAccessModalProcess] = useState<Process | null>(null);
 
   const canCreate = can(Permissions.CREATE_PROCESSES) || isSuperAdmin;
   const canEdit = can(Permissions.EDIT_PROCESSES) || isSuperAdmin;
@@ -38,7 +43,12 @@ export default function DashboardProcessesPage() {
   const fetchProcesses = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/processes');
+      const res = await fetch('/api/processes', {
+        headers: {
+          'x-user-id': currentUser.id,
+          'x-user-permissions': String(currentUser.permissions),
+        },
+      });
       const data = await res.json();
       if (Array.isArray(data)) {
         setProcesses(data);
@@ -101,6 +111,7 @@ export default function DashboardProcessesPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': currentUser.id,
           'x-user-permissions': String(currentUser.permissions),
         },
         body: JSON.stringify(savedProcess),
@@ -266,8 +277,21 @@ export default function DashboardProcessesPage() {
                     className="hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition-colors"
                   >
                     <td className="p-4">
-                      <div className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
-                        {proc.title}
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
+                          {proc.title}
+                        </span>
+                        {proc.visibility === 'restricted' ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                            <Lock className="w-2.5 h-2.5" />
+                            <span>محدود</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                            <Globe className="w-2.5 h-2.5" />
+                            <span>عمومی</span>
+                          </span>
+                        )}
                       </div>
                       <div className="text-[11px] text-slate-400 truncate max-w-sm mt-0.5">
                         {proc.description}
@@ -294,7 +318,7 @@ export default function DashboardProcessesPage() {
                       {proc.slug}
                     </td>
                     <td className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-1.5">
                         <Link
                           href={`/process/${proc.slug}`}
                           target="_blank"
@@ -304,6 +328,16 @@ export default function DashboardProcessesPage() {
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </Link>
+
+                        <button
+                          type="button"
+                          onClick={() => setAccessModalProcess(proc)}
+                          className="p-1.5 rounded-lg border hover:bg-amber-50 dark:hover:bg-amber-950 transition-colors text-amber-600 cursor-pointer"
+                          title="مدیریت دسترسی‌ها و محرمانگی"
+                          style={{ borderColor: 'var(--border-subtle)' }}
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                        </button>
 
                         {canEdit && (
                           <button
@@ -333,6 +367,19 @@ export default function DashboardProcessesPage() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveProcess}
       />
+
+      {/* Process Granular Access & Sharing Modal */}
+      {accessModalProcess && (
+        <ProcessAccessModal
+          process={accessModalProcess}
+          isOpen={Boolean(accessModalProcess)}
+          onClose={() => setAccessModalProcess(null)}
+          onUpdate={(updated) => {
+            setProcesses((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+            setAccessModalProcess(updated);
+          }}
+        />
+      )}
     </div>
   );
 }

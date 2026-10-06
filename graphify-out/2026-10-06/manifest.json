@@ -530,13 +530,13 @@
     "semantic_hash": ""
   },
   "src/components/process-detail-modal.tsx": {
-    "mtime": 1791217784.2636645,
-    "ast_hash": "f0de4f43ec01e4d9b2cb7689119e1e89",
+    "mtime": 1791287160.769473,
+    "ast_hash": "e1c6ff8baa936a8d7850846972767831",
     "semantic_hash": ""
   },
   "src/components/process-detail-view.tsx": {
-    "mtime": 1791212174.5040815,
-    "ast_hash": "e00e4eae5c167aea1a4057c1396633d5",
+    "mtime": 1791287301.0093796,
+    "ast_hash": "9decac0ab29a87056d47c275ac87456b",
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
@@ -947,6 +947,21 @@
   "src/components/dashboard/admin-sidebar.tsx": {
     "mtime": 1791207774.3001075,
     "ast_hash": "5a208ea61e7a608ffff53d997266b1b6",
+    "semantic_hash": ""
+  },
+  "src/app/api/processes/[id]/session/route.ts": {
+    "mtime": 1791286270.3416004,
+    "ast_hash": "2b1221707505058c2274ca653942855a",
+    "semantic_hash": ""
+  },
+  "src/components/image-hotspot-viewer.tsx": {
+    "mtime": 1791286165.0470524,
+    "ast_hash": "de78d61b80c3c748d7e2af499b09431c",
+    "semantic_hash": ""
+  },
+  "src/components/scratchpad-drawer.tsx": {
+    "mtime": 1791286214.6079328,
+    "ast_hash": "4ffc41c02f68348c023b85fea607dbb3",
     "semantic_hash": ""
   }
 }

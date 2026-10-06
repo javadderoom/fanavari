@@ -124,6 +124,24 @@ export interface ProcessCategoryEntity {
   updatedAt?: string | Date;
 }
 
+export type ProcessVisibility = 'public' | 'restricted';
+
+export interface ProcessAccessGrant {
+  id: string;
+  processId: string;
+  userId: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    roleName: string;
+    avatarUrl?: string | null;
+  };
+  permission: 'view' | 'edit';
+  grantedById?: string | null;
+  createdAt: string | Date;
+}
+
 export interface Process {
   id: string;
   slug: string;
@@ -131,6 +149,9 @@ export interface Process {
   description: string;
   scope: string; // 'organization' | 'software' | 'portal' or any dynamic scope key
   category: string; // 'hr' | 'finance' | etc. or any dynamic category key
+  visibility?: ProcessVisibility; // 'public' | 'restricted'
+  authorId?: string | null;
+  accessGrants?: ProcessAccessGrant[];
   departmentName: string;
   departmentSlug?: string;
   estimatedMinutes: number;

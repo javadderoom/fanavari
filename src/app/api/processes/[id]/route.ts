@@ -1,9 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
+import { mapPrismaProcess } from '@/lib/db-service';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
+}
+
+export async function GET(req: NextRequest, { params }: RouteContext) {
+  try {
+    const { id } = await params;
+    const userId = req.headers.get('x-user-id');
+    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+
+    const process = await prisma.process.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }],
+      },
+      include: {
+        steps: {
+          orderBy: { orderIndex: 'asc' },
+          include: {
+            errorGuides: true,
+          },
+        },
+        department: true,
+        systemTool: true,
+        accessGrants: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (!process) {
+      return NextResponse.json({ error: 'فرایند یافت نشد' }, { status: 404 });
+    }
+
+    // Access control check for restricted processes
+    if (process.visibility === 'restricted') {
+      const isSuperAdmin = hasPermission(userPermissions, Permissions.ADMINISTRATOR);
+      const isAuthor = userId && process.authorId === userId;
+      const hasGrant = userId && process.accessGrants.some((g) => g.userId === userId);
+
+      if (!isSuperAdmin && !isAuthor && !hasGrant) {
+        return NextResponse.json(
+          { error: 'دسترسی محدود: این فرایند فقط برای افراد مجاز قابل مشاهده است.' },
+          { status: 403 }
+        );
+      }
+    }
+
+    return NextResponse.json(mapPrismaProcess(process));
+  } catch (error: any) {
+    console.error('Error fetching process by ID:', error);
+    return NextResponse.json({ error: error.message || 'خطا در دریافت فرایند' }, { status: 500 });
+  }
 }
 
 export async function PUT(req: NextRequest, { params }: RouteContext) {
@@ -20,7 +73,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const { title, description, scope, category, targetSystem, targetUrl, estimatedMinutes, schedule } = body;
+    const { title, description, scope, category, visibility, targetSystem, targetUrl, estimatedMinutes, schedule } = body;
 
     const updated = await prisma.process.update({
       where: { id },
@@ -29,14 +82,26 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
         description,
         scope,
         category,
+        ...(visibility ? { visibility } : {}),
         targetSystem,
         targetUrl,
         estimatedMinutes: Number(estimatedMinutes) || 10,
         ...(schedule !== undefined ? { schedule } : {}),
       },
+      include: {
+        steps: {
+          orderBy: { orderIndex: 'asc' },
+          include: { errorGuides: true },
+        },
+        department: true,
+        systemTool: true,
+        accessGrants: {
+          include: { user: true },
+        },
+      },
     });
 
-    return NextResponse.json(updated);
+    return NextResponse.json(mapPrismaProcess(updated));
   } catch (error: any) {
     console.error('Error updating process:', error);
     return NextResponse.json({ error: error.message || 'Failed to update process' }, { status: 500 });

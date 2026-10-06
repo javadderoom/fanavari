@@ -53,7 +53,12 @@ export default function DashboardOverviewPage() {
     setIsLoading(true);
     try {
       const [procRes, deptRes, sysRes, infoRes] = await Promise.all([
-        fetch('/api/processes').then((r) => r.json()),
+        fetch('/api/processes', {
+          headers: {
+            'x-user-id': currentUser.id,
+            'x-user-permissions': String(currentUser.permissions),
+          },
+        }).then((r) => r.json()),
         fetch('/api/departments').then((r) => r.json()),
         fetch('/api/systems').then((r) => r.json()),
         fetch('/api/information').then((r) => r.json()),
@@ -91,6 +96,7 @@ export default function DashboardOverviewPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': currentUser.id,
           'x-user-permissions': String(currentUser.permissions),
         },
         body: JSON.stringify(savedProcess),

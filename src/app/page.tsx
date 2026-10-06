@@ -52,7 +52,12 @@ function HomePageContent() {
   useEffect(() => {
     let isMounted = true;
     Promise.all([
-      fetch('/api/processes').then((res) => res.json()).catch(() => []),
+      fetch('/api/processes', {
+        headers: {
+          'x-user-id': currentUser.id,
+          'x-user-permissions': String(currentUser.permissions),
+        },
+      }).then((res) => res.json()).catch(() => []),
       fetch('/api/information?limit=50').then((res) => res.json()).catch(() => []),
     ])
       .then(([procData, infoData]) => {
@@ -70,7 +75,7 @@ function HomePageContent() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [currentUser.id, currentUser.permissions]);
 
   const handleSelectProcess = (process: Process, initialStepIndex?: number) => {
     setSelectedProcess(process);

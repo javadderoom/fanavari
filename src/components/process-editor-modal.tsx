@@ -12,7 +12,8 @@ import {
   PersianSeason,
   ProcessSchedule,
   ProcessScopeEntity,
-  ProcessCategoryEntity
+  ProcessCategoryEntity,
+  ProcessVisibility
 } from '@/types/process';
 import { useUserSession } from './user-session-provider';
 import { Permissions } from '@/lib/permissions';
@@ -28,6 +29,7 @@ import {
   CheckCircle, 
   Clock, 
   Globe, 
+  Lock,
   Laptop, 
   FileText, 
   Sparkles, 
@@ -93,6 +95,7 @@ export function ProcessEditorModal({
   const [description, setDescription] = useState('');
   const [scope, setScope] = useState<string>('organization');
   const [category, setCategory] = useState<string>('hr');
+  const [visibility, setVisibility] = useState<ProcessVisibility>('public');
   const [departmentName, setDepartmentName] = useState('وزارت آموزش و پرورش');
   const [targetSystem, setTargetSystem] = useState('');
   const [targetUrl, setTargetUrl] = useState('');
@@ -184,6 +187,7 @@ export function ProcessEditorModal({
       setDescription(processToEdit.description);
       setScope(processToEdit.scope || 'organization');
       setCategory(processToEdit.category);
+      setVisibility(processToEdit.visibility || 'public');
       setDepartmentName(processToEdit.departmentName);
       setTargetSystem(processToEdit.targetSystem);
       setTargetUrl(processToEdit.targetUrl || '');
@@ -212,6 +216,7 @@ export function ProcessEditorModal({
       }
       setIsEditingSlug(false);
       setShowAdvanced(Boolean(
+        processToEdit.visibility === 'restricted' ||
         processToEdit.schedule || 
         (processToEdit.tags && processToEdit.tags.length > 0) || 
         (processToEdit.estimatedMinutes && processToEdit.estimatedMinutes !== 10) ||
@@ -609,6 +614,9 @@ export function ProcessEditorModal({
       description: description.trim(),
       scope,
       category,
+      visibility,
+      authorId: processToEdit?.authorId || currentUser.id,
+      accessGrants: processToEdit?.accessGrants || [],
       departmentName: departmentName.trim() || 'مدیریت سازمانی',
       departmentSlug: matchedDept?.slug,
       targetSystem: targetSystem.trim() || 'سامانه سازمانی',
@@ -1134,6 +1142,46 @@ export function ProcessEditorModal({
 
               {showAdvanced && (
                 <div className="p-4 border-t space-y-4 animate-in fade-in" style={{ borderColor: 'var(--border-subtle)' }}>
+                  {/* Visibility & Confidentiality Setting */}
+                  <div className="p-3.5 rounded-xl border" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}>
+                    <label className="block text-xs font-bold mb-2" style={{ color: 'var(--text-secondary)' }}>
+                      سطح محرمانگی و دسترسی (Visibility)
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setVisibility('public')}
+                        className={`p-3 rounded-xl border text-right transition-all flex items-center gap-2.5 cursor-pointer ${
+                          visibility === 'public'
+                            ? 'border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold ring-1 ring-blue-500/30'
+                            : 'border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-slate-400'
+                        }`}
+                      >
+                        <Globe className="w-4 h-4 shrink-0 text-blue-500" />
+                        <div>
+                          <div className="text-xs">عمومی (Public)</div>
+                          <div className="text-[10px] font-normal opacity-80">در دسترس تمام پرسنل سازمان و قابل جستجو</div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setVisibility('restricted')}
+                        className={`p-3 rounded-xl border text-right transition-all flex items-center gap-2.5 cursor-pointer ${
+                          visibility === 'restricted'
+                            ? 'border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold ring-1 ring-amber-500/30'
+                            : 'border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-slate-400'
+                        }`}
+                      >
+                        <Lock className="w-4 h-4 shrink-0 text-amber-500" />
+                        <div>
+                          <div className="text-xs">محدود و محرمانه (Restricted)</div>
+                          <div className="text-[10px] font-normal opacity-80">فقط شما، مدیران ارشد و افراد دارای دسترسی</div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Administrative Timeline Section */}
                   <div 
                     className="rounded-xl p-3.5 border transition-all"

@@ -15,9 +15,11 @@ model User {
   avatarUrl     String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  processes        Process[]         @relation("CreatedProcesses")
-  savedSessions    SavedSession[]
-  informationPosts InformationPost[] @relation("CreatedInformationPosts")
+  processes            Process[]            @relation("CreatedProcesses")
+  savedSessions        SavedSession[]
+  informationPosts     InformationPost[]    @relation("CreatedInformationPosts")
+  receivedAccessGrants ProcessAccessGrant[] @relation("GrantedToUser")
+  createdAccessGrants  ProcessAccessGrant[] @relation("GrantedByUser")
 }
 
 model Department {
@@ -44,27 +46,43 @@ model SystemTool {
 }
 
 model Process {
-  id               String         @id @default(uuid())
+  id               String               @id @default(uuid())
   title            String
-  slug             String         @unique
+  slug             String               @unique
   description      String
-  scope            String         @default("organization") // organization | software | portal
+  scope            String               @default("organization") // organization | software | portal
   category         String
+  visibility       String               @default("public") // "public" | "restricted"
   departmentId     String?
-  department       Department?    @relation(fields: [departmentId], references: [id])
+  department       Department?          @relation(fields: [departmentId], references: [id])
   systemToolId     String?
-  systemTool       SystemTool?    @relation(fields: [systemToolId], references: [id])
+  systemTool       SystemTool?          @relation(fields: [systemToolId], references: [id])
   authorId         String?
-  author           User?          @relation("CreatedProcesses", fields: [authorId], references: [id])
-  estimatedMinutes Int            @default(10)
+  author           User?                @relation("CreatedProcesses", fields: [authorId], references: [id])
+  estimatedMinutes Int                  @default(10)
   targetSystem     String?
   targetUrl        String?
-  schedule         Json?          // Operational calendar & deadline schedule
-  isPublished      Boolean        @default(true)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  schedule         Json?                // Operational calendar & deadline schedule
+  isPublished      Boolean              @default(true)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
   steps            Step[]
   savedSessions    SavedSession[]
+  accessGrants     ProcessAccessGrant[]
+}
+
+model ProcessAccessGrant {
+  id          String   @id @default(uuid())
+  processId   String
+  process     Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation("GrantedToUser", fields: [userId], references: [id], onDelete: Cascade)
+  permission  String   @default("view") // "view" | "edit"
+  grantedById String?
+  grantedBy   User?    @relation("GrantedByUser", fields: [grantedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@unique([processId, userId])
 }
 
 model Step {
@@ -118,6 +136,7 @@ model InformationPost {
   priority     String      @default("normal")       // urgent, high, normal
   isPinned     Boolean     @default(false)
   isPublished  Boolean     @default(true)
+  visibility   String      @default("public") // "public" | "restricted"
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id])
   systemToolId String?
