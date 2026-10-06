@@ -12,7 +12,8 @@ import {
   Clock, 
   Share2, 
   Printer, 
-  ExternalLink 
+  ExternalLink,
+  Columns2
 } from 'lucide-react';
 
 interface ProcessHeaderBannerProps {
@@ -23,6 +24,8 @@ interface ProcessHeaderBannerProps {
   matchingDeptGrant?: any;
   matchingUserGrant?: any;
   onOpenAccessModal: () => void;
+  onToggleSidecar?: () => void;
+  isSidecarOpen?: boolean;
 }
 
 export function ProcessHeaderBanner({
@@ -33,6 +36,8 @@ export function ProcessHeaderBanner({
   matchingDeptGrant,
   matchingUserGrant,
   onOpenAccessModal,
+  onToggleSidecar,
+  isSidecarOpen = false,
 }: ProcessHeaderBannerProps) {
   return (
     <div
@@ -119,6 +124,22 @@ export function ProcessHeaderBanner({
 
         {/* Action Buttons */}
         <div className="flex items-center flex-wrap gap-2.5 self-start lg:self-center">
+          {onToggleSidecar && (
+            <button
+              onClick={onToggleSidecar}
+              type="button"
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer hover:scale-105 ${
+                isSidecarOpen
+                  ? 'bg-purple-600 text-white border-purple-600 shadow-md'
+                  : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/20'
+              }`}
+              title="باز کردن سایدکار جهت اجرای همزمان کنار سایر پنجره‌ها"
+            >
+              <Columns2 className="w-4 h-4" />
+              <span>{isSidecarOpen ? 'بستن سایدکار' : 'سایدکار همراه'}</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenAccessModal}
             type="button"

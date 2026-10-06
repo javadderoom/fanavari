@@ -11,6 +11,7 @@ import { ProcessErrorMatrixTab } from './process-detail/process-error-matrix-tab
 import { ProcessScratchpadTab } from './process-detail/process-scratchpad-tab';
 import { FlowchartCanvas } from './process-detail/flowchart-canvas';
 import { StepRunnerView } from './process-detail/step-runner-view';
+import { SidecarRunner } from './process-detail/sidecar-runner';
 import { useUserSession } from '@/components/user-session-provider';
 import { Permissions, hasPermission } from '@/lib/permissions';
 import { notify } from '@/lib/notify';
@@ -61,6 +62,26 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
   const [flowViewMode, setFlowViewMode] = useState<'canvas' | 'stepper'>('canvas');
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isSidecarOpen, setIsSidecarOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('fanavari-sidecar-open');
+      if (saved === 'true') {
+        setIsSidecarOpen(true);
+      }
+    } catch (e) {}
+  }, []);
+
+  const handleToggleSidecar = () => {
+    setIsSidecarOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('fanavari-sidecar-open', String(next));
+      } catch (e) {}
+      return next;
+    });
+  };
 
   // Scratchpad state with localStorage
   const [scratchpadNote, setScratchpadNote] = useState('');
@@ -301,6 +322,8 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
         matchingDeptGrant={matchingDeptGrant}
         matchingUserGrant={matchingUserGrant}
         onOpenAccessModal={() => setIsAccessModalOpen(true)}
+        onToggleSidecar={handleToggleSidecar}
+        isSidecarOpen={isSidecarOpen}
       />
 
 
@@ -537,6 +560,19 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
         isOpen={isAccessModalOpen}
         onClose={() => setIsAccessModalOpen(false)}
         onUpdate={(updated) => setCurrentProcess(updated)}
+      />
+
+      {/* Dockable Sidecar Companion Runner */}
+      <SidecarRunner
+        process={currentProcess}
+        isOpen={isSidecarOpen}
+        onClose={() => setIsSidecarOpen(false)}
+        activeStepIndex={activeStepIndex}
+        onSelectStep={(idx) => setActiveStepIndex(idx)}
+        completedStepKeys={completedStepKeys}
+        onToggleStepComplete={(stepKey) => toggleStepCompleted(stepKey)}
+        onCompleteAndNext={(stepKey) => handleCompleteAndNext(stepKey)}
+        onResetProgress={handleResetProgress}
       />
     </div>
   );
