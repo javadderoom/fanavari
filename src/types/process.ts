@@ -1,4 +1,4 @@
-export type StepType = 'action' | 'decision' | 'warning' | 'end';
+export type StepType = 'action' | 'decision' | 'warning' | 'end' | 'subprocess';
 
 export type WorkflowScope = 'organization' | 'software' | 'portal';
 
@@ -38,6 +38,18 @@ export interface ProcessStep {
   copyableFields?: CopyableField[];
   tips?: string[];
   errorGuides?: ErrorGuideItem[];
+  subProcessId?: string | null;
+  subProcessSlug?: string | null;
+  subProcessTitle?: string | null;
+  subProcessStepCount?: number | null;
+  subProcess?: {
+    id: string;
+    slug: string;
+    title: string;
+    totalSteps: number;
+    departmentName?: string;
+    targetSystem?: string;
+  } | null;
 }
 
 export interface SystemTool {

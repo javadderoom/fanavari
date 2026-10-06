@@ -31,6 +31,7 @@ interface FlowchartCanvasProps {
   onSelectStep: (index: number) => void;
   onToggleCompleteStep: (stepKey: string) => void;
   onSwitchToRunner?: () => void;
+  onDrillDownSubProcess?: (subProcessSlug: string, stepTitle: string) => void;
 }
 
 const NODE_WIDTH = 270;
@@ -45,6 +46,7 @@ export function FlowchartCanvas({
   onSelectStep,
   onToggleCompleteStep,
   onSwitchToRunner,
+  onDrillDownSubProcess,
 }: FlowchartCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -283,6 +285,7 @@ export function FlowchartCanvas({
                 node={node}
                 onSelectNode={onSelectStep}
                 onToggleComplete={onToggleCompleteStep}
+                onDrillDownSubProcess={onDrillDownSubProcess}
               />
             </div>
           ))}
@@ -395,6 +398,8 @@ export function FlowchartCanvas({
                       ? 'bg-rose-500/80'
                       : n.step.stepType === 'end'
                       ? 'bg-emerald-500'
+                      : n.step.stepType === 'subprocess'
+                      ? 'bg-indigo-500 shadow-sm shadow-indigo-500'
                       : 'bg-slate-600'
                   }`}
                 />

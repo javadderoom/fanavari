@@ -83,6 +83,20 @@ export function mapPrismaProcess(p: any): Process {
         cause: 'خطای سیستمی / مغایرت در پایگاه داده پرسنلی',
         solution: err.solutionMarkdown,
       })),
+      subProcessId: step.subProcessId || null,
+      subProcessSlug: step.subProcess?.slug || step.subProcessSlug || null,
+      subProcessTitle: step.subProcess?.title || null,
+      subProcessStepCount: step.subProcess?.steps?.length || null,
+      subProcess: step.subProcess
+        ? {
+            id: step.subProcess.id,
+            slug: step.subProcess.slug,
+            title: step.subProcess.title,
+            totalSteps: step.subProcess.steps?.length || 0,
+            departmentName: step.subProcess.department?.name,
+            targetSystem: step.subProcess.systemTool?.name,
+          }
+        : null,
     })),
   };
 }
@@ -99,6 +113,16 @@ export async function getDbProcesses(): Promise<Process[]> {
           orderBy: { orderIndex: 'asc' },
           include: {
             errorGuides: true,
+            subProcess: {
+              select: {
+                id: true,
+                slug: true,
+                title: true,
+                department: { select: { name: true } },
+                systemTool: { select: { name: true } },
+                steps: { select: { id: true } },
+              },
+            },
           },
         },
         department: true,
@@ -147,6 +171,16 @@ export async function getDbProcessBySlug(slug: string): Promise<Process | null> 
           orderBy: { orderIndex: 'asc' },
           include: {
             errorGuides: true,
+            subProcess: {
+              select: {
+                id: true,
+                slug: true,
+                title: true,
+                department: { select: { name: true } },
+                systemTool: { select: { name: true } },
+                steps: { select: { id: true } },
+              },
+            },
           },
         },
         department: true,

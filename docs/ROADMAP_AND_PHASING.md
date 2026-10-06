@@ -122,8 +122,8 @@ flowchart TD
 | **09** | **Step Notes & Callout Boxes (`نکات و هشدارها`)** | Circular Req | **P0** | Low | ✅ Complete |
 | **10** | **In-Text Cross-Linking to other processes/systems** | Circular Req #8 | **P1** | Medium | ✅ Complete |
 | **11** | **Distinct Node Types on Flowchart (Decision / End / Action)** | Circular Req / Phase 2 | **P1** | Medium | ✅ Complete |
-| **12** | **Process Timeline View Mode (`تایم‌لاین`)** | Circular Req #2 | **P1** | Medium | ✅ Complete |
-| **13** | **Interactive Simulator Polish** | Circular Req #6 | **P1** | Medium | ⏳ Next Up |
+| **12** | ~~Process Timeline View Mode~~ (Removed per directive) | Circular Req #2 | **—** | Low | ❌ Removed |
+| **13** | **Hierarchical Sub-Processes Architecture (`زیر-فرایندها`)** | Circular Req #1 | **P1** | High | ⏳ In Progress |
 | **14** | **Inline Single-Line Images & Screenshot Lightbox** | Circular Req #3 & #9 | **P2** | Medium | Pending |
 | **15** | **Sub-Processes Architecture (`زیر-فرایند`)** | Circular Req #1 | **P2** | High | Pending |
 | **16** | **Thematic Category Management** | Circular Req #7 | **P2** | Medium | Pending |

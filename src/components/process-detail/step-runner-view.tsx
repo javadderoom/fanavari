@@ -23,6 +23,7 @@ import {
   Lightbulb, 
   ArrowRight, 
   ArrowLeft,
+  ExternalLink,
   ShieldCheck,
   Play,
   LogOut
@@ -42,6 +43,7 @@ interface StepRunnerViewProps {
   onCopyField: (text: string, label: string) => void;
   activeRun?: WorkflowRun | null;
   onDisconnectRun?: () => void;
+  onDrillDownSubProcess?: (subProcessSlug: string, stepTitle: string) => void;
 }
 
 export function StepRunnerView({
@@ -58,6 +60,7 @@ export function StepRunnerView({
   onCopyField,
   activeRun,
   onDisconnectRun,
+  onDrillDownSubProcess,
 }: StepRunnerViewProps) {
   const currentStep = steps[activeStepIndex];
   const isCurrentStepCompleted = currentStep ? completedStepKeys.includes(currentStep.stepKey) : false;
@@ -117,6 +120,7 @@ export function StepRunnerView({
             const isDecision = step.stepType === 'decision';
             const isEnd = step.stepType === 'end';
             const isWarning = step.stepType === 'warning';
+            const isSubProcess = step.stepType === 'subprocess';
 
             return (
               <button
@@ -131,6 +135,8 @@ export function StepRunnerView({
                       ? 'shadow-lg scale-[1.02] ring-2 ring-emerald-500 border-emerald-500'
                       : isWarning
                       ? 'shadow-lg scale-[1.02] ring-2 ring-rose-500 border-rose-400'
+                      : isSubProcess
+                      ? 'shadow-lg scale-[1.02] ring-2 ring-indigo-500 border-indigo-400'
                       : 'shadow-lg scale-[1.02] ring-2 ring-blue-500 border-blue-400'
                     : isStepCompleted
                     ? 'border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-500'
@@ -140,11 +146,13 @@ export function StepRunnerView({
                     ? 'border-emerald-400/60 dark:border-emerald-600/60 ring-1 ring-emerald-500/20 bg-emerald-500/5 hover:border-emerald-400'
                     : isWarning
                     ? 'border-rose-400/60 dark:border-rose-600/60 bg-rose-500/5 hover:border-rose-400'
+                    : isSubProcess
+                    ? 'border-indigo-400/60 dark:border-indigo-600/60 bg-indigo-500/5 hover:border-indigo-400'
                     : 'opacity-80 hover:opacity-100'
                 }`}
                 style={{
                   background: isSelected ? 'var(--bg-surface)' : undefined,
-                  borderColor: !isSelected && !isStepCompleted && !isDecision && !isEnd && !isWarning ? 'var(--border-glass)' : undefined,
+                  borderColor: !isSelected && !isStepCompleted && !isDecision && !isEnd && !isWarning && !isSubProcess ? 'var(--border-glass)' : undefined,
                 }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -332,6 +340,58 @@ export function StepRunnerView({
           {currentStep.targetMenuPath && (
             <div className="mb-6">
               <MenuPathDisplay path={currentStep.targetMenuPath} variant="interactive" />
+            </div>
+          )}
+
+          {/* Hierarchical Sub-Process Drill-Down Card */}
+          {(currentStep.stepType === 'subprocess' || currentStep.subProcessSlug || currentStep.subProcess) && (
+            <div className="mb-6 p-5 rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <GitFork className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-mono" dir="ltr">
+                      SUB-PROCESS
+                    </span>
+                    <h4 className="text-sm font-black text-indigo-950 dark:text-indigo-100 mt-0.5">
+                      {currentStep.subProcess?.title || currentStep.subProcessTitle || 'زیر-فرایند وابسته سازمانی'}
+                    </h4>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {onDrillDownSubProcess && (currentStep.subProcessSlug || currentStep.subProcess?.slug) && (
+                    <button
+                      type="button"
+                      onClick={() => onDrillDownSubProcess(
+                        (currentStep.subProcess?.slug || currentStep.subProcessSlug)!,
+                        currentStep.title
+                      )}
+                      className="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-md cursor-pointer flex items-center gap-1.5 hover:scale-105"
+                    >
+                      <Layers className="w-3.5 h-3.5" />
+                      <span>ورود و اجرای زیر-فرایند (Drill Down)</span>
+                    </button>
+                  )}
+
+                  {(currentStep.subProcessSlug || currentStep.subProcess?.slug) && (
+                    <Link
+                      href={`/process/${currentStep.subProcess?.slug || currentStep.subProcessSlug}`}
+                      target="_blank"
+                      className="p-2 rounded-xl text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/20 transition-all"
+                      title="مشاهده مستقل در تب جدید"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-xs text-indigo-900/80 dark:text-indigo-200/80 leading-relaxed">
+                این مرحله شامل یک رویه مستقل است. می‌توانید مستقیماً وارد زیر-فرایند شده و پس از تکمیل، ادامه این فرایند را پیش ببرید.
+              </p>
             </div>
           )}
 

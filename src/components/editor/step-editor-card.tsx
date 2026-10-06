@@ -6,7 +6,8 @@ import {
   Lightbulb, 
   AlertTriangle, 
   Pin, 
-  Link2 
+  Link2,
+  GitFork
 } from 'lucide-react';
 import { ProcessStep, StepType } from '@/types/process';
 import { MenuPathEditor } from '@/components/menu-path-editor';
@@ -96,6 +97,7 @@ export function StepEditorCard({
             <option value="decision">◇ تصمیم‌گیری (Decision)</option>
             <option value="warning">⚠ هشدار/ایست (Warning)</option>
             <option value="end">◎ پایان/خروجی (End)</option>
+            <option value="subprocess">⊞ زیر-فرایند (Sub-Process)</option>
           </select>
 
           {totalSteps > 1 && (
@@ -118,6 +120,31 @@ export function StepEditorCard({
           onChange={(newPath) => onUpdateStep(stepIndex, { targetMenuPath: newPath })}
         />
       </div>
+
+      {/* Sub-Process Connection Field */}
+      {step.stepType === 'subprocess' && (
+        <div className="mb-3 p-3 rounded-xl border border-indigo-500/30 bg-indigo-500/5 space-y-2">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300">
+            <GitFork className="w-4 h-4" />
+            <span>تنظیم پیوند زیر-فرایند (Sub-Process Link):</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={step.subProcessSlug || ''}
+              onChange={(e) => onUpdateStep(stepIndex, { 
+                subProcessSlug: e.target.value.trim(),
+                subProcessTitle: step.subProcessTitle || step.title
+              })}
+              placeholder="شناسه یا اسلاگ فرایند فرزند (مثال: tax-token-generate)..."
+              className="flex-1 text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 border-indigo-200 dark:border-indigo-800 text-[var(--text-primary)] outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <p className="text-[10px] text-slate-500">
+            اسلاگ فرایندی که مایلید به عنوان زیر-فرایند فرزند در این مرحله پیوست شود را وارد فرمایید.
+          </p>
+        </div>
+      )}
 
       {/* Step Description & Callout Helpers */}
       <div className="mb-3">

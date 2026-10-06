@@ -65,9 +65,7 @@ export function Navbar({ onSearchClick }: NavbarProps) {
     pathname.startsWith('/system') || 
     pathname.startsWith('/organization');
 
-  const isOperationsActive = 
-    pathname.startsWith('/timeline') || 
-    pathname.startsWith('/information');
+  const isOperationsActive = pathname.startsWith('/information');
 
   const isDashboardActive = pathname.startsWith('/dashboard');
 
@@ -258,26 +256,6 @@ export function Navbar({ onSearchClick }: NavbarProps) {
 
                   <div className="space-y-1">
                     <Link
-                      href="/timeline"
-                      onClick={() => setOpenDropdown(null)}
-                      className={`flex items-start gap-3 p-2.5 rounded-xl transition-all ${
-                        pathname.startsWith('/timeline') 
-                          ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-black' 
-                          : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200'
-                      }`}
-                    >
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-amber-500/10 text-amber-600 mt-0.5">
-                        <CalendarClock className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <span className="block text-xs font-bold whitespace-nowrap">گاه‌شمار اجرایی سالانه</span>
-                        <span className="block text-[11px] text-slate-400 truncate mt-0.5 font-normal">
-                          تقویم جامع وظایف و فرایندهای ۱۲ ماه سال
-                        </span>
-                      </div>
-                    </Link>
-
-                    <Link
                       href="/information"
                       onClick={() => setOpenDropdown(null)}
                       className={`flex items-start gap-3 p-2.5 rounded-xl transition-all ${
@@ -428,20 +406,6 @@ export function Navbar({ onSearchClick }: NavbarProps) {
                 رویدادها، تقویم و اطلاعیه‌ها
               </span>
               <div className="flex flex-col gap-1">
-                <Link
-                  href="/timeline"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
-                    pathname.startsWith('/timeline')
-                      ? 'text-amber-600 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-400/15 font-black'
-                      : 'hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10'
-                  }`}
-                  style={{ color: pathname.startsWith('/timeline') ? undefined : 'var(--text-primary)' }}
-                >
-                  <CalendarClock className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="whitespace-nowrap">گاه‌شمار اجرایی سالانه</span>
-                </Link>
-
                 <Link
                   href="/information"
                   onClick={() => setIsMobileMenuOpen(false)}

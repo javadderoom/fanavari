@@ -79,6 +79,7 @@ model Process {
   savedSessions    SavedSession[]
   accessGrants     ProcessAccessGrant[]
   workflowRuns     WorkflowRun[]
+  parentSteps      Step[]               @relation("StepSubProcess")
 }
 
 model ProcessAccessGrant {
@@ -119,6 +120,11 @@ model Step {
   positionX       Float        @default(0)
   positionY       Float        @default(0)
   errorGuides     ErrorGuide[]
+  subProcessId    String?
+  subProcessSlug  String?
+  subProcess      Process?     @relation("StepSubProcess", fields: [subProcessId], references: [id], onDelete: SetNull)
+
+  @@index([subProcessId])
 }
 
 model ErrorGuide {

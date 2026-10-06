@@ -13,6 +13,7 @@ import { FlowchartCanvas } from './process-detail/flowchart-canvas';
 import { StepRunnerView } from './process-detail/step-runner-view';
 import { SidecarRunner } from './process-detail/sidecar-runner';
 import { ProcessRunsTab } from './process-detail/process-runs-tab';
+import { SubProcessDrawer } from './process-detail/subprocess-drawer';
 import { useUserSession } from '@/components/user-session-provider';
 import { Permissions, hasPermission } from '@/lib/permissions';
 import { notify } from '@/lib/notify';
@@ -66,6 +67,25 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isSidecarOpen, setIsSidecarOpen] = useState(false);
+
+  // Sub-Process Drill-Down Drawer State
+  const [subProcessDrawer, setSubProcessDrawer] = useState<{
+    isOpen: boolean;
+    slug: string;
+    stepTitle: string;
+  }>({
+    isOpen: false,
+    slug: '',
+    stepTitle: '',
+  });
+
+  const handleDrillDownSubProcess = (subProcessSlug: string, stepTitle: string) => {
+    setSubProcessDrawer({
+      isOpen: true,
+      slug: subProcessSlug,
+      stepTitle,
+    });
+  };
 
   useEffect(() => {
     try {
@@ -594,6 +614,7 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
               onSelectStep={(idx) => setActiveStepIndex(idx)}
               onToggleCompleteStep={(stepKey) => toggleStepCompleted(stepKey)}
               onSwitchToRunner={() => setFlowViewMode('stepper')}
+              onDrillDownSubProcess={handleDrillDownSubProcess}
             />
           )}
 
@@ -616,6 +637,7 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
                 setActiveRun(null);
                 notify.info('اتصال به اجرای رسمی قطع گردید.');
               }}
+              onDrillDownSubProcess={handleDrillDownSubProcess}
             />
           )}
         </div>
@@ -681,6 +703,21 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
         onToggleStepComplete={(stepKey) => toggleStepCompleted(stepKey)}
         onCompleteAndNext={(stepKey) => handleCompleteAndNext(stepKey)}
         onResetProgress={handleResetProgress}
+      />
+
+      {/* Child Sub-Process Slide-out Drawer */}
+      <SubProcessDrawer
+        isOpen={subProcessDrawer.isOpen}
+        subProcessSlug={subProcessDrawer.slug}
+        parentProcessTitle={currentProcess.title}
+        parentStepTitle={subProcessDrawer.stepTitle}
+        onClose={() => setSubProcessDrawer((prev) => ({ ...prev, isOpen: false }))}
+        onCompleteParentStep={() => {
+          const curStep = currentProcess.steps[activeStepIndex];
+          if (curStep) {
+            toggleStepCompleted(curStep.stepKey);
+          }
+        }}
       />
     </div>
   );

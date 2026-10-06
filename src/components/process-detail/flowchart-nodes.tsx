@@ -11,7 +11,8 @@ import {
   Check, 
   Sparkles,
   ArrowDown,
-  ArrowRight
+  ArrowRight,
+  GitFork
 } from 'lucide-react';
 import { ProcessStep, StepType } from '@/types/process';
 
@@ -44,12 +45,14 @@ interface NodeRendererProps {
   node: LayoutNode;
   onSelectNode: (index: number) => void;
   onToggleComplete: (stepKey: string) => void;
+  onDrillDownSubProcess?: (subProcessSlug: string, stepTitle: string) => void;
 }
 
 export function FlowchartNode({
   node,
   onSelectNode,
   onToggleComplete,
+  onDrillDownSubProcess,
 }: NodeRendererProps) {
   const { step, index, isActive, isCompleted } = node;
 
@@ -78,6 +81,15 @@ export function FlowchartNode({
           onToggleComplete={() => onToggleComplete(step.stepKey)}
         />
       );
+    case 'subprocess':
+      return (
+        <SubProcessNode
+          node={node}
+          onSelect={() => onSelectNode(index)}
+          onToggleComplete={() => onToggleComplete(step.stepKey)}
+          onDrillDown={onDrillDownSubProcess}
+        />
+      );
     case 'action':
     default:
       return (
@@ -88,6 +100,107 @@ export function FlowchartNode({
         />
       );
   }
+}
+
+// 0. Sub-Process Node: Compound Activity (Royal Indigo Accent with BPMN [+] marker)
+function SubProcessNode({
+  node,
+  onSelect,
+  onToggleComplete,
+  onDrillDown,
+}: {
+  node: LayoutNode;
+  onSelect: () => void;
+  onToggleComplete: () => void;
+  onDrillDown?: (subProcessSlug: string, stepTitle: string) => void;
+}) {
+  const { step, index, isActive, isCompleted, x, y, width, height } = node;
+  const childSlug = step.subProcessSlug || step.subProcess?.slug;
+  const childTitle = step.subProcess?.title || step.subProcessTitle || 'زیر-فرایند مستقل';
+  const childCount = step.subProcess?.totalSteps ?? step.subProcessStepCount;
+
+  return (
+    <div
+      onClick={onSelect}
+      style={{
+        position: 'absolute',
+        left: `${x}px`,
+        top: `${y}px`,
+        width: `${width}px`,
+        height: `${height}px`,
+      }}
+      className={`rounded-2xl border p-4 cursor-pointer transition-all select-none flex flex-col justify-between shadow-md relative ${
+        isActive
+          ? 'ring-2 ring-indigo-500 scale-[1.02] bg-indigo-500/10 border-indigo-500 shadow-indigo-500/15'
+          : isCompleted
+          ? 'bg-emerald-500/5 dark:bg-emerald-950/20 border-emerald-500/30 hover:border-emerald-500'
+          : 'bg-indigo-500/5 dark:bg-indigo-950/25 border-indigo-400/50 hover:border-indigo-500'
+      }`}
+    >
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-lg bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-black text-[11px] flex items-center justify-center">
+              {index + 1}
+            </span>
+            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+              <GitFork className="w-3 h-3" />
+              <span>زیر-فرایند</span>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            {childSlug && onDrillDown && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDrillDown(childSlug, step.title);
+                }}
+                className="p-1 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-xs cursor-pointer flex items-center gap-1 text-[10px] px-1.5 font-bold"
+                title="ورود و اجرای زیر-فرایند"
+              >
+                <Layers className="w-3 h-3" />
+                <span>ورود</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleComplete();
+              }}
+              className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors cursor-pointer ${
+                isCompleted
+                  ? 'bg-emerald-500 text-white'
+                  : 'border border-slate-300 dark:border-slate-700 hover:border-emerald-500 text-transparent'
+              }`}
+            >
+              <Check className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        <h4 className="font-black text-xs line-clamp-2 leading-snug" style={{ color: 'var(--text-primary)' }}>
+          {step.title}
+        </h4>
+      </div>
+
+      <div className="pt-2 border-t flex items-center justify-between gap-1 text-[10px]" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-bold truncate max-w-[170px]">
+          <span className="w-3.5 h-3.5 rounded-xs border border-indigo-500 flex items-center justify-center font-mono text-[9px] font-black shrink-0">
+            +
+          </span>
+          <span className="truncate">{childTitle}</span>
+        </div>
+
+        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-sm bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 shrink-0">
+          {childCount ? `${childCount} گام` : 'SUB-FLOW'}
+        </span>
+      </div>
+    </div>
+  );
 }
 
 // 1. Action Node: Rectangular Card (Blue Accent)
