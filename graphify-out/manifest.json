@@ -535,8 +535,8 @@
     "semantic_hash": ""
   },
   "src/components/process-detail-view.tsx": {
-    "mtime": 1791304152.2602599,
-    "ast_hash": "a258cf3e08d4a0fde8a298c96787cecb",
+    "mtime": 1791307013.4359763,
+    "ast_hash": "e0d3179658e52574b016eb6bd3fc1a08",
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
@@ -1117,6 +1117,21 @@
   "src/components/dashboard/permissions/types.ts": {
     "mtime": 1791305117.6572022,
     "ast_hash": "bf1217b7714590b357b579a5c0b23e44",
+    "semantic_hash": ""
+  },
+  "src/components/process-detail/flowchart-canvas.tsx": {
+    "mtime": 1791306130.3102758,
+    "ast_hash": "3e199858092d03a80cb5eba7cc5d206a",
+    "semantic_hash": ""
+  },
+  "src/components/process-detail/flowchart-nodes.tsx": {
+    "mtime": 1791306086.6701715,
+    "ast_hash": "81b7aad6ee43c10f3b549fd4c481da9b",
+    "semantic_hash": ""
+  },
+  "src/components/process-detail/step-runner-view.tsx": {
+    "mtime": 1791307099.0212874,
+    "ast_hash": "541387d33c6620c6facbe27435ba09c4",
     "semantic_hash": ""
   }
 }
