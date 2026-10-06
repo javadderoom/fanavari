@@ -55,6 +55,8 @@ function HomePageContent() {
       fetch('/api/processes', {
         headers: {
           'x-user-id': currentUser.id,
+          'x-user-role': encodeURIComponent(currentUser.roleName || ''),
+          'x-user-dept': currentUser.departmentId || '',
           'x-user-permissions': String(currentUser.permissions),
         },
       }).then((res) => res.json()).catch(() => []),
@@ -75,7 +77,7 @@ function HomePageContent() {
     return () => {
       isMounted = false;
     };
-  }, [currentUser.id, currentUser.permissions]);
+  }, [currentUser.id, currentUser.roleName, currentUser.departmentId, currentUser.permissions]);
 
   const handleSelectProcess = (process: Process, initialStepIndex?: number) => {
     setSelectedProcess(process);

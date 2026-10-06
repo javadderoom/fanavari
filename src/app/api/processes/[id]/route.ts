@@ -11,6 +11,16 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
     const userId = req.headers.get('x-user-id');
+    const rawRole = req.headers.get('x-user-role');
+    let userRole = rawRole;
+    if (rawRole) {
+      try {
+        userRole = decodeURIComponent(rawRole);
+      } catch (e) {
+        userRole = rawRole;
+      }
+    }
+    const userDeptId = req.headers.get('x-user-dept');
     const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
 
     const process = await prisma.process.findFirst({
@@ -29,6 +39,7 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
         accessGrants: {
           include: {
             user: true,
+            department: true,
           },
         },
       },
@@ -42,11 +53,13 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
     if (process.visibility === 'restricted') {
       const isSuperAdmin = hasPermission(userPermissions, Permissions.ADMINISTRATOR);
       const isAuthor = userId && process.authorId === userId;
-      const hasGrant = userId && process.accessGrants.some((g) => g.userId === userId);
+      const hasUserGrant = userId && process.accessGrants.some((g) => g.userId === userId);
+      const hasDeptGrant = userDeptId && process.accessGrants.some((g) => g.departmentId === userDeptId);
+      const hasRoleGrant = userRole && process.accessGrants.some((g) => g.roleName === userRole);
 
-      if (!isSuperAdmin && !isAuthor && !hasGrant) {
+      if (!isSuperAdmin && !isAuthor && !hasUserGrant && !hasDeptGrant && !hasRoleGrant) {
         return NextResponse.json(
-          { error: 'دسترسی محدود: این فرایند فقط برای افراد مجاز قابل مشاهده است.' },
+          { error: 'دسترسی محدود: این فرایند فقط برای افراد و واحدهای مجاز قابل مشاهده است.' },
           { status: 403 }
         );
       }
@@ -96,7 +109,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
         department: true,
         systemTool: true,
         accessGrants: {
-          include: { user: true },
+          include: { user: true, department: true },
         },
       },
     });

@@ -126,10 +126,12 @@ export interface ProcessCategoryEntity {
 
 export type ProcessVisibility = 'public' | 'restricted';
 
+export type AccessGrantType = 'user' | 'department' | 'role' | 'claim';
+
 export interface ProcessAccessGrant {
   id: string;
   processId: string;
-  userId: string;
+  userId?: string | null;
   user?: {
     id: string;
     name: string;
@@ -137,6 +139,16 @@ export interface ProcessAccessGrant {
     roleName: string;
     avatarUrl?: string | null;
   };
+  departmentId?: string | null;
+  departmentName?: string | null;
+  department?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  roleName?: string | null;
+  claimToken?: string | null;
+  claimExpiresAt?: string | Date | null;
   permission: 'view' | 'edit';
   grantedById?: string | null;
   createdAt: string | Date;

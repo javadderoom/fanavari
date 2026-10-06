@@ -125,7 +125,6 @@
   "123": "clip-path for Animation",
   "124": "Performance Rules",
   "125": "Gesture and Drag Interactions",
-  "126": "Technical Implementation",
   "127": "@tiptap/extension-table-header",
   "128": "syncEditBadgeHitProxies",
   "129": "isGeneratedFile",
@@ -134,7 +133,6 @@
   "132": "The Sonner Principles (Building Loved Components)",
   "133": "Spring Animations",
   "134": "readConfig",
-  "135": "The Toolkit",
   "136": "Agentation Setup",
   "137": "Core Philosophy",
   "138": "Debugging Animations",
@@ -151,7 +149,6 @@
   "149": "pg",
   "150": "@prisma/client",
   "151": "react-dom",
-  "152": "CSP detection (first-time only)",
   "153": "pg",
   "154": "live-target.mjs",
   "155": "@tiptap/react",
@@ -160,9 +157,6 @@
   "158": "CLAUDE.md",
   "159": "prisma.config.ts",
   "160": "normalizeIgnoreValueEntries",
-  "161": "Handle fallback",
-  "162": "buffer",
   "163": "@tiptap/extension-highlight",
-  "164": "session/route.ts",
   "165": "@tiptap/extension-link"
 }

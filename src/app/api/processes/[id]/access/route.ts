@@ -24,16 +24,15 @@ async function canManageProcessAccess(processId: string, userId?: string | null,
   if (proc.authorId && proc.authorId === userId) return true;
 
   // Check if user has explicit 'edit' grant
-  const grant = await prisma.processAccessGrant.findUnique({
+  const grant = await prisma.processAccessGrant.findFirst({
     where: {
-      processId_userId: {
-        processId,
-        userId,
-      },
+      processId,
+      userId,
+      permission: 'edit',
     },
   });
 
-  return grant?.permission === 'edit';
+  return Boolean(grant);
 }
 
 export async function GET(req: NextRequest, { params }: RouteContext) {
@@ -57,6 +56,13 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
                 email: true,
                 roleName: true,
                 avatarUrl: true,
+              },
+            },
+            department: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
               },
             },
           },
@@ -84,6 +90,11 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
       accessGrants: process.accessGrants.map((g) => ({
         id: g.id,
         userId: g.userId,
+        departmentId: g.departmentId,
+        department: g.department,
+        roleName: g.roleName,
+        claimToken: g.claimToken,
+        claimExpiresAt: g.claimExpiresAt,
         permission: g.permission,
         createdAt: g.createdAt,
         user: g.user,
@@ -118,7 +129,17 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const { visibility, targetUserId, permission } = body;
+    const { 
+      visibility, 
+      targetUserId, 
+      targetDepartmentId, 
+      targetRoleName, 
+      generateClaim, 
+      expiresInDays,
+      permission 
+    } = body;
+
+    const validPermission = permission === 'edit' ? 'edit' : 'view';
 
     // 1. Update visibility if requested
     if (visibility && ['public', 'restricted'].includes(visibility)) {
@@ -128,23 +149,88 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
       });
     }
 
-    // 2. Upsert grant for target user if requested
+    // 2. Individual User Grant
     if (targetUserId) {
-      const validPermission = permission === 'edit' ? 'edit' : 'view';
+      const existing = await prisma.processAccessGrant.findFirst({
+        where: { processId: process.id, userId: targetUserId },
+      });
 
-      await prisma.processAccessGrant.upsert({
-        where: {
-          processId_userId: {
+      if (existing) {
+        await prisma.processAccessGrant.update({
+          where: { id: existing.id },
+          data: { permission: validPermission },
+        });
+      } else {
+        await prisma.processAccessGrant.create({
+          data: {
             processId: process.id,
             userId: targetUserId,
+            permission: validPermission,
+            grantedById: currentUserId || null,
           },
-        },
-        update: {
-          permission: validPermission,
-        },
-        create: {
+        });
+      }
+    }
+
+    // 3. Department-Level Grant
+    if (targetDepartmentId) {
+      const existing = await prisma.processAccessGrant.findFirst({
+        where: { processId: process.id, departmentId: targetDepartmentId },
+      });
+
+      if (existing) {
+        await prisma.processAccessGrant.update({
+          where: { id: existing.id },
+          data: { permission: validPermission },
+        });
+      } else {
+        await prisma.processAccessGrant.create({
+          data: {
+            processId: process.id,
+            departmentId: targetDepartmentId,
+            permission: validPermission,
+            grantedById: currentUserId || null,
+          },
+        });
+      }
+    }
+
+    // 4. Role-Based Grant (RBAC)
+    if (targetRoleName && targetRoleName.trim()) {
+      const trimmedRole = targetRoleName.trim();
+      const existing = await prisma.processAccessGrant.findFirst({
+        where: { processId: process.id, roleName: trimmedRole },
+      });
+
+      if (existing) {
+        await prisma.processAccessGrant.update({
+          where: { id: existing.id },
+          data: { permission: validPermission },
+        });
+      } else {
+        await prisma.processAccessGrant.create({
+          data: {
+            processId: process.id,
+            roleName: trimmedRole,
+            permission: validPermission,
+            grantedById: currentUserId || null,
+          },
+        });
+      }
+    }
+
+    // 5. Generate Secure Claim Link Token
+    if (generateClaim) {
+      const token = `clm_${Math.random().toString(36).slice(2, 8)}_${Date.now().toString(36)}`;
+      const days = typeof expiresInDays === 'number' && expiresInDays > 0 ? expiresInDays : 7;
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + days);
+
+      await prisma.processAccessGrant.create({
+        data: {
           processId: process.id,
-          userId: targetUserId,
+          claimToken: token,
+          claimExpiresAt: expiresAt,
           permission: validPermission,
           grantedById: currentUserId || null,
         },
@@ -162,6 +248,13 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
             email: true,
             roleName: true,
             avatarUrl: true,
+          },
+        },
+        department: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
           },
         },
       },
@@ -188,13 +281,12 @@ export async function DELETE(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
     const { searchParams } = new URL(req.url);
+    const grantId = searchParams.get('grantId');
     const targetUserId = searchParams.get('userId');
+    const targetDepartmentId = searchParams.get('departmentId');
+    const targetRoleName = searchParams.get('roleName');
     const currentUserId = req.headers.get('x-user-id');
     const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
-
-    if (!targetUserId) {
-      return NextResponse.json({ error: 'شناسه کاربر هدف الزامی است.' }, { status: 400 });
-    }
 
     const process = await prisma.process.findFirst({
       where: { OR: [{ id }, { slug: id }] },
@@ -206,20 +298,30 @@ export async function DELETE(req: NextRequest, { params }: RouteContext) {
 
     const hasAccess = await canManageProcessAccess(process.id, currentUserId, userPermissions);
     if (!hasAccess) {
-      return NextResponse.json(
-        { error: 'دسترسی غیرمجاز' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'دسترسی غیرمجاز' }, { status: 403 });
     }
 
-    await prisma.processAccessGrant.deleteMany({
-      where: {
-        processId: process.id,
-        userId: targetUserId,
-      },
-    });
+    if (grantId) {
+      await prisma.processAccessGrant.deleteMany({
+        where: { id: grantId, processId: process.id },
+      });
+    } else if (targetUserId) {
+      await prisma.processAccessGrant.deleteMany({
+        where: { processId: process.id, userId: targetUserId },
+      });
+    } else if (targetDepartmentId) {
+      await prisma.processAccessGrant.deleteMany({
+        where: { processId: process.id, departmentId: targetDepartmentId },
+      });
+    } else if (targetRoleName) {
+      await prisma.processAccessGrant.deleteMany({
+        where: { processId: process.id, roleName: targetRoleName },
+      });
+    } else {
+      return NextResponse.json({ error: 'پارامتر حذف معتبر ارسال نشده است.' }, { status: 400 });
+    }
 
-    return NextResponse.json({ success: true, message: 'دسترسی کاربر با موفقیت لغو شد.' });
+    return NextResponse.json({ success: true, message: 'دسترسی با موفقیت لغو شد.' });
   } catch (error) {
     console.error('Error deleting process grant:', error);
     return NextResponse.json({ error: 'خطا در حذف دسترسی' }, { status: 500 });

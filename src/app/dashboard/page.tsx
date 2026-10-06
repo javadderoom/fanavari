@@ -56,6 +56,8 @@ export default function DashboardOverviewPage() {
         fetch('/api/processes', {
           headers: {
             'x-user-id': currentUser.id,
+            'x-user-role': encodeURIComponent(currentUser.roleName || ''),
+            'x-user-dept': currentUser.departmentId || '',
             'x-user-permissions': String(currentUser.permissions),
           },
         }).then((r) => r.json()),
@@ -77,7 +79,7 @@ export default function DashboardOverviewPage() {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [currentUser.id, currentUser.roleName, currentUser.departmentId, currentUser.permissions]);
 
   const totalSteps = useMemo(() => {
     return processes.reduce((acc, p) => acc + (p.steps?.length || p.totalSteps || 0), 0);

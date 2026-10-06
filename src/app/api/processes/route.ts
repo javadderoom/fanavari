@@ -9,23 +9,31 @@ export async function GET(req: NextRequest) {
     const query = searchParams.get('q') || '';
     const scope = searchParams.get('scope');
     const userId = req.headers.get('x-user-id');
+    const rawRole = req.headers.get('x-user-role');
+    let userRole = rawRole;
+    if (rawRole) {
+      try {
+        userRole = decodeURIComponent(rawRole);
+      } catch (e) {
+        userRole = rawRole;
+      }
+    }
+    const userDeptId = req.headers.get('x-user-dept');
     const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
 
     const isSuperAdmin = hasPermission(userPermissions, Permissions.ADMINISTRATOR);
 
-    // Privacy-preserving zero-leak filter:
-    // If not super admin, non-public processes are completely hidden unless user is the author or has an explicit grant
+    // Multi-Audience Zero-Leak ACL Filter:
+    // If not super admin, non-public processes are completely hidden unless user matches any target grant
     const aclFilter = isSuperAdmin
       ? {}
       : {
           OR: [
             { visibility: 'public' },
-            ...(userId
-              ? [
-                  { authorId: userId },
-                  { accessGrants: { some: { userId } } },
-                ]
-              : []),
+            ...(userId ? [{ authorId: userId }] : []),
+            ...(userId ? [{ accessGrants: { some: { userId } } }] : []),
+            ...(userDeptId ? [{ accessGrants: { some: { departmentId: userDeptId } } }] : []),
+            ...(userRole ? [{ accessGrants: { some: { roleName: userRole } } }] : []),
           ],
         };
 
@@ -57,6 +65,7 @@ export async function GET(req: NextRequest) {
         accessGrants: {
           include: {
             user: true,
+            department: true,
           },
         },
       },
@@ -221,7 +230,7 @@ export async function POST(req: NextRequest) {
             department: true,
             systemTool: true,
             accessGrants: {
-              include: { user: true },
+              include: { user: true, department: true },
             },
           },
         });
@@ -264,7 +273,7 @@ export async function POST(req: NextRequest) {
         department: true,
         systemTool: true,
         accessGrants: {
-          include: { user: true },
+          include: { user: true, department: true },
         },
       },
     });

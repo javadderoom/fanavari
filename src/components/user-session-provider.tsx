@@ -8,6 +8,8 @@ export interface AppUser {
   name: string;
   email: string;
   roleName: string;
+  departmentId?: string;
+  departmentName?: string;
   permissions: number; // Bitfield integer
   avatarUrl?: string;
 }
@@ -15,27 +17,53 @@ export interface AppUser {
 export const DEMO_USERS: AppUser[] = [
   {
     id: 'usr-admin',
-    name: 'مدیر ارشد سامانه (Super Admin)',
+    name: 'مهندس سهرابی (مدیر ارشد)',
     email: 'admin@fanavari.local',
     roleName: ROLE_PRESETS.SUPER_ADMIN.name,
+    departmentId: 'dept-it',
+    departmentName: 'ستاد مرکزی فناوری',
     permissions: ROLE_PRESETS.SUPER_ADMIN.bitfield,
     avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin',
   },
   {
-    id: 'usr-editor',
-    name: 'کارشناس تدوین فرایند (Editor)',
-    email: 'editor@fanavari.local',
-    roleName: ROLE_PRESETS.PROCESS_EDITOR.name,
-    permissions: ROLE_PRESETS.PROCESS_EDITOR.bitfield,
-    avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=editor',
+    id: 'usr-principal',
+    name: 'سید مرتضی حسینی (مدیر مدرسه)',
+    email: 'principal@school.local',
+    roleName: 'مدیر مدرسه',
+    departmentId: 'org-medu',
+    departmentName: 'مدارس و واحدهای آموزشی',
+    permissions: ROLE_PRESETS.EMPLOYEE_VIEWER.bitfield,
+    avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=principal',
   },
   {
-    id: 'usr-viewer',
-    name: 'پرسنل سازمانی (Viewer)',
-    email: 'viewer@fanavari.local',
-    roleName: ROLE_PRESETS.EMPLOYEE_VIEWER.name,
+    id: 'usr-deputy',
+    name: 'مریم صادقی (معاون اجرایی)',
+    email: 'deputy@school.local',
+    roleName: 'معاون اجرایی',
+    departmentId: 'org-medu',
+    departmentName: 'مدارس و واحدهای آموزشی',
     permissions: ROLE_PRESETS.EMPLOYEE_VIEWER.bitfield,
-    avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=viewer',
+    avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=deputy',
+  },
+  {
+    id: 'usr-tech-support',
+    name: 'علیرضا راد (پشتیبان فناوری)',
+    email: 'it-support@fanavari.local',
+    roleName: 'پشتیبان فناوری',
+    departmentId: 'dept-it',
+    departmentName: 'اداره فناوری و آمار',
+    permissions: ROLE_PRESETS.PROCESS_EDITOR.bitfield,
+    avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=tech',
+  },
+  {
+    id: 'usr-teacher',
+    name: 'احمد محمدی (آموزگار / پرسنل)',
+    email: 'teacher@school.local',
+    roleName: 'آموزگار',
+    departmentId: 'org-medu',
+    departmentName: 'مدارس و واحدهای آموزشی',
+    permissions: ROLE_PRESETS.EMPLOYEE_VIEWER.bitfield,
+    avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=teacher',
   },
 ];
 

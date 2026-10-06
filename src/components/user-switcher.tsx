@@ -48,14 +48,15 @@ export function UserSwitcher() {
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className="absolute left-0 mt-2 w-64 rounded-2xl glass-panel-strong shadow-2xl p-2 z-50 border animate-in fade-in zoom-in-95"
+          className="absolute left-0 mt-2 w-72 rounded-2xl glass-panel-strong shadow-2xl p-2 z-50 border animate-in fade-in zoom-in-95"
           style={{ borderColor: 'var(--border-glass)' }}
           onMouseLeave={() => setIsOpen(false)}
         >
-          <div className="px-3 py-2 border-b mb-1" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div className="px-3 py-2 border-b mb-1 flex items-center justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
             <span className="text-[11px] font-bold block" style={{ color: 'var(--text-muted)' }}>
-              حساب کاربری و سطح دسترسی:
+              تغییر پرسونای تستی سازمانی:
             </span>
+            <span className="text-[10px] text-blue-500 font-mono">RBAC + Dept</span>
           </div>
 
           <div className="space-y-1">
@@ -69,19 +70,43 @@ export function UserSwitcher() {
                     switchUser(user.id);
                     setIsOpen(false);
                   }}
-                  className={`w-full p-2 rounded-xl text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                  className={`w-full p-2.5 rounded-xl text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                     isSelected ? 'bg-blue-500/10 font-bold text-blue-600' : 'hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
-                  <div>
-                    <span className="block font-bold" style={{ color: 'var(--text-primary)' }}>
-                      {user.name}
-                    </span>
-                    <span className="text-[10px] text-slate-400">
-                      {user.roleName} • {user.email}
-                    </span>
+                  <div className="flex items-center gap-2.5">
+                    <img 
+                      src={user.avatarUrl} 
+                      alt="" 
+                      className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0 border border-slate-300 dark:border-slate-600" 
+                    />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-[12px]" style={{ color: 'var(--text-primary)' }}>
+                          {user.name}
+                        </span>
+                        {user.id === 'usr-admin' && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 font-bold border border-rose-500/20">
+                            ادمین کل
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[10px] flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        <span className="font-semibold text-blue-600 dark:text-blue-400">
+                          {user.roleName}
+                        </span>
+                        {user.departmentName && (
+                          <>
+                            <span className="text-slate-400">•</span>
+                            <span className="text-slate-500 dark:text-slate-400 truncate max-w-[130px]">
+                              {user.departmentName}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  {isSelected && <Check className="w-4 h-4 text-blue-600" />}
+                  {isSelected && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
                 </button>
               );
             })}

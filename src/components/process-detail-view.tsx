@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Process, ProcessStep } from '@/types/process';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { MenuPathDisplay } from './menu-path-display';
 import { StepContentRenderer, hasValidStepContent } from './step-content-renderer';
 import { ImageHotspotViewer } from './image-hotspot-viewer';
@@ -49,6 +50,7 @@ interface ProcessDetailViewProps {
 
 export function ProcessDetailView({ process }: ProcessDetailViewProps) {
   const { currentUser } = useUserSession();
+  const searchParams = useSearchParams();
   const [currentProcess, setCurrentProcess] = useState<Process>(process);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
@@ -64,6 +66,56 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
   // Live Step Completion & Runner State
   const [completedStepKeys, setCompletedStepKeys] = useState<string[]>([]);
   const [showCelebration, setShowCelebration] = useState(false);
+
+  // Auto-claim invite token if present in URL
+  useEffect(() => {
+    const claimToken = searchParams.get('claim');
+    if (!claimToken) return;
+
+    async function redeemClaim() {
+      try {
+        const res = await fetch(`/api/processes/${process.id}/claim`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': currentUser.id,
+          },
+          body: JSON.stringify({ claimToken }),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          notify.success('دسترسی شما با موفقیت از طریق لینک دعوت فعال گردید!');
+          // Refresh access grants from server
+          const grantsRes = await fetch(`/api/processes/${process.id}/access`, {
+            headers: {
+              'x-user-id': currentUser.id,
+              'x-user-permissions': String(currentUser.permissions),
+            },
+          });
+          if (grantsRes.ok) {
+            const grantsData = await grantsRes.json();
+            setCurrentProcess((prev) => ({
+              ...prev,
+              accessGrants: grantsData.accessGrants || [],
+            }));
+          }
+          // Clean URL parameter without page reload
+          if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('claim');
+            window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+          }
+        } else if (!res.ok) {
+          notify.error(data.error || 'لینک دعوت نامعتبر است یا منقضی شده است.');
+        }
+      } catch (err) {
+        console.error('Claim redemption error:', err);
+      }
+    }
+
+    redeemClaim();
+  }, [searchParams, process.id, currentUser.id, currentUser.permissions]);
 
   // Restore session from localStorage on mount
   useEffect(() => {
@@ -189,8 +241,18 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
 
   const isSuperAdmin = hasPermission(currentUser.permissions, Permissions.ADMINISTRATOR);
   const isAuthor = Boolean(currentProcess.authorId && currentProcess.authorId === currentUser.id);
-  const hasGrant = Boolean((currentProcess.accessGrants || []).some((g) => g.userId === currentUser.id));
   const isRestricted = currentProcess.visibility === 'restricted';
+
+  // Multi-Audience Union Match:
+  const matchingUserGrant = (currentProcess.accessGrants || []).find((g) => g.userId === currentUser.id);
+  const matchingDeptGrant = (currentProcess.accessGrants || []).find(
+    (g) => g.departmentId && currentUser.departmentId && g.departmentId === currentUser.departmentId
+  );
+  const matchingRoleGrant = (currentProcess.accessGrants || []).find(
+    (g) => g.roleName && currentUser.roleName && g.roleName.trim().toLowerCase() === currentUser.roleName.trim().toLowerCase()
+  );
+
+  const hasGrant = Boolean(matchingUserGrant || matchingDeptGrant || matchingRoleGrant);
   const hasAccess = !isRestricted || isSuperAdmin || isAuthor || hasGrant;
 
   if (!hasAccess) {
@@ -263,6 +325,19 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
                   </>
                 )}
               </span>
+
+              {isRestricted && (matchingRoleGrant || matchingDeptGrant || matchingUserGrant) && (
+                <span className="text-xs px-2.5 py-1 rounded-xl font-bold flex items-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>
+                    {matchingRoleGrant 
+                      ? `دسترسی فعال: سمت ${matchingRoleGrant.roleName}`
+                      : matchingDeptGrant
+                      ? `دسترسی فعال: واحد ${matchingDeptGrant.department?.name || 'سازمانی'}`
+                      : 'دسترسی فعال شخصی'}
+                  </span>
+                </span>
+              )}
 
               <span className="text-xs px-2.5 py-1 rounded-xl font-bold"
                 style={{ background: 'var(--accent-soft)', color: 'var(--accent-primary)', border: '1px solid var(--accent-border)' }}

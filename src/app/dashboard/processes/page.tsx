@@ -46,6 +46,8 @@ export default function DashboardProcessesPage() {
       const res = await fetch('/api/processes', {
         headers: {
           'x-user-id': currentUser.id,
+          'x-user-role': encodeURIComponent(currentUser.roleName || ''),
+          'x-user-dept': currentUser.departmentId || '',
           'x-user-permissions': String(currentUser.permissions),
         },
       });
@@ -63,7 +65,7 @@ export default function DashboardProcessesPage() {
 
   useEffect(() => {
     fetchProcesses();
-  }, []);
+  }, [currentUser.id, currentUser.roleName, currentUser.departmentId, currentUser.permissions]);
 
   const systemsList = useMemo(() => {
     const list = Array.from(new Set(processes.map((p) => p.targetSystem).filter(Boolean)));

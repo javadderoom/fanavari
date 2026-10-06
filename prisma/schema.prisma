@@ -13,6 +13,8 @@ model User {
   roleName      String         @default("User") // "Super Admin" | "Manager" | "Editor" | "Viewer"
   permissions   Int            @default(1) // Discord-style bitfield flags (Int supports 31 bit flags)
   avatarUrl     String?
+  departmentId  String?
+  department    Department?    @relation(fields: [departmentId], references: [id])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   processes            Process[]            @relation("CreatedProcesses")
@@ -23,13 +25,15 @@ model User {
 }
 
 model Department {
-  id               String            @id @default(uuid())
+  id               String               @id @default(uuid())
   name             String
-  slug             String            @unique
+  slug             String               @unique
   icon             String?
-  createdAt        DateTime          @default(now())
+  createdAt        DateTime             @default(now())
+  users            User[]
   processes        Process[]
   informationPosts InformationPost[]
+  accessGrants     ProcessAccessGrant[]
 }
 
 model SystemTool {
@@ -72,17 +76,25 @@ model Process {
 }
 
 model ProcessAccessGrant {
-  id          String   @id @default(uuid())
-  processId   String
-  process     Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User     @relation("GrantedToUser", fields: [userId], references: [id], onDelete: Cascade)
-  permission  String   @default("view") // "view" | "edit"
-  grantedById String?
-  grantedBy   User?    @relation("GrantedByUser", fields: [grantedById], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
+  id             String      @id @default(uuid())
+  processId      String
+  process        Process     @relation(fields: [processId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?       @relation("GrantedToUser", fields: [userId], references: [id], onDelete: Cascade)
+  departmentId   String?
+  department     Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  roleName       String?
+  claimToken     String?     @unique
+  claimExpiresAt DateTime?
+  permission     String      @default("view") // "view" | "edit"
+  grantedById    String?
+  grantedBy      User?       @relation("GrantedByUser", fields: [grantedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime    @default(now())
 
-  @@unique([processId, userId])
+  @@index([processId])
+  @@index([userId])
+  @@index([departmentId])
+  @@index([roleName])
 }
 
 model Step {
