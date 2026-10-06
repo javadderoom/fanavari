@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Process, ProcessStep } from '@/types/process';
 import { MenuPathDisplay } from './menu-path-display';
 import { StepContentRenderer, hasValidStepContent } from './step-content-renderer';
+import { ImageHotspotViewer } from './image-hotspot-viewer';
 import { 
   X, 
   Clock, 
@@ -22,7 +23,8 @@ import {
   Save, 
   ArrowRight, 
   ArrowLeft,
-  Printer
+  Printer,
+  Sparkles
 } from 'lucide-react';
 
 interface ProcessDetailModalProps {
@@ -358,6 +360,23 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
                       {currentStep.title}
                     </h3>
                   </div>
+
+                  {/* Interactive Image Hotspots Viewer */}
+                  {currentStep.imageUrl && (
+                    <div className="mb-4">
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                        <h5 className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                          راهنمای تصویری سامانه و نقاط تعاملی:
+                        </h5>
+                      </div>
+                      <ImageHotspotViewer
+                        imageUrl={currentStep.imageUrl}
+                        hotspots={currentStep.hotspots || []}
+                        alt={`تصویر گام ${currentStep.orderIndex}: ${currentStep.title}`}
+                      />
+                    </div>
+                  )}
 
                   {currentStep.targetMenuPath && (
                     <div className="mb-4">
