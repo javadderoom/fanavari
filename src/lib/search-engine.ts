@@ -16,7 +16,7 @@ export function normalizeText(text: string): string {
     .replace(/\u200c/g, ' ')        // ZWNJ to space for token matching
     .replace(/[\u06F0-\u06F9]/g, (d) => String(d.charCodeAt(0) - 0x06F0)) // Persian numbers -> Latin
     .replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660)) // Arabic numbers -> Latin
-    .replace(/[\s\-_/\\,.:;!؟?]+/g, ' ')
+    .replace(/[\s\-_/\\,.:;!؟?،؛]+/g, ' ')
     .trim();
 }
 
