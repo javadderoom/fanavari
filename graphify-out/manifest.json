@@ -540,8 +540,8 @@
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
-    "mtime": 1791289207.100042,
-    "ast_hash": "4b9d38c0cb95aeb14e2d30a4879a58cd",
+    "mtime": 1791301373.2177153,
+    "ast_hash": "f69085357aeb688307b28ac8c89c0fb7",
     "semantic_hash": ""
   },
   "src/components/rich-text-editor.tsx": {
@@ -980,8 +980,8 @@
     "semantic_hash": ""
   },
   "src/components/process-access-modal.tsx": {
-    "mtime": 1791299534.5289154,
-    "ast_hash": "b77b6c79d06e4394eb80fee0225be249",
+    "mtime": 1791300702.556205,
+    "ast_hash": "88319d3d0da149a3e03d75119f6a1a50",
     "semantic_hash": ""
   },
   "prisma/migrations/20261006180000_add_multi_audience_access_grants/migration.sql": {
@@ -992,6 +992,66 @@
   "src/app/api/processes/[id]/claim/route.ts": {
     "mtime": 1791298306.0987163,
     "ast_hash": "ecacd34ebe8555d006eef23a267ecd37",
+    "semantic_hash": ""
+  },
+  "src/components/access/active-grants-list.tsx": {
+    "mtime": 1791300654.1356325,
+    "ast_hash": "7848eec061cafb9631e4d2399d8456bd",
+    "semantic_hash": ""
+  },
+  "src/components/access/claim-grant-tab.tsx": {
+    "mtime": 1791300599.952882,
+    "ast_hash": "9d837f9e617d48271ff2b8ec767b96d3",
+    "semantic_hash": ""
+  },
+  "src/components/access/department-grant-tab.tsx": {
+    "mtime": 1791300579.7506995,
+    "ast_hash": "1e81f16fd2b4322240a985cdcd99ef55",
+    "semantic_hash": ""
+  },
+  "src/components/access/role-grant-tab.tsx": {
+    "mtime": 1791300560.6476495,
+    "ast_hash": "f678a7b99b355c9be9d50e1a42751612",
+    "semantic_hash": ""
+  },
+  "src/components/access/types.ts": {
+    "mtime": 1791300536.4863214,
+    "ast_hash": "d44373cbde29ed3d520e914fe3c4c727",
+    "semantic_hash": ""
+  },
+  "src/components/access/user-grant-tab.tsx": {
+    "mtime": 1791300623.9010506,
+    "ast_hash": "8bd1494f23842d2dad623025b602cbae",
+    "semantic_hash": ""
+  },
+  "src/components/editor/advanced-settings-section.tsx": {
+    "mtime": 1791300960.717288,
+    "ast_hash": "2c4fca1b0c55ba0cca4d1045350a463c",
+    "semantic_hash": ""
+  },
+  "src/components/editor/process-metadata-fields.tsx": {
+    "mtime": 1791301313.3405335,
+    "ast_hash": "d0d30f8ac1bba0e3b88e27920fcfd039",
+    "semantic_hash": ""
+  },
+  "src/components/editor/step-copyable-fields.tsx": {
+    "mtime": 1791300840.4311137,
+    "ast_hash": "41f594a37215a82d804810fa6ec64d8c",
+    "semantic_hash": ""
+  },
+  "src/components/editor/step-editor-card.tsx": {
+    "mtime": 1791300903.129257,
+    "ast_hash": "76f4f29705f8a16a85ff5d4366a81abf",
+    "semantic_hash": ""
+  },
+  "src/components/editor/step-error-guides.tsx": {
+    "mtime": 1791300868.9316423,
+    "ast_hash": "325e2493d4bb96ad1e89c2c1220fd0f9",
+    "semantic_hash": ""
+  },
+  "src/components/editor/types.ts": {
+    "mtime": 1791300767.8005216,
+    "ast_hash": "1f8d7402fd5ad787294c4bb88ad00fe1",
     "semantic_hash": ""
   }
 }
