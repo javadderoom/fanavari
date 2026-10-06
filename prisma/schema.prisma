@@ -20,20 +20,23 @@ model User {
   processes            Process[]            @relation("CreatedProcesses")
   savedSessions        SavedSession[]
   informationPosts     InformationPost[]    @relation("CreatedInformationPosts")
-  receivedAccessGrants ProcessAccessGrant[] @relation("GrantedToUser")
-  createdAccessGrants  ProcessAccessGrant[] @relation("GrantedByUser")
+  receivedAccessGrants     ProcessAccessGrant[]     @relation("GrantedToUser")
+  createdAccessGrants      ProcessAccessGrant[]     @relation("GrantedByUser")
+  receivedInfoAccessGrants InformationAccessGrant[] @relation("InfoGrantedToUser")
+  createdInfoAccessGrants  InformationAccessGrant[] @relation("InfoGrantedByUser")
 }
 
 model Department {
-  id               String               @id @default(uuid())
+  id               String                   @id @default(uuid())
   name             String
-  slug             String               @unique
+  slug             String                   @unique
   icon             String?
-  createdAt        DateTime             @default(now())
+  createdAt        DateTime                 @default(now())
   users            User[]
   processes        Process[]
   informationPosts InformationPost[]
   accessGrants     ProcessAccessGrant[]
+  infoAccessGrants InformationAccessGrant[]
 }
 
 model SystemTool {
@@ -159,6 +162,7 @@ model InformationPost {
   publishedAt  DateTime    @default(now())
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+  accessGrants InformationAccessGrant[]
 }
 
 model ProcessScope {
@@ -184,5 +188,27 @@ model ProcessCategory {
   scope       ProcessScope? @relation(fields: [scopeId], references: [id], onDelete: Cascade)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+}
+
+model InformationAccessGrant {
+  id             String          @id @default(uuid())
+  postId         String
+  post           InformationPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?           @relation("InfoGrantedToUser", fields: [userId], references: [id], onDelete: Cascade)
+  departmentId   String?
+  department     Department?     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  roleName       String?
+  claimToken     String?         @unique
+  claimExpiresAt DateTime?
+  permission     String          @default("view") // "view" | "edit"
+  grantedById    String?
+  grantedBy      User?           @relation("InfoGrantedByUser", fields: [grantedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime        @default(now())
+
+  @@index([postId])
+  @@index([userId])
+  @@index([departmentId])
+  @@index([roleName])
 }
 

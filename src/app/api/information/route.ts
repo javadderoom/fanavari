@@ -34,9 +34,20 @@ export async function GET(req: NextRequest) {
 
     const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
     const userId = req.headers.get('x-user-id');
+    const rawRole = req.headers.get('x-user-role');
+    let userRole = rawRole;
+    if (rawRole) {
+      try {
+        userRole = decodeURIComponent(rawRole);
+      } catch (e) {
+        userRole = rawRole;
+      }
+    }
+    const userDeptId = req.headers.get('x-user-dept');
     const isSuperAdmin = hasPermission(userPermissions, Permissions.ADMINISTRATOR);
 
-    // Filter restricted posts unless Super Admin or author
+    // Multi-Audience Zero-Leak ACL Filter:
+    // If not super admin, non-public posts are completely hidden unless user matches any target grant
     if (!isSuperAdmin) {
       where.AND = [
         ...(where.AND || []),
@@ -44,6 +55,9 @@ export async function GET(req: NextRequest) {
           OR: [
             { visibility: 'public' },
             ...(userId ? [{ authorId: userId }] : []),
+            ...(userId ? [{ accessGrants: { some: { userId } } }] : []),
+            ...(userDeptId ? [{ accessGrants: { some: { departmentId: userDeptId } } }] : []),
+            ...(userRole ? [{ accessGrants: { some: { roleName: userRole } } }] : []),
           ],
         },
       ];
@@ -64,6 +78,12 @@ export async function GET(req: NextRequest) {
         department: true,
         systemTool: true,
         author: true,
+        accessGrants: {
+          include: {
+            user: true,
+            department: true,
+          },
+        },
       },
       orderBy: [
         { isPinned: 'desc' },
@@ -72,6 +92,7 @@ export async function GET(req: NextRequest) {
       ],
       take: limit,
     });
+
 
     return NextResponse.json(posts.map(mapPrismaInformationPost));
   } catch (error) {
@@ -96,6 +117,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const currentUserId = req.headers.get('x-user-id');
     const body = await req.json();
     const {
       title,
@@ -106,6 +128,7 @@ export async function POST(req: NextRequest) {
       priority = 'normal',
       isPinned = false,
       isPublished = true,
+      visibility = 'public',
       departmentId,
       systemToolId,
       targetUrl,
@@ -146,8 +169,10 @@ export async function POST(req: NextRequest) {
         priority: ['urgent', 'high', 'normal'].includes(priority) ? priority : 'normal',
         isPinned: Boolean(isPinned),
         isPublished: isPublished !== undefined ? Boolean(isPublished) : true,
+        visibility: ['public', 'restricted'].includes(visibility) ? visibility : 'public',
         departmentId: departmentId && departmentId !== 'none' ? departmentId : null,
         systemToolId: systemToolId && systemToolId !== 'none' ? systemToolId : null,
+        authorId: currentUserId || null,
         targetUrl: targetUrl ? targetUrl.trim() : null,
         publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
       },
@@ -155,6 +180,12 @@ export async function POST(req: NextRequest) {
         department: true,
         systemTool: true,
         author: true,
+        accessGrants: {
+          include: {
+            user: true,
+            department: true,
+          },
+        },
       },
     });
 
@@ -196,6 +227,7 @@ export async function PUT(req: NextRequest) {
       priority,
       isPinned,
       isPublished,
+      visibility,
       departmentId,
       systemToolId,
       targetUrl,
@@ -247,6 +279,7 @@ export async function PUT(req: NextRequest) {
         priority: priority && ['urgent', 'high', 'normal'].includes(priority) ? priority : target.priority,
         isPinned: isPinned !== undefined ? Boolean(isPinned) : target.isPinned,
         isPublished: isPublished !== undefined ? Boolean(isPublished) : target.isPublished,
+        visibility: visibility && ['public', 'restricted'].includes(visibility) ? visibility : target.visibility,
         departmentId: departmentId !== undefined ? (departmentId && departmentId !== 'none' ? departmentId : null) : target.departmentId,
         systemToolId: systemToolId !== undefined ? (systemToolId && systemToolId !== 'none' ? systemToolId : null) : target.systemToolId,
         targetUrl: targetUrl !== undefined ? (targetUrl ? targetUrl.trim() : null) : target.targetUrl,
@@ -256,6 +289,12 @@ export async function PUT(req: NextRequest) {
         department: true,
         systemTool: true,
         author: true,
+        accessGrants: {
+          include: {
+            user: true,
+            department: true,
+          },
+        },
       },
     });
 

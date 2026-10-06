@@ -16,7 +16,8 @@ import {
   Calendar,
   AlertTriangle,
   Sparkles,
-  Filter
+  Filter,
+  Lock,
 } from 'lucide-react';
 import { InformationPost, InformationType, OrganizationEntity, SystemTool } from '@/types/process';
 
@@ -272,6 +273,13 @@ export function InformationClientView({
                           <span>{typeMeta.label}</span>
                         </span>
 
+                        {post.visibility === 'restricted' && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                            <Lock className="w-3 h-3" />
+                            <span>محدود سازمانی</span>
+                          </span>
+                        )}
+
                         {post.priority !== 'normal' && (
                           <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${priorityMeta.badgeBg}`}>
                             {priorityMeta.isUrgent && <AlertTriangle className="w-3 h-3" />}
@@ -372,10 +380,19 @@ export function InformationClientView({
                   <div>
                     {/* Top Badges */}
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${typeMeta.badgeBg}`}>
-                        <TypeIcon className="w-3 h-3" />
-                        <span>{typeMeta.label}</span>
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${typeMeta.badgeBg}`}>
+                          <TypeIcon className="w-3 h-3" />
+                          <span>{typeMeta.label}</span>
+                        </span>
+
+                        {post.visibility === 'restricted' && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                            <Lock className="w-3 h-3" />
+                            <span>محدود سازمانی</span>
+                          </span>
+                        )}
+                      </div>
 
                       {post.priority !== 'normal' && (
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${priorityMeta.badgeBg}`}>
@@ -384,6 +401,7 @@ export function InformationClientView({
                         </span>
                       )}
                     </div>
+
 
                     {/* Title */}
                     <Link

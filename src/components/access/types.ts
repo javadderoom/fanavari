@@ -1,4 +1,6 @@
-import { ProcessAccessGrant } from '@/types/process';
+import { ProcessAccessGrant, InformationAccessGrant } from '@/types/process';
+
+export type UnifiedAccessGrant = ProcessAccessGrant | InformationAccessGrant;
 
 export type AudienceTab = 'role' | 'department' | 'claim' | 'user';
 export type GrantsFilter = 'all' | 'role' | 'department' | 'user' | 'claim';

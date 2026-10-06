@@ -2,13 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Building2, Loader2 } from 'lucide-react';
-import { ProcessAccessGrant } from '@/types/process';
-import { DeptItem } from './types';
+import { UnifiedAccessGrant, DeptItem } from './types';
 import { notify } from '@/lib/notify';
 
 interface DepartmentGrantTabProps {
   departments: DeptItem[];
-  grants: ProcessAccessGrant[];
+  grants: UnifiedAccessGrant[];
   isLoading: boolean;
   isLoadingDepts: boolean;
   onAddDeptGrant: (deptId: string) => Promise<void>;
@@ -40,7 +39,7 @@ export function DepartmentGrantTab({
   return (
     <div className="space-y-3 pt-1">
       <div className="text-xs text-[var(--text-secondary)] leading-relaxed">
-        با یک کلیک، کلیه اعضا و پرسنل متعلق به واحد سازمانی انتخاب‌شده به این فرایند دسترسی خواهند داشت:
+        با یک کلیک، کلیه اعضا و پرسنل متعلق به واحد سازمانی انتخاب‌شده دسترسی خواهند داشت:
       </div>
 
       <div className="flex flex-col sm:flex-row gap-2">

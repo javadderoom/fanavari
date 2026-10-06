@@ -20,7 +20,7 @@ import {
   Send,
   Check,
 } from 'lucide-react';
-import { InformationPost, InformationType, InformationPriority, OrganizationEntity, SystemTool } from '@/types/process';
+import { InformationPost, InformationType, InformationPriority, OrganizationEntity, SystemTool, ProcessVisibility } from '@/types/process';
 import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
 import { RichTextEditor } from './rich-text-editor';
 
@@ -90,6 +90,7 @@ export function InformationEditorModal({
   const [priority, setPriority] = useState<InformationPriority>('normal');
   const [isPinned, setIsPinned] = useState(false);
   const [isPublished, setIsPublished] = useState(true);
+  const [visibility, setVisibility] = useState<ProcessVisibility>('public');
   const [departmentId, setDepartmentId] = useState<string>('none');
   const [systemToolId, setSystemToolId] = useState<string>('none');
   const [targetUrl, setTargetUrl] = useState('');
@@ -118,6 +119,7 @@ export function InformationEditorModal({
     priority,
     isPinned,
     isPublished,
+    visibility,
     departmentId,
     systemToolId,
     targetUrl,
@@ -135,6 +137,7 @@ export function InformationEditorModal({
       priority,
       isPinned,
       isPublished,
+      visibility,
       departmentId,
       systemToolId,
       targetUrl,
@@ -153,6 +156,7 @@ export function InformationEditorModal({
       setPriority(postToEdit.priority || 'normal');
       setIsPinned(Boolean(postToEdit.isPinned));
       setIsPublished(postToEdit.isPublished !== undefined ? postToEdit.isPublished : true);
+      setVisibility(postToEdit.visibility || 'public');
       setDepartmentId(postToEdit.departmentId || 'none');
       setSystemToolId(postToEdit.systemToolId || 'none');
       setTargetUrl(postToEdit.targetUrl || '');
@@ -171,6 +175,7 @@ export function InformationEditorModal({
       setPriority('normal');
       setIsPinned(false);
       setIsPublished(true);
+      setVisibility('public');
       setDepartmentId('none');
       setSystemToolId('none');
       setTargetUrl('');
@@ -269,6 +274,7 @@ export function InformationEditorModal({
         priority: cur.priority,
         isPinned: cur.isPinned,
         isPublished: targetIsPublished,
+        visibility: cur.visibility || 'public',
         departmentId: cur.departmentId === 'none' ? null : cur.departmentId,
         systemToolId: cur.systemToolId === 'none' ? null : cur.systemToolId,
         targetUrl: cur.targetUrl.trim() || null,
@@ -283,6 +289,7 @@ export function InformationEditorModal({
         method: isExisting ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': currentUser.id,
           'x-user-permissions': String(currentUser.permissions),
         },
         body: JSON.stringify(payload),
@@ -498,7 +505,52 @@ export function InformationEditorModal({
             </div>
           </div>
 
+          {/* Visibility Setting */}
+          <div className="p-3.5 rounded-xl bg-slate-50/80 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                سطح انتشار و دسترسی (Visibility)
+              </label>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                {visibility === 'public'
+                  ? 'عمومی: قابل مشاهده و جستجو برای تمام فرهنگیان و پرسنل'
+                  : 'محدود سازمانی: اختصاصی برای سمت‌ها یا واحدهای هدف (RBAC)'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setVisibility('public');
+                  setIsDirty(true);
+                }}
+                className={`py-1.5 px-3 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                  visibility === 'public'
+                    ? 'border-blue-500/50 bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500 font-bold'
+                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                🌐 عمومی
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setVisibility('restricted');
+                  setIsDirty(true);
+                }}
+                className={`py-1.5 px-3 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                  visibility === 'restricted'
+                    ? 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500 font-bold'
+                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                🔒 محدود سازمانی (RBAC)
+              </button>
+            </div>
+          </div>
+
           {/* Relations: Department & System */}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">

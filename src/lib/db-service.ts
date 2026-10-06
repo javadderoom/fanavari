@@ -326,6 +326,38 @@ export function mapPrismaInformationPost(p: any): InformationPost {
     priority: p.priority || 'normal',
     isPinned: Boolean(p.isPinned),
     isPublished: p.isPublished !== undefined ? Boolean(p.isPublished) : true,
+    visibility: (p.visibility as any) || 'public',
+    accessGrants: Array.isArray(p.accessGrants)
+      ? p.accessGrants.map((g: any) => ({
+          id: g.id,
+          postId: g.postId,
+          userId: g.userId || null,
+          user: g.user
+            ? {
+                id: g.user.id,
+                name: g.user.name,
+                email: g.user.email,
+                roleName: g.user.roleName,
+                avatarUrl: g.user.avatarUrl,
+              }
+            : undefined,
+          departmentId: g.departmentId || null,
+          departmentName: g.department?.name || null,
+          department: g.department
+            ? {
+                id: g.department.id,
+                name: g.department.name,
+                slug: g.department.slug,
+              }
+            : undefined,
+          roleName: g.roleName || null,
+          claimToken: g.claimToken || null,
+          claimExpiresAt: g.claimExpiresAt || null,
+          permission: (g.permission as any) || 'view',
+          grantedById: g.grantedById || null,
+          createdAt: g.createdAt,
+        }))
+      : [],
     departmentId: p.departmentId || null,
     departmentName: p.department?.name || null,
     departmentSlug: p.department?.slug || null,
@@ -368,6 +400,12 @@ export async function getDbInformationPosts(options?: {
         department: true,
         systemTool: true,
         author: true,
+        accessGrants: {
+          include: {
+            user: true,
+            department: true,
+          },
+        },
       },
       orderBy: [
         { isPinned: 'desc' },
@@ -410,6 +448,12 @@ export async function getDbInformationPostBySlug(slug: string): Promise<Informat
         department: true,
         systemTool: true,
         author: true,
+        accessGrants: {
+          include: {
+            user: true,
+            department: true,
+          },
+        },
       },
     });
 
@@ -420,6 +464,7 @@ export async function getDbInformationPostBySlug(slug: string): Promise<Informat
     return null;
   }
 }
+
 
 /**
  * Fetch all process scopes and their categories directly from PostgreSQL database.

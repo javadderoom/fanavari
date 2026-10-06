@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, Loader2, UserPlus } from 'lucide-react';
-import { ProcessAccessGrant } from '@/types/process';
-import { LookupUser } from './types';
+import { UnifiedAccessGrant, LookupUser } from './types';
 
 interface UserGrantTabProps {
-  grants: ProcessAccessGrant[];
+  grants: UnifiedAccessGrant[];
   isLoading: boolean;
   onAddUserGrant: (userId: string, userName: string) => Promise<void>;
 }
+
 
 export function UserGrantTab({
   grants,

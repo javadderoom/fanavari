@@ -211,6 +211,32 @@ export interface SearchResult {
 export type InformationType = 'announcement' | 'circular' | 'guide' | 'article';
 export type InformationPriority = 'urgent' | 'high' | 'normal';
 
+export interface InformationAccessGrant {
+  id: string;
+  postId: string;
+  userId?: string | null;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    roleName: string;
+    avatarUrl?: string | null;
+  };
+  departmentId?: string | null;
+  departmentName?: string | null;
+  department?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  roleName?: string | null;
+  claimToken?: string | null;
+  claimExpiresAt?: string | Date | null;
+  permission: 'view' | 'edit';
+  grantedById?: string | null;
+  createdAt: string | Date;
+}
+
 export interface InformationPost {
   id: string;
   title: string;
@@ -221,6 +247,7 @@ export interface InformationPost {
   priority: InformationPriority;
   isPinned: boolean;
   isPublished?: boolean;
+  visibility?: ProcessVisibility;
   departmentId?: string | null;
   departmentName?: string | null;
   departmentSlug?: string | null;
@@ -233,4 +260,6 @@ export interface InformationPost {
   publishedAt: string | Date;
   createdAt: string | Date;
   updatedAt: string | Date;
+  accessGrants?: InformationAccessGrant[];
 }
+

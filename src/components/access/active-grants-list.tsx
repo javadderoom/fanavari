@@ -13,23 +13,32 @@ import {
   Eye, 
   Edit3 
 } from 'lucide-react';
-import { ProcessAccessGrant } from '@/types/process';
-import { GrantsFilter } from './types';
+import { UnifiedAccessGrant, GrantsFilter } from './types';
 import { notify } from '@/lib/notify';
 
 interface ActiveGrantsListProps {
-  grants: ProcessAccessGrant[];
-  processSlug: string;
+  grants: UnifiedAccessGrant[];
+  processSlug?: string;
+  targetSlug?: string;
+  targetType?: 'process' | 'information';
+  entityLabel?: string;
   onRevokeGrant: (grantId: string, label: string) => Promise<void>;
 }
 
 export function ActiveGrantsList({
   grants,
   processSlug,
+  targetSlug,
+  targetType = 'process',
+  entityLabel,
   onRevokeGrant,
 }: ActiveGrantsListProps) {
   const [grantsFilter, setGrantsFilter] = useState<GrantsFilter>('all');
   const [copiedClaimId, setCopiedClaimId] = useState<string | null>(null);
+
+  const slug = targetSlug || processSlug || '';
+  const basePath = targetType === 'information' ? 'information' : 'process';
+  const labelPrefix = entityLabel || (targetType === 'information' ? 'اطلاعیه' : 'فرایند');
 
   const roleGrants = grants.filter((g) => Boolean(g.roleName));
   const deptGrants = grants.filter((g) => Boolean(g.departmentId));
@@ -46,7 +55,7 @@ export function ActiveGrantsList({
 
   const handleCopyClaimUrl = (token: string, grantId: string) => {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const url = `${origin}/process/${processSlug}?claim=${token}`;
+    const url = `${origin}/${basePath}/${slug}?claim=${token}`;
     navigator.clipboard.writeText(url);
     setCopiedClaimId(grantId);
     notify.success('لینک دعوت در کلیپ‌بورد کپی شد.');
@@ -57,7 +66,7 @@ export function ActiveGrantsList({
     <div className="space-y-3 pt-3 border-t border-amber-500/20">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <span className="text-xs font-bold text-[var(--text-primary)]">
-          دسترسی‌های فعال این فرایند ({grants.length})
+          دسترسی‌های فعال این {labelPrefix} ({grants.length})
         </span>
 
         {/* Filter Chips */}

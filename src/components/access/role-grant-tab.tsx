@@ -2,16 +2,16 @@
 
 import React, { useState } from 'react';
 import { Tag, Loader2 } from 'lucide-react';
-import { ProcessAccessGrant } from '@/types/process';
-import { PRESET_ROLES } from './types';
+import { UnifiedAccessGrant, PRESET_ROLES } from './types';
 import { notify } from '@/lib/notify';
 
 interface RoleGrantTabProps {
-  grants: ProcessAccessGrant[];
+  grants: UnifiedAccessGrant[];
   isLoading: boolean;
   selectedPermission: 'view' | 'edit';
   onAddRoleGrant: (roleName: string) => Promise<void>;
 }
+
 
 export function RoleGrantTab({
   grants,
