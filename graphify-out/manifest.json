@@ -920,8 +920,8 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/permissions/page.tsx": {
-    "mtime": 1791207658.2788024,
-    "ast_hash": "2db320da67b33a43707e9698941e83c5",
+    "mtime": 1791305317.6345203,
+    "ast_hash": "043b2cb99e24cd4a0c057e990d890fa9",
     "semantic_hash": ""
   },
   "src/app/dashboard/processes/page.tsx": {
@@ -1092,6 +1092,31 @@
   "src/components/process-detail/process-scratchpad-tab.tsx": {
     "mtime": 1791303975.6729345,
     "ast_hash": "3529544900eeae67ec12f47cc81a7819",
+    "semantic_hash": ""
+  },
+  "src/components/dashboard/permissions/permissions-bitfield-panel.tsx": {
+    "mtime": 1791305291.653247,
+    "ast_hash": "7ac61a15806479f4ee5f8dbede2e2d76",
+    "semantic_hash": ""
+  },
+  "src/components/dashboard/permissions/permissions-matrix-table.tsx": {
+    "mtime": 1791305416.8906686,
+    "ast_hash": "de8c4b4c3c6939d4241aa0e547cac679",
+    "semantic_hash": ""
+  },
+  "src/components/dashboard/permissions/permissions-persona-view.tsx": {
+    "mtime": 1791305430.729632,
+    "ast_hash": "e2d11433c3ba84fab68222a9e904a655",
+    "semantic_hash": ""
+  },
+  "src/components/dashboard/permissions/permissions-simulator-header.tsx": {
+    "mtime": 1791305387.564895,
+    "ast_hash": "9dd89bdbf70afc0a2b1bb113ce982d39",
+    "semantic_hash": ""
+  },
+  "src/components/dashboard/permissions/types.ts": {
+    "mtime": 1791305117.6572022,
+    "ast_hash": "bf1217b7714590b357b579a5c0b23e44",
     "semantic_hash": ""
   }
 }
