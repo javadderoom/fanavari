@@ -78,6 +78,9 @@ export function Footer() {
         >
           <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
             <span className="text-slate-400 font-normal">دسترسی سریع:</span>
+            <Link href="/timeline" className="hover:text-blue-600 transition-colors">
+              گاه‌شمار اجرایی
+            </Link>
             <Link href="/information" className="hover:text-blue-600 transition-colors">
               اعلامیه‌ها و اطلاعیه‌ها
             </Link>

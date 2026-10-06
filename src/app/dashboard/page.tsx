@@ -442,6 +442,25 @@ export default function DashboardOverviewPage() {
             </span>
           </div>
         </Link>
+
+        <Link
+          href="/timeline"
+          target="_blank"
+          className="p-4 rounded-2xl border transition-all hover:scale-102 flex items-center gap-3"
+          style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)' }}
+        >
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-500/10 text-blue-600 shrink-0">
+            <Activity className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="font-bold text-xs sm:text-sm block" style={{ color: 'var(--text-primary)' }}>
+              گاه‌شمار اجرایی سالانه
+            </span>
+            <span className="text-[11px] text-slate-400">
+              تقویم عملیاتی ۱۲ ماه سال
+            </span>
+          </div>
+        </Link>
       </div>
 
       {/* Modals */}

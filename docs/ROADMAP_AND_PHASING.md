@@ -122,12 +122,11 @@ flowchart TD
 | **09** | **Step Notes & Callout Boxes (`نکات و هشدارها`)** | Circular Req | **P0** | Low | ✅ Complete |
 | **10** | **In-Text Cross-Linking to other processes/systems** | Circular Req #8 | **P1** | Medium | ✅ Complete |
 | **11** | **Distinct Node Types on Flowchart (Decision / End / Action)** | Circular Req / Phase 2 | **P1** | Medium | ✅ Complete |
-| **12** | ~~Process Timeline View Mode~~ (Removed per directive) | Circular Req #2 | **—** | Low | ❌ Removed |
-| **13** | **Hierarchical Sub-Processes Architecture (`زیر-فرایندها`)** | Circular Req #1 | **P1** | High | ⏳ In Progress |
+| **12** | Annual Administrative Timeline Calendar (`/timeline`) | Phase 1 / Foundation | **P0** | High | ✅ Active |
+| **13** | **Hierarchical Sub-Processes Architecture (`زیر-فرایندها`)** | Circular Req #1 | **P1** | High | ✅ Complete |
 | **14** | **Inline Single-Line Images & Screenshot Lightbox** | Circular Req #3 & #9 | **P2** | Medium | Pending |
-| **15** | **Sub-Processes Architecture (`زیر-فرایند`)** | Circular Req #1 | **P2** | High | Pending |
-| **16** | **Thematic Category Management** | Circular Req #7 | **P2** | Medium | Pending |
-| **17** | Dockable Sidecar runner mode | Phase 4 | P2 | Medium | Pending |
+| **15** | **Thematic Category Management** | Circular Req #7 | **P2** | Medium | Pending |
+| **16** | Dockable Sidecar runner mode | Phase 4 | P2 | Medium | ✅ Complete |
 | **18** | Screenshot Hotspot pins & privacy blur | Phase 4 | P2 | High | Pending |
 | **19** | Persistent Workflow Run instances & logs | Phase 5 | P3 | High | Pending |
 | **20** | Visual No-Code Flow Builder studio | Phase 6 | P3 | High | Pending |
