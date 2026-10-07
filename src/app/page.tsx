@@ -48,7 +48,7 @@ function HomePageContent() {
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Load processes and announcements live from PostgreSQL database on mount
+  // Load processes and announcements live from database on mount
   useEffect(() => {
     let isMounted = true;
     Promise.all([

@@ -31,7 +31,7 @@ export function Footer() {
                   سامانه فناوری
                 </span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                  آماده برای Vercel & Neon
+                  سامانه برخط و پایدار
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -40,19 +40,19 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Technology Badges */}
+          {/* Enterprise Status Badges */}
           <div className="flex items-center flex-wrap gap-3 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border"
               style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
             >
               <Database className="w-3.5 h-3.5 text-blue-500" />
-              <span>پایگاه داده: Neon Postgres</span>
+              <span>پایگاه داده سازمانی: فعال</span>
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border"
               style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
             >
               <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
-              <span>پیکربندی: Prisma 7</span>
+              <span>امنیت و یکپارچگی: تایید شده</span>
             </span>
           </div>
 

@@ -365,7 +365,7 @@ export function InteractiveFlowSimulator() {
             </div>
 
             <div className="mt-4 pt-3 border-t text-[11px] text-slate-400 text-center" style={{ borderColor: 'var(--border-subtle)' }}>
-              قابلیت ذخیره امن خودکار در حافظه مرورگر و دیتابیس Neon
+              قابلیت ذخیره امن خودکار در حافظه مرورگر و سرور سازمانی
             </div>
           </div>
         </div>

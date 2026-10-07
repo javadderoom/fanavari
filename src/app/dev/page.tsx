@@ -307,7 +307,7 @@ export default function DevDocsPage() {
                   شناسنامه فنی، معماری و تصمیمات مهندسی سامانه فناوری
                 </h1>
                 <p className="text-sm sm:text-base font-medium leading-relaxed max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
-                  مستندات شفاف تمام تکنولوژی‌های زیرساخت، کدنویسی، امنیت پیشرفته، داکر، پایگاه داده PostgreSQL و استدلال انتخاب هر فناوری.
+                  مستندات شفاف تمام تکنولوژی‌های زیرساخت، کدنویسی، امنیت پیشرفته، داکر، پایگاه داده سازمانی و استدلال انتخاب هر فناوری.
                 </p>
               </div>
 
@@ -316,10 +316,10 @@ export default function DevDocsPage() {
               >
                 <div className="flex items-center gap-2 font-bold text-emerald-600">
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>داکر دیتابیس: متصل و فعال (Port 5433)</span>
+                  <span>پایگاه داده سازمانی: متصل و فعال (Port 5433)</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-500 font-mono">
-                  <span>Postgres 16 Alpine • Prisma 7.10.0</span>
+                  <span>Relational Database Engine • Type-Safe Access</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-500 font-mono">
                   <span>Next.js 16.3.8 • React 19 • TypeScript</span>
@@ -480,7 +480,7 @@ export default function DevDocsPage() {
               </p>
             </div>
 
-            {/* Tech 2: PostgreSQL in Docker Container */}
+            {/* Tech 2: Enterprise Relational Database */}
             <div className="glass-card rounded-3xl p-6 border shadow-sm space-y-3" style={{ borderColor: 'var(--border-glass)' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -489,7 +489,7 @@ export default function DevDocsPage() {
                   </div>
                   <div>
                     <h3 className="text-base font-black" style={{ color: 'var(--text-primary)' }}>
-                      PostgreSQL 16 (Docker Container)
+                      پایگاه داده رابطه‌ای سازمانی (Relational Database)
                     </h3>
                     <span className="text-xs text-slate-400">پایگاه داده رابطه‌ای ایزوله روی پورت ۵۴۳۳</span>
                   </div>
@@ -499,30 +499,30 @@ export default function DevDocsPage() {
                 </span>
               </div>
               <p className="text-xs sm:text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300">
-                <strong>دلایل انتخاب:</strong> قابلیت اطمینان ACID کامل برای روابط فرایندها، مراحل و ماتریس خطایابی. راه‌اندازی با کانتینر مجزای <code className="px-1 rounded bg-slate-100 dark:bg-slate-800 font-mono">fanavari-postgres</code> روی پورت ۵۴۳۳ تا تداخلی با سایر پروژه‌های سیستم ایجاد نکند و در دپلوی Vercel به راحتی به Neon Postgres متصل شود.
+                <strong>دلایل انتخاب:</strong> قابلیت اطمینان ACID کامل برای روابط فرایندها، مراحل و ماتریس خطایابی. راه‌اندازی با کانتینر مجزای <code className="px-1 rounded bg-slate-100 dark:bg-slate-800 font-mono">fanavari-db</code> روی پورت ۵۴۳۳ تا تداخلی با سایر پروژه‌های سیستم ایجاد نکند و در محیط ابری پایدار و یکپارچه باشد.
               </p>
             </div>
 
-            {/* Tech 3: Prisma 7 ORM with Driver Adapter */}
+            {/* Tech 3: Type-Safe Data Engine */}
             <div className="glass-card rounded-3xl p-6 border shadow-sm space-y-3" style={{ borderColor: 'var(--border-glass)' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold">
-                    ▲P
+                    DB
                   </div>
                   <div>
                     <h3 className="text-base font-black" style={{ color: 'var(--text-primary)' }}>
-                      Prisma 7 + Driver Adapter Pattern
+                      موتور مدل‌سازی و دسترسی به داده (Type-Safe Data Engine)
                     </h3>
-                    <span className="text-xs text-slate-400">دسترسی به داده و مایگریشن با @prisma/adapter-pg</span>
+                    <span className="text-xs text-slate-400">دسترسی به داده و مایگریشن با معماری Driver Adapter</span>
                   </div>
                 </div>
                 <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-teal-500/10 text-teal-600">
-                  ORM & Migrations
+                  Data Access & Migrations
                 </span>
               </div>
               <p className="text-xs sm:text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300">
-                <strong>دلایل انتخاب:</strong> تایپ‌سیفتی ۱۰۰ درصدی در کدهای TypeScript، تولید خودکار مایگریشن‌ها، و استفاده از الگوی جدید Driver Adapter که در پریزما ۷ جایگزین اتصال مستقیم شده و سرعت فوق‌العاده‌ای در محیط‌های Serverless دارد.
+                <strong>دلایل انتخاب:</strong> تایپ‌سیفتی ۱۰۰ درصدی در کدهای TypeScript، تولید خودکار مایگریشن‌ها، و استفاده از الگوی استاندارد Driver Adapter که سرعت و مقیاس‌پذیری بالایی در محیط‌های ابری به همراه دارد.
               </p>
             </div>
 
@@ -558,7 +558,7 @@ export default function DevDocsPage() {
               مدل‌سازی داده‌ها (Entity Architecture)
             </span>
             <h2 className="text-xl sm:text-2xl font-black" style={{ color: 'var(--text-primary)' }}>
-              جداول دیتابیس در PostgreSQL
+              جداول پایگاه داده یکپارچه
             </h2>
           </div>
 

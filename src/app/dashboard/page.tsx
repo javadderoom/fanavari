@@ -131,7 +131,7 @@ export default function DashboardOverviewPage() {
           <div className="flex items-center gap-2 mb-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-              سیستم آنلاین • متصل به PostgreSQL
+              سیستم آنلاین • پایگاه داده متصل و فعال
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-black" style={{ color: 'var(--text-primary)' }}>
