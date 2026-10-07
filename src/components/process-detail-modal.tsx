@@ -24,7 +24,8 @@ import {
   ArrowRight, 
   ArrowLeft,
   Printer,
-  Sparkles
+  Sparkles,
+  MousePointerClick
 } from 'lucide-react';
 
 interface ProcessDetailModalProps {
@@ -391,6 +392,50 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
                         content={currentStep.contentMarkdown} 
                         tips={currentStep.tips}
                       />
+                    </div>
+                  )}
+
+                  {/* Micro UI Click Elements & Icons */}
+                  {currentStep.uiSnippets && currentStep.uiSnippets.length > 0 && (
+                    <div className="mb-5 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
+                      <h5 className="text-xs font-bold mb-2.5 flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
+                        <MousePointerClick className="w-3.5 h-3.5" />
+                        <span>دکمه‌ها و گزینه‌های تصویری برای کلیک در سامانه:</span>
+                      </h5>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {currentStep.uiSnippets.map((snippet, sIdx) => (
+                          <div
+                            key={snippet.id || sIdx}
+                            className="p-2.5 rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex items-center gap-2.5 shadow-2xs"
+                          >
+                            <div className="w-10 h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-0.5 flex items-center justify-center shrink-0">
+                              <img
+                                src={snippet.iconUrl}
+                                alt={snippet.title}
+                                className="w-full h-full object-contain"
+                                loading="lazy"
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                                  {snippet.title}
+                                </span>
+                                {snippet.badgeText && (
+                                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20" dir="ltr">
+                                    {snippet.badgeText}
+                                  </span>
+                                )}
+                              </div>
+                              {snippet.description && (
+                                <p className="text-[10px] text-slate-400 mt-0.5 leading-snug truncate">
+                                  {snippet.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 

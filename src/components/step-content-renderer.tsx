@@ -53,17 +53,40 @@ function renderInlineFormattedText(text: string, isPrintView = false): React.Rea
     if (fullMatch.startsWith('![')) {
       const alt = match[2];
       const url = match[3];
-      nodes.push(
-        <span key={`img-${matchIndex}`} className="inline-block my-1.5 align-middle">
-          <img
-            src={url}
-            alt={alt || 'تصویر راهنما'}
-            className="rounded-xl border shadow-xs max-h-64 object-contain inline-block"
-            style={{ borderColor: 'var(--border-glass)' }}
-            loading="lazy"
-          />
-        </span>
-      );
+      const isIconSnippet = alt.startsWith('icon:') || alt.startsWith('ui:');
+
+      if (isIconSnippet) {
+        const label = alt.replace(/^(icon|ui):/, '').trim();
+        nodes.push(
+          <span
+            key={`icon-${matchIndex}`}
+            className="inline-flex items-center gap-1.5 px-2 py-0.5 mx-1 rounded-lg border bg-amber-500/10 hover:bg-amber-500/15 border-amber-500/30 text-amber-900 dark:text-amber-200 align-middle shadow-2xs transition-all select-none group"
+            title={`المان کلیک: ${label}`}
+          >
+            <span className="w-4 h-4 rounded border border-amber-500/30 bg-white dark:bg-slate-900 flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
+              <img
+                src={url}
+                alt={label}
+                className="w-full h-full object-contain"
+                loading="lazy"
+              />
+            </span>
+            <span className="text-[11px] font-bold">{label}</span>
+          </span>
+        );
+      } else {
+        nodes.push(
+          <span key={`img-${matchIndex}`} className="inline-block my-1.5 align-middle">
+            <img
+              src={url}
+              alt={alt || 'تصویر راهنما'}
+              className="rounded-xl border shadow-xs max-h-64 object-contain inline-block"
+              style={{ borderColor: 'var(--border-glass)' }}
+              loading="lazy"
+            />
+          </span>
+        );
+      }
     }
     // Link [text](url)
     else if (fullMatch.startsWith('[')) {

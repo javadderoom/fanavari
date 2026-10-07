@@ -25,6 +25,14 @@ export interface ErrorGuideItem {
   screenshotUrl?: string;
 }
 
+export interface UiSnippet {
+  id: string;
+  title: string;
+  iconUrl: string;
+  description?: string;
+  badgeText?: string;
+}
+
 export interface ProcessStep {
   id: string;
   orderIndex: number;
@@ -36,6 +44,7 @@ export interface ProcessStep {
   imageUrl?: string;
   hotspots?: Hotspot[];
   copyableFields?: CopyableField[];
+  uiSnippets?: UiSnippet[];
   tips?: string[];
   errorGuides?: ErrorGuideItem[];
   subProcessId?: string | null;

@@ -164,6 +164,15 @@ describe('db-service Data Mapping', () => {
             title: 'ورود به سامانه',
             contentMarkdown: 'متن راهنما',
             stepType: 'action',
+            imageUrl: 'https://blob.vercel.com/screenshot.webp',
+            uiSnippets: [
+              {
+                id: 'snip-1',
+                title: 'دکمه تایید نهایی',
+                iconUrl: 'https://blob.vercel.com/btn-confirm.webp',
+                badgeText: 'Alt+S',
+              },
+            ],
             copyableFields: [{ label: 'کد احراز', value: 'AUTH-999' }],
             hotspots: [{ x: 50, y: 50, title: 'دکمه ورود', note: 'کلیک کنید' }],
             errorGuides: [
@@ -182,6 +191,15 @@ describe('db-service Data Mapping', () => {
 
       assert.equal(mapped.steps.length, 1);
       const step = mapped.steps[0];
+      assert.equal(step.imageUrl, 'https://blob.vercel.com/screenshot.webp');
+      assert.deepEqual(step.uiSnippets, [
+        {
+          id: 'snip-1',
+          title: 'دکمه تایید نهایی',
+          iconUrl: 'https://blob.vercel.com/btn-confirm.webp',
+          badgeText: 'Alt+S',
+        },
+      ]);
       assert.deepEqual(step.copyableFields, [{ label: 'کد احراز', value: 'AUTH-999' }]);
       assert.deepEqual(step.hotspots, [{ x: 50, y: 50, title: 'دکمه ورود', note: 'کلیک کنید' }]);
       assert.equal(step.errorGuides?.length, 1);

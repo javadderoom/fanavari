@@ -1,19 +1,24 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Trash2, 
   Lightbulb, 
   AlertTriangle, 
   Pin, 
   Link2,
-  GitFork
+  GitFork,
+  Image as ImageIcon,
+  MousePointerClick,
+  ExternalLink
 } from 'lucide-react';
-import { ProcessStep, StepType } from '@/types/process';
+import { ProcessStep, StepType, UiSnippet } from '@/types/process';
 import { MenuPathEditor } from '@/components/menu-path-editor';
 import { StepContentRenderer } from '@/components/step-content-renderer';
 import { StepCopyableFields } from './step-copyable-fields';
 import { StepErrorGuides } from './step-error-guides';
+import { StepUiSnippets } from './step-ui-snippets';
+import { ImageSnippetModal } from '@/components/image-snippet-modal';
 
 interface StepEditorCardProps {
   step: ProcessStep;
@@ -30,6 +35,8 @@ export function StepEditorCard({
   onUpdateStep,
   onRemoveStep,
 }: StepEditorCardProps) {
+  const [activeModal, setActiveModal] = useState<'screenshot' | 'snippet' | null>(null);
+
   // Callout append helper
   const appendCallout = (prefix: string) => {
     const cur = step.contentMarkdown || '';
@@ -121,6 +128,56 @@ export function StepEditorCard({
         />
       </div>
 
+      {/* Step Screenshot Attachment */}
+      {step.imageUrl ? (
+        <div className="mb-3 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-14 h-10 rounded-lg border overflow-hidden bg-black/10 shrink-0 border-slate-200 dark:border-slate-700">
+                <img src={step.imageUrl} alt="اسکرین‌شات گام" className="w-full h-full object-cover" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block truncate">
+                  اسکرین‌شات پیوست این مرحله (WebP)
+                </span>
+                <span className="text-[10px] text-emerald-600 font-bold block">
+                  ✓ فشرده‌شده و آماده نمایش در اجرای زنده
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setActiveModal('screenshot')}
+                className="px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+              >
+                تغییر تصویر
+              </button>
+              <button
+                type="button"
+                onClick={() => onUpdateStep(stepIndex, { imageUrl: undefined })}
+                className="p-1 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                title="حذف تصویر"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="mb-3">
+          <button
+            type="button"
+            onClick={() => setActiveModal('screenshot')}
+            className="w-full p-2.5 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 hover:border-blue-400 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 text-slate-500 hover:text-blue-600 dark:text-slate-400 transition-all flex items-center justify-center gap-2 cursor-pointer text-xs font-bold"
+          >
+            <ImageIcon className="w-4 h-4 text-blue-500" />
+            <span>+ پیوست اسکرین‌شات کامل این گام (فشرده‌سازی WebP و پشتیبانی از Ctrl+V)</span>
+          </button>
+        </div>
+      )}
+
       {/* Sub-Process Connection Field */}
       {step.stepType === 'subprocess' && (
         <div className="mb-3 p-3 rounded-xl border border-indigo-500/30 bg-indigo-500/5 space-y-2">
@@ -153,6 +210,15 @@ export function StepEditorCard({
             دستورالعمل اجرایی و شرح تفصیلی گام
           </label>
           <div className="flex items-center gap-1 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setActiveModal('snippet')}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 transition-colors border border-amber-500/20 cursor-pointer"
+              title="افزودن دکمه یا آیکون تصویری کلیک به متن و فهرست"
+            >
+              <MousePointerClick className="w-2.5 h-2.5" />
+              <span>+ دکمه/آیکون کلیک</span>
+            </button>
             <button
               type="button"
               onClick={() => appendCallout('💡 نکته: ')}
@@ -213,6 +279,30 @@ export function StepEditorCard({
           )}
       </div>
 
+      {/* Micro UI Click Elements & Icons */}
+      <StepUiSnippets
+        snippets={step.uiSnippets || []}
+        onAddSnippet={(snippet, insertInline) => {
+          const currentSnippets = step.uiSnippets || [];
+          const updatedSnippets = [...currentSnippets, snippet];
+
+          let updatedMarkdown = step.contentMarkdown || '';
+          if (insertInline) {
+            const macro = ` ![icon:${snippet.title}](${snippet.iconUrl}) `;
+            updatedMarkdown = updatedMarkdown ? `${updatedMarkdown}${macro}` : macro;
+          }
+
+          onUpdateStep(stepIndex, {
+            uiSnippets: updatedSnippets,
+            contentMarkdown: updatedMarkdown,
+          });
+        }}
+        onRemoveSnippet={(snippetIdx) => {
+          const currentSnippets = (step.uiSnippets || []).filter((_, i) => i !== snippetIdx);
+          onUpdateStep(stepIndex, { uiSnippets: currentSnippets });
+        }}
+      />
+
       {/* Copyable Fields */}
       <StepCopyableFields
         fields={step.copyableFields || []}
@@ -261,6 +351,34 @@ export function StepEditorCard({
           onUpdateStep(stepIndex, { errorGuides: currentGuides });
         }}
       />
+
+      {/* Image / Snippet Modal */}
+      {activeModal && (
+        <ImageSnippetModal
+          isOpen={!!activeModal}
+          mode={activeModal}
+          initialScreenshotUrl={step.imageUrl}
+          onClose={() => setActiveModal(null)}
+          onScreenshotSaved={(url) => {
+            onUpdateStep(stepIndex, { imageUrl: url });
+          }}
+          onSnippetSaved={(snippet, insertInline) => {
+            const currentSnippets = step.uiSnippets || [];
+            const updatedSnippets = [...currentSnippets, snippet];
+
+            let updatedMarkdown = step.contentMarkdown || '';
+            if (insertInline) {
+              const macro = ` ![icon:${snippet.title}](${snippet.iconUrl}) `;
+              updatedMarkdown = updatedMarkdown ? `${updatedMarkdown}${macro}` : macro;
+            }
+
+            onUpdateStep(stepIndex, {
+              uiSnippets: updatedSnippets,
+              contentMarkdown: updatedMarkdown,
+            });
+          }}
+        />
+      )}
     </div>
   );
 }

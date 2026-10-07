@@ -117,6 +117,7 @@ model Step {
   imageUrl        String?
   hotspots        Json?        // Coordinates and labels on screenshots
   copyableFields  Json?        // Helper sample data to copy
+  uiSnippets      Json?        // Micro UI click elements and icons (WebP)
   positionX       Float        @default(0)
   positionY       Float        @default(0)
   errorGuides     ErrorGuide[]

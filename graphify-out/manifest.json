@@ -345,8 +345,8 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1791314042.6388648,
-    "ast_hash": "a210a633ec78c16f5abb4feb70c67c3d",
+    "mtime": 1791384148.2680173,
+    "ast_hash": "a07f79356df0639491512f3c0905264d",
     "semantic_hash": ""
   },
   "postcss.config.mjs": {
@@ -410,8 +410,8 @@
     "semantic_hash": ""
   },
   "src/app/api/processes/route.ts": {
-    "mtime": 1791312042.9407768,
-    "ast_hash": "ecf106977377bcf36b745fa00c68eb21",
+    "mtime": 1791386941.0643375,
+    "ast_hash": "e06e17d0f043b4a488027a83b8db58f5",
     "semantic_hash": ""
   },
   "src/app/api/systems/route.ts": {
@@ -530,8 +530,8 @@
     "semantic_hash": ""
   },
   "src/components/process-detail-modal.tsx": {
-    "mtime": 1791287160.769473,
-    "ast_hash": "e1c6ff8baa936a8d7850846972767831",
+    "mtime": 1791387675.5878105,
+    "ast_hash": "24bc8224c0bffa46a0e54b732088e810",
     "semantic_hash": ""
   },
   "src/components/process-detail-view.tsx": {
@@ -580,8 +580,8 @@
     "semantic_hash": ""
   },
   "src/lib/db-service.ts": {
-    "mtime": 1791311992.6348684,
-    "ast_hash": "86af49d4e3b0eeb9da790f7ffcf229dc",
+    "mtime": 1791386898.3329456,
+    "ast_hash": "182d29c4cd809790a83d3ee5ce834fcf",
     "semantic_hash": ""
   },
   "src/lib/notify.tsx": {
@@ -610,8 +610,8 @@
     "semantic_hash": ""
   },
   "src/types/process.ts": {
-    "mtime": 1791311942.3344128,
-    "ast_hash": "ca40cd80a3bf905dadafa8229fc830ea",
+    "mtime": 1791386575.5738106,
+    "ast_hash": "81dd4bb32dc144aa0b488b71b8e3feee",
     "semantic_hash": ""
   },
   "tsconfig.json": {
@@ -850,8 +850,8 @@
     "semantic_hash": ""
   },
   "src/components/process-print-view.tsx": {
-    "mtime": 1791382036.7431793,
-    "ast_hash": "107a54276a9d5484957846bb2d0d7ef7",
+    "mtime": 1791387835.685567,
+    "ast_hash": "138ee9dba42ebf841e06b350c769b318",
     "semantic_hash": ""
   },
   "src/components/menu-path-display.tsx": {
@@ -865,8 +865,8 @@
     "semantic_hash": ""
   },
   "src/components/step-content-renderer.tsx": {
-    "mtime": 1791211566.935382,
-    "ast_hash": "c3fd2d4e60ed35afeff6d95cfdf80543",
+    "mtime": 1791387402.3885555,
+    "ast_hash": "798585c69b4d72548fae2d13f576d38b",
     "semantic_hash": ""
   },
   "prisma/migrations/20261004175522_add_schedule_to_process/migration.sql": {
@@ -1030,8 +1030,8 @@
     "semantic_hash": ""
   },
   "src/components/editor/step-editor-card.tsx": {
-    "mtime": 1791312578.2811382,
-    "ast_hash": "507cc38ba03227ecf6dbf751199799aa",
+    "mtime": 1791387352.2626252,
+    "ast_hash": "4a37590e5804713ab9b0ae40e2212266",
     "semantic_hash": ""
   },
   "src/components/editor/step-error-guides.tsx": {
@@ -1120,8 +1120,8 @@
     "semantic_hash": ""
   },
   "src/components/process-detail/step-runner-view.tsx": {
-    "mtime": 1791382121.3444693,
-    "ast_hash": "bb259fe18b01cca3e61a670f44af9a0d",
+    "mtime": 1791387531.7558782,
+    "ast_hash": "c9a139d32e5030b2bb4e58ff21c4ace3",
     "semantic_hash": ""
   },
   "src/app/process/[slug]/sidecar/page.tsx": {
@@ -1190,8 +1190,8 @@
     "semantic_hash": ""
   },
   "tests/db-service.test.ts": {
-    "mtime": 1791314244.6590538,
-    "ast_hash": "515f70c5707abfbffebf24ccd99fa7fc",
+    "mtime": 1791388006.1912405,
+    "ast_hash": "5e61806ad4dc3615915dc94e96747e62",
     "semantic_hash": ""
   },
   "tests/menu-path.test.ts": {
@@ -1237,6 +1237,36 @@
   "src/app/dashboard/runs/page.tsx": {
     "mtime": 1791383043.8725922,
     "ast_hash": "19dbb0c9df8556ec9650ba14e8ac1332",
+    "semantic_hash": ""
+  },
+  "prisma/migrations/20261007152457_add_ui_snippets_to_step/migration.sql": {
+    "mtime": 1791386697.8523595,
+    "ast_hash": "5299adc24ee3b3e8b605351ee388ce9f",
+    "semantic_hash": ""
+  },
+  "src/app/api/upload/route.ts": {
+    "mtime": 1791384268.5299716,
+    "ast_hash": "e1145440061b7c48bd676f008f862da6",
+    "semantic_hash": ""
+  },
+  "src/components/editor/step-ui-snippets.tsx": {
+    "mtime": 1791387027.824913,
+    "ast_hash": "0d055143ed404c9ed15a8a2eb3c662bf",
+    "semantic_hash": ""
+  },
+  "src/components/image-snippet-modal.tsx": {
+    "mtime": 1791386996.8625512,
+    "ast_hash": "99ea2a5430d6de16204f5d525f4ac969",
+    "semantic_hash": ""
+  },
+  "src/lib/image-utils.ts": {
+    "mtime": 1791384222.2701352,
+    "ast_hash": "21f71ce916ede5219b26173cf5c55f4e",
+    "semantic_hash": ""
+  },
+  "tests/image-utils.test.ts": {
+    "mtime": 1791388062.0385365,
+    "ast_hash": "17fcc4a09f58401af9cb672e1eeaa063",
     "semantic_hash": ""
   }
 }

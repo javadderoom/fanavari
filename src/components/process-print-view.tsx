@@ -24,7 +24,8 @@ import {
   ShieldCheck,
   Award,
   Check,
-  Timer
+  Timer,
+  MousePointerClick
 } from 'lucide-react';
 
 interface ProcessPrintViewProps {
@@ -609,6 +610,31 @@ export function ProcessPrintView({ process, initialRun }: ProcessPrintViewProps)
                             ))}
                           </tbody>
                         </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Micro UI Click Elements & Action Buttons (Printable Grid) */}
+                  {step.uiSnippets && step.uiSnippets.length > 0 && (
+                    <div className="my-4 p-4 rounded-xl border border-slate-300 bg-slate-50 print:bg-white print:border-black">
+                      <h5 className="text-xs font-black text-slate-900 mb-2 flex items-center gap-1.5">
+                        <MousePointerClick className="w-3.5 h-3.5 text-slate-700 print:text-black" />
+                        <span>دکمه‌ها و گزینه‌های تصویری برای کلیک در سامانه:</span>
+                      </h5>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {step.uiSnippets.map((snippet, sIdx) => (
+                          <div key={sIdx} className="p-2 rounded-lg border border-slate-300 bg-white print:border-black flex items-center gap-2">
+                            <div className="w-8 h-8 rounded border border-slate-200 bg-slate-50 p-0.5 flex items-center justify-center shrink-0">
+                              <img src={snippet.iconUrl} alt={snippet.title} className="w-full h-full object-contain" />
+                            </div>
+                            <div className="min-w-0">
+                              <span className="text-xs font-bold text-slate-900 block truncate">{snippet.title}</span>
+                              {snippet.badgeText && (
+                                <span className="text-[9px] font-mono font-bold text-slate-600 block" dir="ltr">{snippet.badgeText}</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
