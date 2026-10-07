@@ -393,7 +393,7 @@ export function ScopesCategoriesManagement() {
                 </span>
                 {cat.processCount !== undefined && cat.processCount > 0 && (
                   <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
-                    <span dir="ltr">\u200E{cat.processCount}</span>
+                    <span dir="ltr">{cat.processCount}</span>
                   </span>
                 )}
                 {canManage && (
@@ -529,7 +529,7 @@ export function ScopesCategoriesManagement() {
                           </span>
                           {cat.processCount !== undefined && cat.processCount > 0 && (
                             <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
-                              <span dir="ltr">\u200E{cat.processCount}</span>
+                              <span dir="ltr">{cat.processCount}</span>
                             </span>
                           )}
                           {canManage && (

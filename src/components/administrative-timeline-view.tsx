@@ -233,7 +233,7 @@ export function AdministrativeTimelineView({
               style={{ background: 'var(--bg-glass-card)', borderColor: 'var(--border-subtle)' }}
             >
               <span className="text-2xl font-black text-blue-600 dark:text-blue-400 font-mono block">
-                <span dir="ltr">\u200E{stats.totalScheduled}</span>
+                <span dir="ltr">{stats.totalScheduled}</span>
               </span>
               <span className="text-[11px] font-semibold text-slate-500">فرایند زمان‌بندی شده</span>
             </div>
@@ -243,7 +243,7 @@ export function AdministrativeTimelineView({
               style={{ background: 'var(--bg-glass-card)', borderColor: 'var(--border-subtle)' }}
             >
               <span className="text-2xl font-black text-amber-500 font-mono block">
-                <span dir="ltr">\u200E{stats.activeInCurrentMonth}</span>
+                <span dir="ltr">{stats.activeInCurrentMonth}</span>
               </span>
               <span className="text-[11px] font-semibold text-slate-500">فعال در {currentMonth}</span>
             </div>
@@ -253,7 +253,7 @@ export function AdministrativeTimelineView({
               style={{ background: 'var(--bg-glass-card)', borderColor: 'var(--border-subtle)' }}
             >
               <span className="text-2xl font-black text-rose-500 font-mono block">
-                <span dir="ltr">\u200E{stats.mandatoryCount}</span>
+                <span dir="ltr">{stats.mandatoryCount}</span>
               </span>
               <span className="text-[11px] font-semibold text-slate-500">مهلت قطعی و الزامی</span>
             </div>
@@ -263,7 +263,7 @@ export function AdministrativeTimelineView({
               style={{ background: 'var(--bg-glass-card)', borderColor: 'var(--border-subtle)' }}
             >
               <span className="text-2xl font-black text-emerald-500 font-mono block">
-                <span dir="ltr">\u200E{stats.deptsCount}</span>
+                <span dir="ltr">{stats.deptsCount}</span>
               </span>
               <span className="text-[11px] font-semibold text-slate-500">سازمان و وزارتخانه</span>
             </div>
@@ -496,7 +496,7 @@ export function AdministrativeTimelineView({
 
                   <span className="text-xs font-bold text-slate-400 font-mono">
                     <span dir="ltr">
-                      \u200E{seasonMonths.reduce((acc, m) => acc + (processesByMonth.get(m.name)?.length || 0), 0)}
+                      {seasonMonths.reduce((acc, m) => acc + (processesByMonth.get(m.name)?.length || 0), 0)}
                     </span>{' '}
                     فرایند
                   </span>
@@ -535,7 +535,7 @@ export function AdministrativeTimelineView({
                             )}
                           </div>
                           <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono">
-                            <span dir="ltr">\u200E{monthProcesses.length}</span>
+                            <span dir="ltr">{monthProcesses.length}</span>
                           </span>
                         </div>
 
@@ -616,7 +616,7 @@ function ProcessScheduleCard({
             <span>
               مهلت:{' '}
               <span dir="ltr" className="font-mono inline-block">
-                \u200E{schedule.deadlineDays}
+                {schedule.deadlineDays}
               </span>{' '}
               روز
             </span>
@@ -715,7 +715,7 @@ function ProcessScheduleRow({
         >
           <span className="text-[10px] font-bold leading-none">{schedule.month}</span>
           <span className="text-xs font-black font-mono leading-none mt-1">
-            <span dir="ltr">\u200E{schedule.startDay || 1}</span>
+            <span dir="ltr">{schedule.startDay || 1}</span>
           </span>
         </div>
 
@@ -728,7 +728,7 @@ function ProcessScheduleRow({
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
                 مهلت اقدام:{' '}
                 <span dir="ltr" className="font-mono">
-                  \u200E{schedule.deadlineDays}
+                  {schedule.deadlineDays}
                 </span>{' '}
                 روز
               </span>
@@ -768,7 +768,7 @@ function ProcessScheduleRow({
               <Clock className="w-3.5 h-3.5 text-slate-400" />
               <span>
                 <span dir="ltr" className="font-mono font-bold">
-                  \u200E{process.estimatedMinutes}
+                  {process.estimatedMinutes}
                 </span>{' '}
                 دقیقه
               </span>

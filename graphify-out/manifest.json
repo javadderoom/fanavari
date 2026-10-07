@@ -890,8 +890,8 @@
     "semantic_hash": ""
   },
   "src/components/scopes-categories-management.tsx": {
-    "mtime": 1791144308.4820328,
-    "ast_hash": "8cb2636d78e32a17f4863330b4790e56",
+    "mtime": 1791381195.330354,
+    "ast_hash": "604a7f4a2e438ba02d7bc1a483de2204",
     "semantic_hash": ""
   },
   "src/app/dashboard/information/page.tsx": {
@@ -1180,8 +1180,8 @@
     "semantic_hash": ""
   },
   "src/components/administrative-timeline-view.tsx": {
-    "mtime": 1791313036.640804,
-    "ast_hash": "7e8bc6cbd51d2e220f51973e4f620cf5",
+    "mtime": 1791381143.9855597,
+    "ast_hash": "2ee58680ea4e22ffeb5ddf2d3f3c2cc1",
     "semantic_hash": ""
   },
   "tests/api-permissions.test.ts": {
