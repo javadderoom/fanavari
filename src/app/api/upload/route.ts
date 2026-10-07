@@ -41,6 +41,16 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Local Development Fallback: Save to public/uploads
+    if (process.env.VERCEL) {
+      return NextResponse.json(
+        {
+          error:
+            'BLOB_READ_WRITE_TOKEN is missing on Vercel. Please connect your Vercel Blob store to this project in the Vercel Dashboard (Storage -> Blob Store -> Settings -> Connect Project).',
+        },
+        { status: 500 }
+      );
+    }
+
     const uploadDir = path.join(process.cwd(), 'public', 'uploads', folder);
     await fs.mkdir(uploadDir, { recursive: true });
 
