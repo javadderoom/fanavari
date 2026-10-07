@@ -35,6 +35,12 @@ export default function DashboardOverviewPage() {
   const [departments, setDepartments] = useState<OrganizationEntity[]>([]);
   const [systems, setSystems] = useState<SystemTool[]>([]);
   const [informationPosts, setInformationPosts] = useState<InformationPost[]>([]);
+  const [recentRuns, setRecentRuns] = useState<any[]>([]);
+  const [runsStats, setRunsStats] = useState<{ totalRuns: number; completedRuns: number; inProgressRuns: number }>({
+    totalRuns: 0,
+    completedRuns: 0,
+    inProgressRuns: 0,
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   // Modals state
@@ -52,7 +58,7 @@ export default function DashboardOverviewPage() {
   const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [procRes, deptRes, sysRes, infoRes] = await Promise.all([
+      const [procRes, deptRes, sysRes, infoRes, runsRes] = await Promise.all([
         fetch('/api/processes', {
           headers: {
             'x-user-id': currentUser.id,
@@ -64,12 +70,15 @@ export default function DashboardOverviewPage() {
         fetch('/api/departments').then((r) => r.json()),
         fetch('/api/systems').then((r) => r.json()),
         fetch('/api/information').then((r) => r.json()),
+        fetch('/api/runs').then((r) => r.json()).catch(() => ({ runs: [], stats: {} })),
       ]);
 
       if (Array.isArray(procRes)) setProcesses(procRes);
       if (Array.isArray(deptRes)) setDepartments(deptRes);
       if (Array.isArray(sysRes)) setSystems(sysRes);
       if (Array.isArray(infoRes)) setInformationPosts(infoRes);
+      if (runsRes?.runs && Array.isArray(runsRes.runs)) setRecentRuns(runsRes.runs);
+      if (runsRes?.stats) setRunsStats(runsRes.stats);
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -402,6 +411,102 @@ export default function DashboardOverviewPage() {
               ))
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Live Tracked Execution Runs & ISO Audit Status */}
+      <div 
+        className="glass-panel-strong rounded-3xl border shadow-lg overflow-hidden flex flex-col"
+        style={{ borderColor: 'var(--border-glass)' }}
+      >
+        <div className="p-4 sm:p-5 border-b flex items-center justify-between flex-wrap gap-2" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div className="flex items-center gap-2">
+            <Activity className="w-4 h-4 text-emerald-600 animate-pulse" />
+            <h3 className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>
+              پایش اجراهای رسمی و ممیزی زنده فرایندها (Live Workflow Runs)
+            </h3>
+            {runsStats.inProgressRuns > 0 && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                <span>{runsStats.inProgressRuns} اجرای فعال</span>
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+            <span>مجموع کل: {runsStats.totalRuns}</span>
+            <span>•</span>
+            <span className="text-emerald-600">تکمیل و ثبت شده: {runsStats.completedRuns}</span>
+          </div>
+        </div>
+
+        <div className="divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
+          {isLoading ? (
+            <div className="p-8 text-center">
+              <Loader2 className="w-5 h-5 mx-auto animate-spin text-emerald-600 mb-2" />
+              <span className="text-xs text-slate-400">در حال بارگذاری لاگ‌های اجرا...</span>
+            </div>
+          ) : recentRuns.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-400">
+              هنوز اجرای رسمی برای فرایندها ثبت نشده است. مجریان می‌توانند از صفحه هر فرایند با زدن دکمه «اجرای رسمی»، پایش زمان و چک‌لیست را آغاز کنند.
+            </div>
+          ) : (
+            recentRuns.slice(0, 5).map((run) => {
+              const durationMins = run.totalDurationSeconds ? Math.floor(run.totalDurationSeconds / 60) : 0;
+              const durationSecs = run.totalDurationSeconds ? run.totalDurationSeconds % 60 : 0;
+              const formattedDuration = `${durationMins}m ${durationSecs}s`;
+              const isDone = run.status === 'completed';
+
+              return (
+                <div key={run.id} className="p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-slate-500/5 transition-colors flex-wrap sm:flex-nowrap">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 border border-blue-500/20" dir="ltr">
+                        #{run.runNumber}
+                      </span>
+                      <span className="font-bold text-xs sm:text-sm truncate" style={{ color: 'var(--text-primary)' }}>
+                        {run.title}
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isDone
+                          ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
+                          : 'bg-blue-500/10 text-blue-600 border border-blue-500/20'
+                      }`}>
+                        {isDone ? 'تکمیل و ثبت نهایی ✓' : 'در حال اجرا (Live)'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-400 flex-wrap">
+                      <span>مجری: <strong className="text-slate-600 dark:text-slate-300">{run.operatorName}</strong></span>
+                      <span>•</span>
+                      <span>فرایند: <strong className="text-slate-600 dark:text-slate-300">{run.process?.title || '—'}</strong></span>
+                      {run.totalDurationSeconds ? (
+                        <>
+                          <span>•</span>
+                          <span className="font-mono text-slate-500" dir="ltr">⏱️ {formattedDuration}</span>
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                      {run.completedStepsCount} از {run.totalStepsCount} گام
+                    </span>
+                    {run.process?.slug && (
+                      <Link
+                        href={`/process/${run.process.slug}`}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold text-blue-600 bg-blue-500/10 hover:bg-blue-500/20 transition-colors flex items-center gap-1"
+                        title="ورود به رانر فرایند"
+                      >
+                        <span>کنسول فرایند</span>
+                        <ArrowLeft className="w-3 h-3" />
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 

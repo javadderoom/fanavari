@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   ProcessStep,
@@ -26,7 +26,9 @@ import {
   ExternalLink,
   ShieldCheck,
   Play,
-  LogOut
+  LogOut,
+  Clock,
+  FileText
 } from 'lucide-react';
 
 interface StepRunnerViewProps {
@@ -35,14 +37,15 @@ interface StepRunnerViewProps {
   completedStepKeys: string[];
   showCelebration: boolean;
   onSelectStep: (index: number) => void;
-  onToggleStepComplete: (stepKey: string) => void;
-  onCompleteAndNext: (stepKey: string) => void;
+  onToggleStepComplete: (stepKey: string, operatorNotes?: string) => void;
+  onCompleteAndNext: (stepKey: string, operatorNotes?: string) => void;
   onResetProgress: () => void;
   processSlug: string;
   copiedField: string | null;
   onCopyField: (text: string, label: string) => void;
   activeRun?: WorkflowRun | null;
   onDisconnectRun?: () => void;
+  onFinishActiveRun?: () => void;
   onDrillDownSubProcess?: (subProcessSlug: string, stepTitle: string) => void;
 }
 
@@ -60,45 +63,93 @@ export function StepRunnerView({
   onCopyField,
   activeRun,
   onDisconnectRun,
+  onFinishActiveRun,
   onDrillDownSubProcess,
 }: StepRunnerViewProps) {
   const currentStep = steps[activeStepIndex];
   const isCurrentStepCompleted = currentStep ? completedStepKeys.includes(currentStep.stepKey) : false;
 
+  // Local state for per-step operator notes
+  const [stepNotes, setStepNotes] = useState<Record<string, string>>({});
+
+  // Live timer for active run
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    if (!activeRun || activeRun.status !== 'in_progress') {
+      setElapsedSeconds(activeRun?.totalDurationSeconds || 0);
+      return;
+    }
+    const startMs = new Date(activeRun.startedAt).getTime();
+    const update = () => {
+      const nowMs = Date.now();
+      setElapsedSeconds(Math.max(0, Math.floor((nowMs - startMs) / 1000)));
+    };
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, [activeRun]);
+
+  const timerMins = Math.floor(elapsedSeconds / 60);
+  const timerSecs = elapsedSeconds % 60;
+  const formattedTimer = `${String(timerMins).padStart(2, '0')}:${String(timerSecs).padStart(2, '0')}`;
+
   return (
     <div className="space-y-6">
       {/* Official Execution Run HUD Banner */}
       {activeRun && (
-        <div className="p-4 rounded-2xl border border-blue-500/30 bg-blue-500/10 backdrop-blur-sm flex items-center justify-between gap-4 flex-wrap animate-in fade-in">
+        <div className="p-4 sm:p-5 rounded-3xl border border-blue-500/30 bg-gradient-to-r from-blue-500/15 via-indigo-500/10 to-transparent backdrop-blur-md flex items-center justify-between gap-4 flex-wrap animate-in fade-in shadow-lg">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md">
-              <ShieldCheck className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/30">
+              <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-600 text-white uppercase tracking-wider font-mono" dir="ltr">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-blue-600 text-white uppercase tracking-wider font-mono" dir="ltr">
                   OFFICIAL RUN #{activeRun.runNumber}
                 </span>
-                <span className="text-xs font-black text-blue-900 dark:text-blue-100">
+                <span className="text-sm font-black text-blue-950 dark:text-blue-100">
                   {activeRun.title}
                 </span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               </div>
-              <p className="text-[11px] text-blue-700/80 dark:text-blue-300/80 mt-0.5">
-                مجری: <strong>{activeRun.operatorName}</strong> • پیشرفت در لاگ ممیزی ISO 9001 ذخیره می‌شود.
+              <p className="text-xs text-blue-800/80 dark:text-blue-200/80 mt-0.5">
+                مجری: <strong>{activeRun.operatorName}</strong> ({activeRun.operatorRole || 'کاربر سازمانی'}) • پایش زمان و لاگ ممیزی فعال است.
               </p>
             </div>
           </div>
 
-          {onDisconnectRun && (
-            <button
-              type="button"
-              onClick={onDisconnectRun}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>خروج از حالت رهگیری رسمی</span>
-            </button>
-          )}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Live Stopwatch Timer */}
+            <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/90 dark:bg-slate-800/90 border border-blue-500/30 text-blue-700 dark:text-blue-300 font-mono text-xs font-black shadow-xs" dir="ltr">
+              <Clock className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+              <span>{formattedTimer}</span>
+            </div>
+
+            {onFinishActiveRun && (
+              <button
+                type="button"
+                onClick={onFinishActiveRun}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-500/20 flex items-center gap-1.5 transition-all hover:scale-102 cursor-pointer"
+                title="ثبت خاتمه و ثبت رسمی لاگ ممیزی"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>ثبت و پایان رسمی اجرا</span>
+              </button>
+            )}
+
+            {onDisconnectRun && (
+              <button
+                type="button"
+                onClick={onDisconnectRun}
+                className="px-3 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 cursor-pointer"
+                title="توقف موقت یا خروج بدون ابطال"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>خروج از رهگیری</span>
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -319,7 +370,7 @@ export function StepRunnerView({
             {/* Direct Step Completion Checkbox Button */}
             <button
               type="button"
-              onClick={() => onToggleStepComplete(currentStep.stepKey)}
+              onClick={() => onToggleStepComplete(currentStep.stepKey, stepNotes[currentStep.stepKey])}
               className={`flex items-center gap-2 px-4 py-2 rounded-2xl border text-xs font-bold transition-all cursor-pointer self-start sm:self-center shrink-0 shadow-xs ${
                 isCurrentStepCompleted
                   ? 'bg-emerald-500 text-white border-emerald-600 ring-2 ring-emerald-400/30'
@@ -496,6 +547,35 @@ export function StepRunnerView({
             </div>
           )}
 
+          {/* Active Run Operator Notes & Checkpoint Attestation */}
+          {activeRun && (
+            <div className="mb-6 p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <label className="text-xs font-bold text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-blue-500" />
+                  <span>یادداشت یا کد رهگیری مجری برای این گام (اختیاری جهت لاگ ممیزی):</span>
+                </label>
+                {currentStep.stepType === 'warning' && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30">
+                    ایست بازرسی الزامی
+                  </span>
+                )}
+              </div>
+              <input
+                type="text"
+                value={stepNotes[currentStep.stepKey] || ''}
+                onChange={(e) => setStepNotes(prev => ({ ...prev, [currentStep.stepKey]: e.target.value }))}
+                placeholder="مثال: شماره پیگیری #12345، تایید کنترل کیفیت دریافت شد..."
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
+              />
+              {currentStep.stepType === 'warning' && (
+                <p className="text-[11px] text-amber-700 dark:text-amber-300 font-medium leading-relaxed">
+                  ⚠️ این مرحله به عنوان ایست بازرسی در شناسنامه ثبت شده است. یادداشت‌ها و زمان تکمیل به صورت سیستمی در برگه ممیزی ISO ضبط خواهد شد.
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Step Navigation & Completion Runner Controls */}
           <div className="flex items-center justify-between pt-6 border-t flex-wrap gap-3" style={{ borderColor: 'var(--border-subtle)' }}>
             <button
@@ -522,7 +602,7 @@ export function StepRunnerView({
 
               <button
                 type="button"
-                onClick={() => onCompleteAndNext(currentStep.stepKey)}
+                onClick={() => onCompleteAndNext(currentStep.stepKey, stepNotes[currentStep.stepKey])}
                 className="px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-md text-white bg-blue-600 hover:bg-blue-700 hover:scale-105"
               >
                 <span>{activeStepIndex === steps.length - 1 ? 'تکمیل و پایان فرایند' : 'تکمیل این گام و رفتن به بعد'}</span>

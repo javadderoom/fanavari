@@ -11,6 +11,9 @@ import { ProcessErrorMatrixTab } from './process-detail/process-error-matrix-tab
 import { ProcessScratchpadTab } from './process-detail/process-scratchpad-tab';
 import { FlowchartCanvas } from './process-detail/flowchart-canvas';
 import { StepRunnerView } from './process-detail/step-runner-view';
+import { QuickStartRunModal } from './process-detail/quick-start-run-modal';
+import { RunCompletionModal } from './process-detail/run-completion-modal';
+import { ProcessRunAuditModal } from './process-detail/process-run-audit-modal';
 import { SidecarRunner } from './process-detail/sidecar-runner';
 import { ProcessRunsTab } from './process-detail/process-runs-tab';
 import { SubProcessDrawer } from './process-detail/subprocess-drawer';
@@ -64,6 +67,9 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
   const [activeTab, setActiveTab] = useState<'flow' | 'errors' | 'scratchpad' | 'runs'>('flow');
   const [flowViewMode, setFlowViewMode] = useState<'canvas' | 'stepper'>('canvas');
   const [activeRun, setActiveRun] = useState<WorkflowRun | null>(null);
+  const [isQuickStartModalOpen, setIsQuickStartModalOpen] = useState(false);
+  const [completedRunForModal, setCompletedRunForModal] = useState<WorkflowRun | null>(null);
+  const [selectedAuditRun, setSelectedAuditRun] = useState<WorkflowRun | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isSidecarOpen, setIsSidecarOpen] = useState(false);
@@ -195,7 +201,7 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
   const isAllCompleted = totalCount > 0 && completedCount === totalCount;
   const isCurrentStepCompleted = currentStep ? completedStepKeys.includes(currentStep.stepKey) : false;
 
-  const logStepToActiveRun = async (stepKey: string, isCompleted: boolean) => {
+  const logStepToActiveRun = async (stepKey: string, isCompleted: boolean, operatorNotes?: string) => {
     if (!activeRun) return;
     const step = process.steps.find((s) => s.stepKey === stepKey);
     if (!step) return;
@@ -214,6 +220,7 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
             stepTitle: step.title,
             stepId: step.id,
             status: isCompleted ? 'completed' : 'skipped',
+            operatorNotes: operatorNotes || undefined,
             isCheckpoint: step.stepType === 'warning',
           },
         }),
@@ -247,6 +254,7 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
           const data = await res.json();
           if (data.run) {
             setActiveRun(data.run);
+            setCompletedRunForModal(data.run);
             notify.success('اجرای رسمی با موفقیت خاتمه یافت و لاگ ممیزی ایزو ثبت گردید!');
           }
         }
@@ -256,14 +264,48 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
     }
   };
 
-  const toggleStepCompleted = (stepKey: string) => {
+  const handleFinishActiveRun = async () => {
+    if (!activeRun) return;
+    const ok = await notify.confirm({
+      title: 'ثبت خاتمه رسمی اجرا و صدور گواهی ممیزی',
+      message: `آیا از ثبت و بستن اجرای رسمی #${activeRun.runNumber} اطمینان دارید؟ کارنامه ممیزی و تایم‌لاین ISO ثبت نهایی خواهد شد.`,
+      confirmText: 'بله، ثبت و صدور گواهی',
+      cancelText: 'انصراف',
+    });
+    if (!ok) return;
+
+    try {
+      const res = await fetch(`/api/processes/${process.slug}/runs/${activeRun.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUser.id,
+        },
+        body: JSON.stringify({
+          status: 'completed',
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.run) {
+          setActiveRun(data.run);
+          setCompletedRunForModal(data.run);
+          notify.success('اجرای رسمی با موفقیت پایان یافت و گواهی ممیزی ثبت گردید!');
+        }
+      }
+    } catch (err) {
+      console.error('Error completing active run:', err);
+    }
+  };
+
+  const toggleStepCompleted = (stepKey: string, operatorNotes?: string) => {
     setCompletedStepKeys((prev) => {
       let next: string[];
       const isNowDone = !prev.includes(stepKey);
       if (isNowDone) {
         next = [...prev, stepKey];
         notify.success('گام به عنوان انجام‌شده علامت‌گذاری شد ✓');
-        logStepToActiveRun(stepKey, true);
+        logStepToActiveRun(stepKey, true, operatorNotes);
         if (next.length === process.steps.length) {
           setShowCelebration(true);
           completeActiveRunIfDone(next.length);
@@ -271,7 +313,7 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
       } else {
         next = prev.filter((k) => k !== stepKey);
         setShowCelebration(false);
-        logStepToActiveRun(stepKey, false);
+        logStepToActiveRun(stepKey, false, operatorNotes);
       }
       try {
         localStorage.setItem(`fanavari-completed-${process.id}`, JSON.stringify(next));
@@ -282,9 +324,9 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
     });
   };
 
-  const handleCompleteAndNext = (stepKey: string) => {
+  const handleCompleteAndNext = (stepKey: string, operatorNotes?: string) => {
     if (!completedStepKeys.includes(stepKey)) {
-      toggleStepCompleted(stepKey);
+      toggleStepCompleted(stepKey, operatorNotes);
     }
     if (activeStepIndex < process.steps.length - 1) {
       setActiveStepIndex((prev) => prev + 1);
@@ -411,6 +453,8 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
         onOpenAccessModal={() => setIsAccessModalOpen(true)}
         onToggleSidecar={handleToggleSidecar}
         isSidecarOpen={isSidecarOpen}
+        onStartOfficialRun={() => setIsQuickStartModalOpen(true)}
+        activeRun={activeRun}
       />
 
 
@@ -626,8 +670,8 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
               completedStepKeys={completedStepKeys}
               showCelebration={showCelebration}
               onSelectStep={(idx) => setActiveStepIndex(idx)}
-              onToggleStepComplete={(stepKey) => toggleStepCompleted(stepKey)}
-              onCompleteAndNext={(stepKey) => handleCompleteAndNext(stepKey)}
+              onToggleStepComplete={(stepKey, notes) => toggleStepCompleted(stepKey, notes)}
+              onCompleteAndNext={(stepKey, notes) => handleCompleteAndNext(stepKey, notes)}
               onResetProgress={handleResetProgress}
               processSlug={process.slug}
               copiedField={copiedField}
@@ -637,6 +681,7 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
                 setActiveRun(null);
                 notify.info('اتصال به اجرای رسمی قطع گردید.');
               }}
+              onFinishActiveRun={handleFinishActiveRun}
               onDrillDownSubProcess={handleDrillDownSubProcess}
             />
           )}
@@ -719,6 +764,55 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
           }
         }}
       />
+
+      {/* Official Workflow Run Quick-Launch Modal */}
+      <QuickStartRunModal
+        process={currentProcess}
+        isOpen={isQuickStartModalOpen}
+        onClose={() => setIsQuickStartModalOpen(false)}
+        onRunStarted={(run) => {
+          setActiveRun(run);
+          setActiveTab('flow');
+          setFlowViewMode('stepper');
+          notify.success(`اجرای رسمی #${run.runNumber} با موفقیت آغاز گردید!`);
+        }}
+      />
+
+      {/* Workflow Run Completion & ISO Audit Certificate Modal */}
+      {completedRunForModal && (
+        <RunCompletionModal
+          run={completedRunForModal}
+          processSlug={process.slug}
+          isOpen={!!completedRunForModal}
+          onClose={() => setCompletedRunForModal(null)}
+          onViewAuditDetails={(run) => {
+            setSelectedAuditRun(run);
+            setCompletedRunForModal(null);
+          }}
+          onRestartNewRun={() => {
+            setCompletedRunForModal(null);
+            handleResetProgress();
+            setIsQuickStartModalOpen(true);
+          }}
+        />
+      )}
+
+      {/* ISO Compliance Audit Sheet & Certificate Viewer Modal */}
+      {selectedAuditRun && (
+        <ProcessRunAuditModal
+          run={selectedAuditRun}
+          processTitle={process.title}
+          processSlug={process.slug}
+          isOpen={!!selectedAuditRun}
+          onClose={() => setSelectedAuditRun(null)}
+          onRunUpdated={(updated) => {
+            setSelectedAuditRun(updated);
+            if (activeRun?.id === updated.id) {
+              setActiveRun(updated);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

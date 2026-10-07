@@ -13,8 +13,11 @@ import {
   Share2, 
   Printer, 
   ExternalLink,
-  Columns2
+  Columns2,
+  Play,
+  ShieldCheck
 } from 'lucide-react';
+import { WorkflowRun } from '@/types/process';
 
 interface ProcessHeaderBannerProps {
   process: Process;
@@ -26,6 +29,8 @@ interface ProcessHeaderBannerProps {
   onOpenAccessModal: () => void;
   onToggleSidecar?: () => void;
   isSidecarOpen?: boolean;
+  onStartOfficialRun?: () => void;
+  activeRun?: WorkflowRun | null;
 }
 
 export function ProcessHeaderBanner({
@@ -38,6 +43,8 @@ export function ProcessHeaderBanner({
   onOpenAccessModal,
   onToggleSidecar,
   isSidecarOpen = false,
+  onStartOfficialRun,
+  activeRun,
 }: ProcessHeaderBannerProps) {
   return (
     <div
@@ -124,6 +131,27 @@ export function ProcessHeaderBanner({
 
         {/* Action Buttons */}
         <div className="flex items-center flex-wrap gap-2.5 self-start lg:self-center">
+          {/* Tracked Execution Action */}
+          {activeRun ? (
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-xs font-black">
+                اجرای رسمی #{activeRun.runNumber} در جریان
+              </span>
+            </div>
+          ) : onStartOfficialRun ? (
+            <button
+              onClick={onStartOfficialRun}
+              type="button"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/25 transition-all cursor-pointer hover:scale-105"
+              title="آغاز رهگیری زنده این فرایند و ثبت در ممیزی رسمی ISO"
+            >
+              <Play className="w-4 h-4 fill-current" />
+              <span>شروع اجرای رسمی</span>
+            </button>
+          ) : null}
+
           {onToggleSidecar && (
             <button
               onClick={onToggleSidecar}
