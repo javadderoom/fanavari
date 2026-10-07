@@ -295,7 +295,7 @@ export function StepRunnerView({
           </div>
           <div className="flex items-center justify-center gap-3 pt-2 flex-wrap">
             <Link
-              href={`/process/${processSlug}/print`}
+              href={activeRun ? `/process/${processSlug}/print?runId=${activeRun.id}` : `/process/${processSlug}/print`}
               target="_blank"
               className="px-4 py-2.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-emerald-400 text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 shadow-sm hover:scale-105 transition-all"
             >

@@ -549,13 +549,26 @@ export function ProcessRunAuditModal({
             شناسه یکتای ممیزی: <span className="font-mono" dir="ltr">{run.id}</span>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2 rounded-xl text-xs font-bold bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-[var(--text-primary)] transition-all cursor-pointer"
-          >
-            بستن
-          </button>
+          <div className="flex items-center gap-2">
+            <a
+              href={`/process/${processSlug}/print?runId=${run.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all flex items-center gap-1.5 shadow-sm hover:scale-102"
+              title="چاپ سند یا صدور فایل PDF با امضاهای رسمی"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>چاپ گواهینامه رسمی ISO</span>
+            </a>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2 rounded-xl text-xs font-bold bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-[var(--text-primary)] transition-all cursor-pointer"
+            >
+              بستن
+            </button>
+          </div>
         </div>
       </div>
     </div>

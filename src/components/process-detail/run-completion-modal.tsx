@@ -132,12 +132,12 @@ export function RunCompletionModal({
           </button>
 
           <Link
-            href={`/process/${processSlug}/print`}
+            href={`/process/${processSlug}/print?runId=${run.id}`}
             target="_blank"
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 hover:border-slate-400 text-slate-700 dark:text-slate-200 transition-all flex items-center justify-center gap-1.5"
           >
             <Printer className="w-4 h-4" />
-            <span>چاپ نسخه رسمی</span>
+            <span>چاپ گواهینامه رسمی ISO</span>
           </Link>
 
           <button

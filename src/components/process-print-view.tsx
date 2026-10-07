@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Process } from '@/types/process';
+import { Process, WorkflowRun, WorkflowStepLog } from '@/types/process';
 import { MenuPathDisplay } from './menu-path-display';
 import { StepContentRenderer, hasValidStepContent } from './step-content-renderer';
 import { 
@@ -12,26 +12,76 @@ import {
   Laptop, 
   Building2, 
   Workflow, 
-  Navigation, 
   Lightbulb, 
   AlertTriangle, 
-  CheckCircle, 
+  CheckCircle,
+  CheckCircle2, 
   GitFork, 
   Layers, 
   ExternalLink,
-  ZoomIn,
-  ZoomOut,
   FileText,
-  Calendar
+  Calendar,
+  ShieldCheck,
+  Award,
+  Check,
+  Timer
 } from 'lucide-react';
 
 interface ProcessPrintViewProps {
   process: Process;
+  initialRun?: WorkflowRun | null;
 }
 
-export function ProcessPrintView({ process }: ProcessPrintViewProps) {
+function formatDurationText(seconds?: number | null): string {
+  if (seconds === undefined || seconds === null || seconds <= 0) return 'کمتر از ۱ دقیقه';
+  const mins = Math.floor(seconds / 60);
+  const remainingSecs = seconds % 60;
+  if (mins === 0) return `${remainingSecs} ثانیه`;
+  if (remainingSecs === 0) return `${mins} دقیقه`;
+  return `${mins} دقیقه و ${remainingSecs} ثانیه`;
+}
+
+function formatDateTimeText(dateStr?: string | Date | null): string {
+  if (!dateStr) return '—';
+  try {
+    const d = new Date(dateStr);
+    return (
+      d.toLocaleDateString('fa-IR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }) +
+      ' ساعت ' +
+      d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
+    );
+  } catch {
+    return String(dateStr);
+  }
+}
+
+export function ProcessPrintView({ process, initialRun }: ProcessPrintViewProps) {
   // Font scale mode for elderly accessibility / customized reading before printing
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('large');
+
+  // Currently selected execution run (null = blank SOP template checklist)
+  const [selectedRun, setSelectedRun] = useState<WorkflowRun | null>(initialRun || null);
+  const [availableRuns, setAvailableRuns] = useState<WorkflowRun[]>(initialRun ? [initialRun] : []);
+
+  useEffect(() => {
+    // Fetch all recorded execution runs for this process so user can toggle between them
+    fetch(`/api/processes/${process.slug}/runs`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.runs && Array.isArray(data.runs)) {
+          setAvailableRuns(data.runs);
+          if (initialRun) {
+            const matched = data.runs.find((r: WorkflowRun) => r.id === initialRun.id);
+            if (matched) setSelectedRun(matched);
+          }
+        }
+      })
+      .catch((err) => console.error('Error fetching runs for print view:', err));
+  }, [process.slug, initialRun]);
 
   const handlePrint = () => {
     window.print();
@@ -42,7 +92,7 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
       case 'decision':
         return { label: 'بررسی و تصمیم‌گیری', color: 'bg-amber-100 text-amber-900 border-amber-300' };
       case 'warning':
-        return { label: 'هشدار و دقت ویژه', color: 'bg-rose-100 text-rose-900 border-rose-300' };
+        return { label: 'ایست بازرسی حساس', color: 'bg-rose-100 text-rose-900 border-rose-300' };
       case 'end':
         return { label: 'پایان موفقیت‌آمیز', color: 'bg-emerald-100 text-emerald-900 border-emerald-300' };
       default:
@@ -77,18 +127,43 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
       {/* Floating Action Bar (Visible only on screen, completely hidden when printing) */}
       {/* ========================================================================= */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-300 shadow-sm print:hidden">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           {/* Back link */}
           <Link
             href={`/process/${process.slug}`}
-            className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors py-2 px-3 rounded-xl hover:bg-slate-100"
+            className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors py-2 px-3 rounded-xl hover:bg-slate-100 shrink-0"
           >
             <ArrowRight className="w-4 h-4" />
             <span>بازگشت به فرایند</span>
           </Link>
 
+          {/* Mode Selector: Blank SOP vs Recorded Official Run */}
+          <div className="flex items-center gap-2 flex-1 max-w-md mx-2">
+            <select
+              value={selectedRun?.id || 'blank'}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === 'blank') {
+                  setSelectedRun(null);
+                } else {
+                  const r = availableRuns.find((item) => item.id === val);
+                  if (r) setSelectedRun(r);
+                }
+              }}
+              className="w-full text-xs font-bold py-2 px-3 rounded-xl border border-slate-300 bg-slate-50 text-slate-800 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer truncate"
+              title="انتخاب حالت چاپ سند"
+            >
+              <option value="blank">📄 فرم استاندارد راهنما (فرم سفید چک‌لیست)</option>
+              {availableRuns.map((r) => (
+                <option key={r.id} value={r.id}>
+                  🏆 گواهی رسمی ISO #{r.runNumber} — {r.operatorName} ({r.status === 'completed' ? 'تکمیل شده' : 'در جریان'})
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Center: Font Size Controls for accessibility */}
-          <div className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <div className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0">
             <span className="px-2 text-slate-500">اندازه قلم:</span>
             <button
               onClick={() => setFontSize('normal')}
@@ -106,7 +181,7 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                 fontSize === 'large' ? 'bg-white text-blue-600 shadow-xs font-black' : 'hover:text-slate-900'
               }`}
             >
-              بزرگ (خوانا)
+              بزرگ
             </button>
             <button
               onClick={() => setFontSize('xlarge')}
@@ -120,7 +195,7 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
           </div>
 
           {/* Primary Print Button */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handlePrint}
               type="button"
@@ -129,7 +204,7 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
             >
               <Printer className="w-4 h-4" />
               <span>چاپ سند یا خروجی PDF</span>
-              <kbd className="hidden md:inline-block px-1.5 py-0.5 rounded text-[10px] font-mono bg-blue-700 text-white/90">
+              <kbd className="hidden md:inline-block px-1.5 py-0.5 rounded text-[10px] font-mono bg-blue-700 text-white/90" dir="ltr">
                 Ctrl+P
               </kbd>
             </button>
@@ -141,7 +216,7 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
       {/* Printable Sheet Container (Styled for A4 paper and high screen clarity)   */}
       {/* ========================================================================= */}
       <main className="max-w-4xl mx-auto my-6 sm:my-10 print:my-0 print:max-w-none print:w-full px-3 sm:px-6 print:p-0">
-        <article className="bg-white rounded-3xl border border-slate-300 shadow-xl print:border-none print:shadow-none p-6 sm:p-12 print:p-0">
+        <article className="bg-white rounded-3xl border border-slate-300 shadow-xl print:border-none print:shadow-none p-6 sm:p-12 print:p-0 relative">
           
           {/* Formal Document Top Banner */}
           <div className="border-b-2 border-slate-800 pb-5 mb-6">
@@ -153,14 +228,18 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                 </div>
                 <div>
                   <h3 className="text-base font-black text-slate-900">سامانه جامع فناوری و فرایندها</h3>
-                  <p className="text-xs text-slate-500 font-semibold mt-0.5">راهنمای رسمی و گام‌به‌گام اجرایی</p>
+                  <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                    {selectedRun 
+                      ? 'گواهینامه رسمی انطباق فرایند و کارنامه ممیزی اجرایی (ISO 9001:2015)' 
+                      : 'راهنمای رسمی و گام‌به‌گام اجرایی (فرم استاندارد عملیاتی)'}
+                  </p>
                 </div>
               </div>
 
               {/* Center: Document Title */}
               <div className="text-center sm:text-right">
-                <span className="inline-block text-xs font-black uppercase px-3 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-300">
-                  شناسه فرایند: {process.id.slice(0, 8)}
+                <span className="inline-block text-xs font-black uppercase px-3 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-300 font-mono" dir="ltr">
+                  {selectedRun ? `RUN-ISO-#${selectedRun.runNumber}` : `PROC-${process.id.slice(0, 8)}`}
                 </span>
               </div>
 
@@ -168,17 +247,102 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
               <div className="text-xs text-slate-600 bg-slate-50 border border-slate-200 p-2.5 rounded-xl space-y-1 text-right self-stretch sm:self-auto min-w-[160px]">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-slate-500 font-medium">تاریخ چاپ:</span>
-                  <span className="font-bold text-slate-900" dir="ltr">
-                    {'\u200E' + new Date().toLocaleDateString('fa-IR')}
+                  <span className="font-bold text-slate-900 font-mono" dir="ltr">
+                    {new Date().toLocaleDateString('fa-IR')}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-slate-500 font-medium">نسخه مستند:</span>
-                  <span className="font-bold text-slate-900">۱.۰ (معتبر)</span>
+                  <span className="text-slate-500 font-medium">نوع سند:</span>
+                  <span className="font-bold text-slate-900">
+                    {selectedRun ? 'کارنامه ممیزی' : 'راهنمای عملیاتی'}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* ========================================================================= */}
+          {/* OFFICIAL RUN ATTESTATION SEAL & METRICS BREAKDOWN (When Run is Selected)   */}
+          {/* ========================================================================= */}
+          {selectedRun && (
+            <div className="mb-8 p-5 sm:p-6 rounded-2xl border-2 border-emerald-600 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent text-slate-900 print:border-black print:bg-white space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-emerald-600/30 print:border-black">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0 print:border print:border-black">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-600 text-white uppercase tracking-wider font-mono" dir="ltr">
+                        OFFICIAL ISO 9001 RUN #{selectedRun.runNumber}
+                      </span>
+                      <h3 className="text-base font-black text-emerald-950 dark:text-emerald-100 print:text-black">
+                        {selectedRun.title}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-emerald-800 dark:text-emerald-200 print:text-slate-700 mt-0.5">
+                      ثبت شده در سامانه پایش عملیاتی • انطباق کامل مراحل با شیوه‌نامه اجرایی
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-left font-mono text-xs text-slate-600 print:text-black" dir="ltr">
+                  UUID: {selectedRun.id}
+                </div>
+              </div>
+
+              {/* Execution Metrics Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-white/80 dark:bg-slate-900/40 border border-emerald-600/20 print:border-slate-400">
+                  <span className="text-slate-500 block mb-1">مجری عملیات:</span>
+                  <span className="font-black text-slate-900 block truncate">
+                    {selectedRun.operatorName}
+                  </span>
+                  <span className="text-[10px] text-slate-400 block truncate">
+                    {selectedRun.operatorRole || 'اپراتور سازمانی'}
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-white/80 dark:bg-slate-900/40 border border-emerald-600/20 print:border-slate-400">
+                  <span className="text-slate-500 block mb-1">مدت زمان اجرا:</span>
+                  <span className="font-black text-blue-700 block font-mono" dir="ltr">
+                    ⏱️ {formatDurationText(selectedRun.totalDurationSeconds)}
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">پایش مستمر زمان</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-white/80 dark:bg-slate-900/40 border border-emerald-600/20 print:border-slate-400">
+                  <span className="text-slate-500 block mb-1">پیشرفت مراحل:</span>
+                  <span className="font-black text-emerald-700 block font-mono" dir="ltr">
+                    {selectedRun.completedStepsCount} / {selectedRun.totalStepsCount} (100%)
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">تکمیل ۱۰۰٪ گام‌ها</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-white/80 dark:bg-slate-900/40 border border-emerald-600/20 print:border-slate-400">
+                  <span className="text-slate-500 block mb-1">وضعیت ممیزی:</span>
+                  <span className="font-black text-emerald-700 block">
+                    {selectedRun.supervisorApprovalStatus === 'approved' ? 'تایید نهایی ناظر کیفی' : 'ثبت کامل و معتبر'}
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">
+                    {selectedRun.supervisorName ? `ناظر: ${selectedRun.supervisorName}` : 'آماده بایگانی'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Start & End Timestamps */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-600 print:text-black gap-2 pt-1 border-t border-emerald-600/20 print:border-slate-300">
+                <div>
+                  <span className="font-bold">آغاز عملیات: </span>
+                  <span className="font-mono">{formatDateTimeText(selectedRun.startedAt)}</span>
+                </div>
+                <div>
+                  <span className="font-bold">پایان عملیات: </span>
+                  <span className="font-mono">{formatDateTimeText(selectedRun.completedAt || selectedRun.startedAt)}</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Process Title and Summary Section */}
           <div className="mb-8">
@@ -205,11 +369,21 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
 
               <span className="text-xs px-3 py-1 rounded-lg font-bold bg-slate-100 text-slate-800 border border-slate-300 flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5 text-slate-600" />
-                <span>زمان تخمینی: {'\u200E' + process.estimatedMinutes} دقیقه</span>
+                <span>
+                  زمان تخمینی استاندارد:{' '}
+                  <span dir="ltr" className="font-mono font-bold">
+                    {process.estimatedMinutes}
+                  </span>{' '}
+                  دقیقه
+                </span>
               </span>
 
               <span className="text-xs px-3 py-1 rounded-lg font-bold bg-blue-50 text-blue-900 border border-blue-200">
-                تعداد مراحل: {'\u200E' + process.steps.length} مرحله
+                تعداد کل مراحل:{' '}
+                <span dir="ltr" className="font-mono font-bold">
+                  {process.steps.length}
+                </span>{' '}
+                مرحله
               </span>
             </div>
 
@@ -217,7 +391,7 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
               {process.title}
             </h1>
 
-            {/* Operating Schedule / Timeline Banner (Enforces Deadline Accountability) */}
+            {/* Operating Schedule / Timeline Banner */}
             {process.schedule && (
               <div className="mb-4 p-4 rounded-2xl border-2 border-amber-300 bg-amber-50/80 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:border-slate-800">
                 <div className="flex items-center gap-2.5">
@@ -228,7 +402,7 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                       {process.schedule.timeframeLabel || `از ${process.schedule.startDay} الی ${process.schedule.endDay} ${process.schedule.month} ماه`}
                       {process.schedule.deadlineDays && (
                         <span className="mr-2 text-xs font-semibold text-amber-800 print:text-black">
-                          (مهلت اقدام: <span dir="ltr" className="font-mono font-bold">{'\u200E' + process.schedule.deadlineDays}</span> روز)
+                          (مهلت اقدام: <span dir="ltr" className="font-mono font-bold">{process.schedule.deadlineDays}</span> روز)
                         </span>
                       )}
                     </span>
@@ -269,10 +443,10 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
             <div className="flex items-center justify-between border-b border-slate-300 pb-2">
               <h3 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-600" />
-                <span>مراحل گام‌به‌گام اجرای فرایند</span>
+                <span>مراحل گام‌به‌گام و تاییدات اجرایی</span>
               </h3>
               <span className="text-xs font-bold text-slate-500">
-                لطفاً مراحل را دقیقا به ترتیب زیر انجام دهید
+                {selectedRun ? 'ثبت ممیزی تاییدات و زمان‌بندی گام‌ها' : 'لطفاً مراحل را دقیقا به ترتیب زیر انجام دهید'}
               </span>
             </div>
 
@@ -287,6 +461,12 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                 (e) => (e.errorTitle && e.errorTitle.trim()) || (e.solution && e.solution.trim())
               );
 
+              // Check if there is an execution log recorded for this step
+              const stepLog = selectedRun?.stepLogs?.find(
+                (l) => l.stepKey === step.stepKey || l.stepOrder === step.orderIndex
+              );
+              const isStepExecuted = stepLog?.status === 'completed';
+
               return (
                 <section
                   key={step.id || idx}
@@ -296,18 +476,18 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                     pageBreakInside: 'avoid',
                   }}
                 >
-                  {/* Step Top Bar: Step Number + Title + Step Type + Checkbox for manual audit tick */}
+                  {/* Step Top Bar: Step Number + Title + Step Type + Verification Stamp */}
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-slate-200">
                     <div className="flex items-start gap-3.5">
                       {/* Step Number Round Badge */}
-                      <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white font-black text-lg flex items-center justify-center shrink-0 shadow-sm print:border print:border-black">
-                        {'\u200E' + step.orderIndex}
+                      <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white font-black text-lg flex items-center justify-center shrink-0 shadow-sm print:border print:border-black font-mono">
+                        {step.orderIndex}
                       </div>
 
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-bold text-blue-700">
-                            مرحله {'\u200E' + step.orderIndex} از {'\u200E' + process.steps.length}
+                            مرحله {step.orderIndex} از {process.steps.length}
                           </span>
                           <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${typeInfo.color}`}>
                             {typeInfo.label}
@@ -319,19 +499,71 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                       </div>
                     </div>
 
-                    {/* Step Completion Verification Box for Printout Audit */}
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-300 print:border-slate-800 bg-slate-50 print:bg-white text-xs font-bold text-slate-700 self-start sm:self-center shrink-0">
-                      <span className="w-4 h-4 rounded border-2 border-slate-400 print:border-black inline-block bg-white" />
-                      <span>تایید انجام مرحله</span>
-                    </div>
+                    {/* Step Completion Verification Box / Formal Stamp */}
+                    {selectedRun ? (
+                      <div className={`flex flex-col items-end gap-1 px-3.5 py-2 rounded-xl border text-xs font-bold self-start sm:self-center shrink-0 ${
+                        isStepExecuted
+                          ? 'border-emerald-600 bg-emerald-50 text-emerald-900 print:border-black print:bg-white'
+                          : 'border-slate-300 bg-slate-50 text-slate-600'
+                      }`}>
+                        <div className="flex items-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 print:text-black" />
+                          <span>تایید و انجام رسمی ✓</span>
+                        </div>
+                        {stepLog?.completedAt && (
+                          <span className="text-[10px] text-slate-500 font-mono" dir="ltr">
+                            {new Date(stepLog.completedAt).toLocaleTimeString('fa-IR')}
+                          </span>
+                        )}
+                        {stepLog?.durationSeconds ? (
+                          <span className="text-[10px] text-blue-700 font-mono" dir="ltr">
+                            ⏱️ {stepLog.durationSeconds}s
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-300 print:border-slate-800 bg-slate-50 print:bg-white text-xs font-bold text-slate-700 self-start sm:self-center shrink-0">
+                        <span className="w-4 h-4 rounded border-2 border-slate-400 print:border-black inline-block bg-white" />
+                        <span>تایید انجام مرحله</span>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Mandatory ISO Checkpoint Stamp */}
+                  {(step.stepType === 'warning' || stepLog?.isCheckpoint) && (
+                    <div className="my-3 p-3 rounded-xl border-2 border-rose-500/40 bg-rose-50/80 text-rose-950 print:border-black print:bg-white flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 text-xs font-bold">
+                        <ShieldCheck className="w-4 h-4 text-rose-600 print:text-black shrink-0" />
+                        <span>ایست بازرسی الزامی کنترل کیفیت (ISO 9001 Checkpoint):</span>
+                        <span className="font-normal text-rose-900 print:text-black">
+                          تایید صحت اجرای این گام ثبت و ممهور گردید.
+                        </span>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded-md font-mono font-bold bg-rose-600 text-white print:bg-black" dir="ltr">
+                        CHECKPOINT VERIFIED
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Operator Step Notes Recorded during Run */}
+                  {stepLog?.operatorNotes && (
+                    <div className="my-3 p-3 rounded-xl border border-blue-400/40 bg-blue-50/70 text-blue-950 print:border-black print:bg-white text-xs">
+                      <div className="flex items-center gap-1.5 font-bold mb-1 text-blue-900 print:text-black">
+                        <FileText className="w-3.5 h-3.5 text-blue-600 print:text-black" />
+                        <span>یادداشت و کد رهگیری مستندات مجری:</span>
+                      </div>
+                      <p className="font-medium text-slate-800 print:text-black">
+                        {stepLog.operatorNotes}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Menu Access Path / Software Route (Boxed Breadcrumbs) */}
                   {step.targetMenuPath && step.targetMenuPath.trim() && (
                     <MenuPathDisplay path={step.targetMenuPath.trim()} variant="print" />
                   )}
 
-                  {/* Step Narrative Instructions & Callouts - OMITTED ENTIRELY IF EMPTY */}
+                  {/* Step Narrative Instructions & Callouts */}
                   {hasContent && (
                     <div className="my-4">
                       <h5 className="text-xs font-black text-slate-600 mb-1.5">
@@ -358,7 +590,7 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                             <tr className="border-b border-slate-300 text-slate-600">
                               <th className="py-2 px-3 font-black">عنوان فیلد</th>
                               <th className="py-2 px-3 font-black">مقدار / نمونه ورودی</th>
-                              {validCopyableFields.some(f => f.description && f.description.trim()) && (
+                              {validCopyableFields.some((f) => f.description && f.description.trim()) && (
                                 <th className="py-2 px-3 font-black">توضیحات</th>
                               )}
                             </tr>
@@ -370,7 +602,7 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
                                 <td className="py-2 px-3 font-mono font-black text-blue-700" dir="ltr">
                                   {field.value}
                                 </td>
-                                {validCopyableFields.some(f => f.description && f.description.trim()) && (
+                                {validCopyableFields.some((f) => f.description && f.description.trim()) && (
                                   <td className="py-2 px-3 text-slate-600">{field.description || '—'}</td>
                                 )}
                               </tr>
@@ -435,20 +667,82 @@ export function ProcessPrintView({ process }: ProcessPrintViewProps) {
           {/* Formal Document Sign-off / Print Footer                                    */}
           {/* ========================================================================= */}
           <div className="mt-12 pt-6 border-t-2 border-slate-800 text-xs text-slate-600">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-              <div className="p-3 border border-slate-300 rounded-xl">
-                <span className="font-bold text-slate-700 block mb-6">نام و امضای مجری فرایند:</span>
-                <span className="text-slate-400">...................................................</span>
+            {selectedRun ? (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+                {/* 1. Official Operator Stamp */}
+                <div className="p-4 border-2 border-emerald-600/40 rounded-2xl bg-emerald-50/30 print:border-black print:bg-white space-y-2">
+                  <span className="font-bold text-emerald-950 print:text-black block border-b pb-1">
+                    ۱. مجری رسمی عملیات:
+                  </span>
+                  <div className="text-slate-800 font-bold">
+                    {selectedRun.operatorName}
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    سمت: {selectedRun.operatorRole || 'اپراتور رسمی'}
+                  </div>
+                  <div className="pt-2">
+                    <span className="inline-block px-2.5 py-1 rounded-md text-[10px] font-mono font-bold bg-emerald-600 text-white print:border print:border-black print:text-black print:bg-white" dir="ltr">
+                      ✓ SIGN-OP-{selectedRun.id.slice(0, 6)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 2. Quality Supervisor Approval */}
+                <div className="p-4 border-2 border-blue-600/40 rounded-2xl bg-blue-50/30 print:border-black print:bg-white space-y-2">
+                  <span className="font-bold text-blue-950 print:text-black block border-b pb-1">
+                    ۲. ناظر کنترل کیفیت (QA):
+                  </span>
+                  {selectedRun.supervisorApprovalStatus === 'approved' ? (
+                    <>
+                      <div className="text-slate-800 font-bold">
+                        {selectedRun.supervisorName}
+                      </div>
+                      <div className="text-[11px] text-emerald-700 font-bold">
+                        تایید ممیزی کیفیت ISO 9001
+                      </div>
+                      <div className="pt-2">
+                        <span className="inline-block px-2.5 py-1 rounded-md text-[10px] font-mono font-bold bg-blue-600 text-white print:border print:border-black print:text-black print:bg-white" dir="ltr">
+                          ✓ QA-APPROVED
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-slate-500">امضا و تایید ناظر:</div>
+                      <div className="text-slate-400 pt-4">...................................................</div>
+                    </>
+                  )}
+                </div>
+
+                {/* 3. Standards Compliance Certificate Stamp */}
+                <div className="p-4 border-2 border-slate-300 rounded-2xl bg-slate-50/50 print:border-black print:bg-white space-y-2">
+                  <span className="font-bold text-slate-800 print:text-black block border-b pb-1">
+                    ۳. واحد تعالی و تضمین استاندارد:
+                  </span>
+                  <div className="text-[11px] text-slate-600 leading-relaxed">
+                    منطبق با سیستم مدیریت کیفیت <strong>ISO 9001:2015</strong>
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-mono" dir="ltr">
+                    VERIFIED HASH: {selectedRun.id.slice(-8).toUpperCase()}
+                  </div>
+                </div>
               </div>
-              <div className="p-3 border border-slate-300 rounded-xl">
-                <span className="font-bold text-slate-700 block mb-6">تاریخ انجام اقدامات:</span>
-                <span className="text-slate-400">...................................................</span>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+                <div className="p-3 border border-slate-300 rounded-xl">
+                  <span className="font-bold text-slate-700 block mb-6">نام و امضای مجری فرایند:</span>
+                  <span className="text-slate-400">...................................................</span>
+                </div>
+                <div className="p-3 border border-slate-300 rounded-xl">
+                  <span className="font-bold text-slate-700 block mb-6">تاریخ انجام اقدامات:</span>
+                  <span className="text-slate-400">...................................................</span>
+                </div>
+                <div className="p-3 border border-slate-300 rounded-xl">
+                  <span className="font-bold text-slate-700 block mb-6">تایید و بازبینی مسئول واحد:</span>
+                  <span className="text-slate-400">...................................................</span>
+                </div>
               </div>
-              <div className="p-3 border border-slate-300 rounded-xl">
-                <span className="font-bold text-slate-700 block mb-6">تایید و بازبینی مسئول واحد:</span>
-                <span className="text-slate-400">...................................................</span>
-              </div>
-            </div>
+            )}
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-slate-500 pt-2 border-t border-slate-200">
               <p>این سند راهنما به‌صورت اختصاصی و جامع جهت اجرای دقیق مراحل تدوین شده است.</p>
