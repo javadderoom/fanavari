@@ -845,13 +845,13 @@
     "semantic_hash": ""
   },
   "src/app/process/[slug]/print/page.tsx": {
-    "mtime": 1791054213.2634723,
-    "ast_hash": "477043eb06c27621cf6f2cb7f081e79a",
+    "mtime": 1791381900.1264417,
+    "ast_hash": "c967ea10497af214980581460114277d",
     "semantic_hash": ""
   },
   "src/components/process-print-view.tsx": {
-    "mtime": 1791212076.9237392,
-    "ast_hash": "98916e4b1d7b3f78a7547c4873182143",
+    "mtime": 1791382036.7431793,
+    "ast_hash": "107a54276a9d5484957846bb2d0d7ef7",
     "semantic_hash": ""
   },
   "src/components/menu-path-display.tsx": {
@@ -1120,8 +1120,8 @@
     "semantic_hash": ""
   },
   "src/components/process-detail/step-runner-view.tsx": {
-    "mtime": 1791379085.437525,
-    "ast_hash": "2888d2075e1df44fe6ee33d3ffb55a3e",
+    "mtime": 1791382121.3444693,
+    "ast_hash": "bb259fe18b01cca3e61a670f44af9a0d",
     "semantic_hash": ""
   },
   "src/app/process/[slug]/sidecar/page.tsx": {
@@ -1155,8 +1155,8 @@
     "semantic_hash": ""
   },
   "src/components/process-detail/process-run-audit-modal.tsx": {
-    "mtime": 1791310183.1550448,
-    "ast_hash": "e179043a37469ac1326ac058c99593ba",
+    "mtime": 1791382163.763841,
+    "ast_hash": "1d7570edcda457caa831233db73e2f3e",
     "semantic_hash": ""
   },
   "src/components/process-detail/process-runs-tab.tsx": {
@@ -1225,8 +1225,8 @@
     "semantic_hash": ""
   },
   "src/components/process-detail/run-completion-modal.tsx": {
-    "mtime": 1791377691.340233,
-    "ast_hash": "4174f72d1a6d88861828a79321cb18db",
+    "mtime": 1791382080.8054764,
+    "ast_hash": "0ee4ab2c19854ebb73a884f0a9f0c6ce",
     "semantic_hash": ""
   },
   "tests/workflow-runs.test.ts": {

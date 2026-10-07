@@ -17,7 +17,8 @@ import {
   ExternalLink, 
   GitBranch, 
   ChevronLeft,
-  X
+  X,
+  Award
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -54,6 +55,13 @@ export function AdminSidebar({ isOpenMobile = false, onCloseMobile }: AdminSideb
           icon: LayoutDashboard,
           badge: 'مرکزی',
           color: 'text-indigo-500',
+        },
+        {
+          href: '/dashboard/runs',
+          label: 'ممیزی و کارتابل ناظران',
+          icon: Award,
+          badge: 'ISO 9001',
+          color: 'text-emerald-500',
         },
       ],
     },
