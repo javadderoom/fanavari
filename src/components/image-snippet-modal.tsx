@@ -11,7 +11,8 @@ import {
   Loader2, 
   Trash2, 
   MousePointerClick,
-  Info
+  Info,
+  Edit3
 } from 'lucide-react';
 import { 
   convertImageToWebP, 
@@ -21,6 +22,7 @@ import {
 } from '@/lib/image-utils';
 import { UiSnippet } from '@/types/process';
 import { notify } from '@/lib/notify';
+import { ScreenshotEditorModal } from './screenshot-editor-modal';
 
 interface ImageSnippetModalProps {
   isOpen: boolean;
@@ -44,6 +46,7 @@ export function ImageSnippetModal({
   const [conversionStats, setConversionStats] = useState<WebPConversionResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isStudioOpen, setIsStudioOpen] = useState(false);
 
   // Micro Snippet Form Fields
   const [snippetTitle, setSnippetTitle] = useState('');
@@ -295,6 +298,20 @@ export function ImageSnippetModal({
                   </button>
                 </div>
 
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsStudioOpen(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-xs transition-all cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>ویرایش و حریم خصوصی (تار کردن، کادر، فلش، متن)</span>
+                  </button>
+                </div>
+
                 {conversionStats && (
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
                     <Sparkles className="w-3 h-3" />
@@ -420,6 +437,20 @@ export function ImageSnippetModal({
           </button>
         </div>
       </div>
+
+      {/* Screenshot Studio Modal */}
+      {isStudioOpen && previewUrl && (
+        <ScreenshotEditorModal
+          isOpen={isStudioOpen}
+          imageUrl={previewUrl}
+          onClose={() => setIsStudioOpen(false)}
+          onSave={(newWebPUrl) => {
+            setPreviewUrl(newWebPUrl);
+            setSelectedFile(null);
+            setConversionStats(null);
+          }}
+        />
+      )}
     </div>
   );
 }
