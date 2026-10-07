@@ -10,7 +10,8 @@ import {
   GitFork,
   Image as ImageIcon,
   MousePointerClick,
-  ExternalLink
+  ExternalLink,
+  Edit3
 } from 'lucide-react';
 import { ProcessStep, StepType, UiSnippet } from '@/types/process';
 import { MenuPathEditor } from '@/components/menu-path-editor';
@@ -19,6 +20,7 @@ import { StepCopyableFields } from './step-copyable-fields';
 import { StepErrorGuides } from './step-error-guides';
 import { StepUiSnippets } from './step-ui-snippets';
 import { ImageSnippetModal } from '@/components/image-snippet-modal';
+import { ScreenshotEditorModal } from '@/components/screenshot-editor-modal';
 
 interface StepEditorCardProps {
   step: ProcessStep;
@@ -36,6 +38,7 @@ export function StepEditorCard({
   onRemoveStep,
 }: StepEditorCardProps) {
   const [activeModal, setActiveModal] = useState<'screenshot' | 'snippet' | null>(null);
+  const [isEditorStudioOpen, setIsEditorStudioOpen] = useState(false);
 
   // Callout append helper
   const appendCallout = (prefix: string) => {
@@ -147,6 +150,15 @@ export function StepEditorCard({
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsEditorStudioOpen(true)}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 transition-colors border border-purple-500/20 cursor-pointer"
+                title="ویرایش، برش (Crop)، نشانگر کلیک، کادر و یادداشت فارسی"
+              >
+                <Edit3 className="w-3 h-3" />
+                <span>ویرایش و علامت‌گذاری</span>
+              </button>
               <button
                 type="button"
                 onClick={() => setActiveModal('screenshot')}
@@ -376,6 +388,19 @@ export function StepEditorCard({
               uiSnippets: updatedSnippets,
               contentMarkdown: updatedMarkdown,
             });
+          }}
+        />
+      )}
+
+      {/* Direct Screenshot Studio Editor */}
+      {isEditorStudioOpen && step.imageUrl && (
+        <ScreenshotEditorModal
+          isOpen={isEditorStudioOpen}
+          imageUrl={step.imageUrl}
+          onClose={() => setIsEditorStudioOpen(false)}
+          onSave={(newUrl) => {
+            onUpdateStep(stepIndex, { imageUrl: newUrl });
+            setIsEditorStudioOpen(false);
           }}
         />
       )}

@@ -308,7 +308,7 @@ export function ImageSnippetModal({
                     className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-xs transition-all cursor-pointer"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
-                    <span>ویرایش و حریم خصوصی (تار کردن، کادر، فلش، متن)</span>
+                    <span>ویرایش، برش (Crop) و نشانه‌گذاری (کلیک، کادر، فلش، متن)</span>
                   </button>
                 </div>
 
@@ -448,6 +448,10 @@ export function ImageSnippetModal({
             setPreviewUrl(newWebPUrl);
             setSelectedFile(null);
             setConversionStats(null);
+            if (mode === 'screenshot' && onScreenshotSaved) {
+              onScreenshotSaved(newWebPUrl);
+              onClose();
+            }
           }}
         />
       )}
