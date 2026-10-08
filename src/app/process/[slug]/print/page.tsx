@@ -36,13 +36,13 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 
   if (runId) {
     return {
-      title: `گواهینامه رسمی و کارنامه ممیزی ISO: ${process.title} | سامانه فناوری`,
+      title: `گواهینامه رسمی و کارنامه ممیزی ISO: ${process.title} | سامانه فرآیندنما`,
       description: `سند رسمی ممیزی، تاییدات اپراتور و ایست‌های بازرسی فرایند ${process.title}`,
     };
   }
 
   return {
-    title: `نسخه چاپی و راهنمای رسمی: ${process.title} | سامانه فناوری`,
+    title: `نسخه چاپی و راهنمای رسمی: ${process.title} | سامانه فرآیندنما`,
     description: `راهنمای گام‌به‌گام و رسمی جهت چاپ فرایند ${process.title} شامل تمامی مراحل و مسیرهای دسترسی`,
   };
 }

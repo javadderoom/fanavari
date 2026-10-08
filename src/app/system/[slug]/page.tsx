@@ -31,10 +31,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const { tool } = await getDbSystemToolBySlug(decodedSlug);
-  if (!tool) return { title: 'نرم‌افزار یا سامانه یافت نشد | سامانه فناوری' };
+  if (!tool) return { title: 'نرم‌افزار یا سامانه یافت نشد | سامانه فرآیندنما' };
 
   return {
-    title: `فرایندهای ${tool.name} | سامانه فناوری`,
+    title: `فرایندهای ${tool.name} | سامانه فرآیندنما`,
     description: tool.description,
   };
 }

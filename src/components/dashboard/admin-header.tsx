@@ -63,7 +63,7 @@ export function AdminHeader({ onToggleMobileSidebar }: AdminHeaderProps) {
   const pathname = usePathname();
   const current = PAGE_TITLES[pathname] || {
     title: 'پنل مدیریت ادمین',
-    subtitle: 'سامانه راهنمای جامع فرایندهای فناوری',
+    subtitle: 'سامانه راهنمای جامع فرآیندنما',
     icon: LayoutDashboard,
   };
 

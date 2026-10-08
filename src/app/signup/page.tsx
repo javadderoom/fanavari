@@ -73,7 +73,7 @@ export default function SignupPage() {
           </div>
           <div>
             <h1 className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>
-              ثبت‌نام در سامانه فناوری
+              ثبت‌نام در سامانه فرآیندنما
             </h1>
             <p className="text-xs text-slate-500">حساب شما پس از تأیید مشخصات تماس فعال می‌شود</p>
           </div>

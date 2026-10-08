@@ -31,13 +31,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const process = await getDbProcessBySlug(decodedSlug, { redactGrants: true });
-  if (!process) return { title: 'فرایند یافت نشد | سامانه فناوری' };
+  if (!process) return { title: 'فرایند یافت نشد | سامانه فرآیندنما' };
   // Archived processes are hidden from public routes (server components have
   // no access to the localStorage demo session, so gate unconditionally).
-  if (process.isPublished === false) return { title: 'فرایند یافت نشد | سامانه فناوری' };
+  if (process.isPublished === false) return { title: 'فرایند یافت نشد | سامانه فرآیندنما' };
 
   return {
-    title: `${process.title} | سامانه فناوری`,
+    title: `${process.title} | سامانه فرآیندنما`,
     description: process.description,
   };
 }

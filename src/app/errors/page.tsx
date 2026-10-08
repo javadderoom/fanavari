@@ -9,7 +9,7 @@ import type { Metadata } from 'next';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'بانک جامع خطایابی و عیب‌یابی فرایندها | سامانه فناوری',
+  title: 'بانک جامع خطایابی و عیب‌یابی فرایندها | سامانه فرآیندنما',
   description: 'فهرست کامل کدهای خطا، علل وقوع و راه‌حل‌های تست‌شده برای فرایندهای اداری و نرم‌افزاری',
 };
 

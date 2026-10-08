@@ -102,7 +102,7 @@ export function Navbar({ onSearchClick }: NavbarProps) {
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-xl font-black tracking-tight whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>
-                  فناوری
+                  فرآیندنما
                 </span>
                 <span 
                   className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider whitespace-nowrap"

@@ -69,7 +69,7 @@ export function FeaturesSection() {
           }}
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-          <span>چرا سامانه فناوری؟</span>
+          <span>چرا سامانه فرآیندنما؟</span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-black mb-3" style={{ color: 'var(--text-primary)' }}>
           پایان دوران مستندات خشک و سردرگمی در فرایندهای سازمانی

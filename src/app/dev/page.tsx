@@ -304,7 +304,7 @@ export default function DevDocsPage() {
                   <span>ENVIRONMENT: DEVELOPMENT • ROUTE: /dev</span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black" style={{ color: 'var(--text-primary)' }}>
-                  شناسنامه فنی، معماری و تصمیمات مهندسی سامانه فناوری
+                  شناسنامه فنی، معماری و تصمیمات مهندسی سامانه فرآیندنما
                 </h1>
                 <p className="text-sm sm:text-base font-medium leading-relaxed max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
                   مستندات شفاف تمام تکنولوژی‌های زیرساخت، کدنویسی، امنیت پیشرفته، داکر، پایگاه داده سازمانی و استدلال انتخاب هر فناوری.

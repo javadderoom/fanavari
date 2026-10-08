@@ -228,7 +228,7 @@ export function ProcessPrintView({ process, initialRun }: ProcessPrintViewProps)
                   <Workflow className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900">سامانه جامع فناوری و فرایندها</h3>
+                  <h3 className="text-base font-black text-slate-900">سامانه جامع فرآیندنما</h3>
                   <p className="text-xs text-slate-500 font-semibold mt-0.5">
                     {selectedRun 
                       ? 'گواهینامه رسمی انطباق فرایند و کارنامه ممیزی اجرایی (ISO 9001:2015)' 
@@ -755,7 +755,7 @@ export function ProcessPrintView({ process, initialRun }: ProcessPrintViewProps)
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-slate-500 pt-2 border-t border-slate-200">
               <p>این سند راهنما به‌صورت اختصاصی و جامع جهت اجرای دقیق مراحل تدوین شده است.</p>
-              <p className="font-bold text-slate-700">سامانه فناوری • نسخه چاپی رسمی</p>
+              <p className="font-bold text-slate-700">سامانه فرآیندنما • نسخه چاپی رسمی</p>
             </div>
           </div>
 

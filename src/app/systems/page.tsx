@@ -23,7 +23,7 @@ import type { Metadata } from 'next';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'بانک نرم‌افزارها و سامانه‌ها | سامانه فناوری',
+  title: 'بانک نرم‌افزارها و سامانه‌ها | سامانه فرآیندنما',
   description: 'دایرکتوری کامل نرم‌افزارهای کاربردی، ابزارهای مهندسی و پرتال‌های دولتی به همراه دستورالعمل‌های گام‌به‌گام',
 };
 

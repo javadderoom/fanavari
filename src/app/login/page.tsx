@@ -132,7 +132,7 @@ export default function LoginPage() {
           </div>
           <div>
             <h1 className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>
-              {stage === 'otp' ? 'تأیید دومرحله‌ای' : 'ورود به سامانه فناوری'}
+              {stage === 'otp' ? 'تأیید دومرحله‌ای' : 'ورود به سامانه فرآیندنما'}
             </h1>
             <p className="text-xs text-slate-500">
               {stage === 'otp'

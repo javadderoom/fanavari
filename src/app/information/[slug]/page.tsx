@@ -30,16 +30,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const post = await getDbInformationPostBySlug(decodedSlug, { redactGrants: true });
   if (!post) {
-    return { title: 'مطلب اطلاعاتی یافت نشد | سامانه فناوری' };
+    return { title: 'مطلب اطلاعاتی یافت نشد | سامانه فرآیندنما' };
   }
   // Drafts are privileged content — never render or describe them publicly
   // (server components cannot see the localStorage session, so gate fully).
   if (post.isPublished === false) {
-    return { title: 'مطلب اطلاعاتی یافت نشد | سامانه فناوری' };
+    return { title: 'مطلب اطلاعاتی یافت نشد | سامانه فرآیندنما' };
   }
 
   return {
-    title: `${post.title} | سامانه فناوری`,
+    title: `${post.title} | سامانه فرآیندنما`,
     description: post.summary || post.content.slice(0, 150),
   };
 }

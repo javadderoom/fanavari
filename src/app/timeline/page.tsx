@@ -10,7 +10,7 @@ import type { Metadata } from 'next';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'گاه‌شمار اجرایی و تقویم سالانه فرایندها | سامانه فناوری',
+  title: 'گاه‌شمار اجرایی و تقویم سالانه فرایندها | سامانه فرآیندنما',
   description: 'تقویم سالانه زمان‌بندی، مهلت‌های اداری و موعدهای مقرر اجرای فرایندها در سازمان‌ها و دستگاه‌های اجرایی',
 };
 

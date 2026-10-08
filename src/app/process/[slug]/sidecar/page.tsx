@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'فرایند یافت نشد | سایدکار همراه' };
 
   return {
-    title: `سایدکار همراه: ${process.title} | سامانه فناوری`,
+    title: `سایدکار همراه: ${process.title} | سامانه فرآیندنما`,
     description: `پنجره همراه و اجرای همزمان فرایند ${process.title} کنار نرم‌افزارهای سازمانی`,
   };
 }

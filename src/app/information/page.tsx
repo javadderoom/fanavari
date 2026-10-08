@@ -10,8 +10,8 @@ import type { Metadata } from 'next';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'پایگاه اطلاعات، بخشنامه‌ها و راهنماها | سامانه فناوری',
-  description: 'اطلاعیه‌های رسمی، بخشنامه‌های سازمانی، معرفی و آموزش سامانه‌ها، و مقالات پایگاه دانش فناوری',
+  title: 'پایگاه اطلاعات، بخشنامه‌ها و راهنماها | سامانه فرآیندنما',
+  description: 'اطلاعیه‌های رسمی، بخشنامه‌های سازمانی، معرفی و آموزش سامانه‌ها، و مقالات پایگاه دانش فرآیندنما',
 };
 
 export default async function InformationPage() {

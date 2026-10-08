@@ -33,7 +33,7 @@ export function Footer() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-base font-black" style={{ color: 'var(--text-primary)' }}>
-                  سامانه فناوری
+                  سامانه فرآیندنما
                 </span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                   سامانه برخط و پایدار
@@ -106,7 +106,7 @@ export function Footer() {
         <div className="mt-4 pt-4 border-t flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3"
           style={{ borderColor: 'var(--border-subtle)' }}
         >
-          <p>© {new Date().getFullYear()} سامانه فناوری. تمامی حقوق برای سازمان محفوظ است.</p>
+          <p>© {new Date().getFullYear()} سامانه فرآیندنما. تمامی حقوق برای سازمان محفوظ است.</p>
           <div className="flex items-center gap-1">
             <span>طراحی شده با دقت و زیبایی بصری</span>
             <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 inline mx-1" />

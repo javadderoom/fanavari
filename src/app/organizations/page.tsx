@@ -10,7 +10,7 @@ import type { Metadata } from 'next';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'دایرکتوری سازمان‌ها و ادارات | سامانه فناوری',
+  title: 'دایرکتوری سازمان‌ها و ادارات | سامانه فرآیندنما',
   description: 'فهرست سازمان‌ها، وزارتخانه‌ها و دپارتمان‌های سازمانی به تفکیک فرایندهای اجرایی و اداری',
 };
 

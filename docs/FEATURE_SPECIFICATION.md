@@ -1,7 +1,7 @@
-# Fanavari Platform: Comprehensive Feature Specification
+# Farayandnema (فرآیندنما) Platform: Comprehensive Feature Specification
 
 ## 1. Overview
-This specification details all functional capabilities, user experiences, and operational components of **Fanavari**—the Intelligent Visual SOP & Flowchart Navigation Platform. It unifies our proprietary innovations with top benchmark capabilities identified from global digital adoption and workflow tools, and incorporates the operational requirements established in the official platform circular (*"آپدیت مورد نیاز در فناوری"*).
+This specification details all functional capabilities, user experiences, and operational components of **Farayandnema (فرآیندنما)**—the Intelligent Visual SOP & Flowchart Navigation Platform. It unifies our proprietary innovations with top benchmark capabilities identified from global digital adoption and workflow tools, and incorporates the operational requirements established in the official platform circular (*"آپدیت مورد نیاز در فناوری"*).
 
 ### 1.1. Universal Scope: Organizational Procedures & Software Workflows
 The platform is designed to handle two fundamental classes of procedural knowledge:

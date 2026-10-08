@@ -155,7 +155,7 @@ export function AdminSidebar({ isOpenMobile = false, onCloseMobile }: AdminSideb
               </span>
             </div>
             <span className="text-[10px] text-slate-400 block font-medium">
-              سامانه یکپارچه فرایندهای فناوری
+              سامانه یکپارچه فرآیندنما
             </span>
           </div>
         </Link>
