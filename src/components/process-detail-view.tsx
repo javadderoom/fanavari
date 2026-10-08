@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Process, ProcessStep, WorkflowRun } from '@/types/process';
+import { Process, WorkflowRun } from '@/types/process';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ScratchpadDrawer } from './scratchpad-drawer';
@@ -29,7 +29,6 @@ import {
   Lightbulb, 
   Layers, 
   GitFork, 
-  CheckCircle,
   CheckCircle2, 
   ShieldAlert, 
   StickyNote, 
@@ -43,11 +42,6 @@ import {
   Building2,
   Workflow,
   Sparkles,
-  RotateCcw,
-  CheckSquare,
-  Square,
-  Trophy,
-  Play,
   Lock,
   Globe,
   Compass,
@@ -117,9 +111,8 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
   const [isSavedNotice, setIsSavedNotice] = useState(false);
   const [isScratchpadDrawerOpen, setIsScratchpadDrawerOpen] = useState(false);
 
-  // Live Step Completion & Runner State
+  // Live Step Completion State (checkboxes persist to localStorage)
   const [completedStepKeys, setCompletedStepKeys] = useState<string[]>([]);
-  const [showCelebration, setShowCelebration] = useState(false);
 
   // Auto-claim invite token if present in URL
   useEffect(() => {
@@ -182,24 +175,12 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
         const parsed = JSON.parse(savedProgress);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setCompletedStepKeys(parsed);
-          if (parsed.length === process.steps.length) {
-            setShowCelebration(true);
-          }
         }
       }
     } catch (e) {
       console.error('Error loading process session:', e);
     }
   }, [process.id, process.steps.length]);
-
-  const currentStep: ProcessStep | undefined = process.steps[activeStepIndex];
-
-  // Progress metrics
-  const completedCount = completedStepKeys.length;
-  const totalCount = process.steps.length;
-  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-  const isAllCompleted = totalCount > 0 && completedCount === totalCount;
-  const isCurrentStepCompleted = currentStep ? completedStepKeys.includes(currentStep.stepKey) : false;
 
   const logStepToActiveRun = async (stepKey: string, isCompleted: boolean, operatorNotes?: string) => {
     if (!activeRun) return;
@@ -306,13 +287,9 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
         next = [...prev, stepKey];
         notify.success('گام به عنوان انجام‌شده علامت‌گذاری شد ✓');
         logStepToActiveRun(stepKey, true, operatorNotes);
-        if (next.length === process.steps.length) {
-          setShowCelebration(true);
-          completeActiveRunIfDone(next.length);
-        }
+        completeActiveRunIfDone(next.length);
       } else {
         next = prev.filter((k) => k !== stepKey);
-        setShowCelebration(false);
         logStepToActiveRun(stepKey, false, operatorNotes);
       }
       try {
@@ -330,8 +307,6 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
     }
     if (activeStepIndex < process.steps.length - 1) {
       setActiveStepIndex((prev) => prev + 1);
-    } else {
-      setShowCelebration(true);
     }
   };
 
@@ -349,19 +324,8 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
         localStorage.removeItem(`fanavari-completed-${process.id}`);
       } catch (e) {}
       setActiveStepIndex(0);
-      setShowCelebration(false);
       notify.success('پیشرفت فرایند با موفقیت بازنشانی شد.');
     }
-  };
-
-  const handleMarkAllCompleted = () => {
-    const allKeys = process.steps.map((s) => s.stepKey);
-    setCompletedStepKeys(allKeys);
-    try {
-      localStorage.setItem(`fanavari-completed-${process.id}`, JSON.stringify(allKeys));
-    } catch (e) {}
-    setShowCelebration(true);
-    notify.success('تمامی مراحل انجام‌شده علامت‌گذاری شدند.');
   };
 
   const handleCopy = (text: string, label: string) => {
@@ -534,84 +498,6 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
       {/* Tab 1: Flowchart & Step Walkthrough (Interactive Process Runner Mode) */}
       {activeTab === 'flow' && (
         <div className="space-y-6">
-          {/* Live Progress Bar & Execution Controller */}
-          <div 
-            className="p-4 sm:p-5 rounded-3xl border shadow-md transition-all"
-            style={{ 
-              background: isAllCompleted 
-                ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), var(--bg-glass-card))' 
-                : 'var(--bg-glass-card)', 
-              borderColor: isAllCompleted ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-glass)' 
-            }}
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-              <div className="flex items-center gap-3">
-                <div 
-                  className={`w-9 h-9 rounded-2xl flex items-center justify-center font-bold text-xs transition-transform shadow-sm ${
-                    isAllCompleted 
-                      ? 'bg-emerald-500 text-white scale-105' 
-                      : 'bg-blue-600 text-white'
-                  }`}
-                >
-                  {isAllCompleted ? <CheckCircle className="w-5 h-5" /> : <Play className="w-4 h-4" />}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>
-                      حالت اجرای زنده فرایند (Process Runner)
-                    </span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                      isAllCompleted 
-                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
-                        : completedCount > 0 
-                        ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' 
-                        : 'bg-slate-500/10 text-slate-500 border-slate-500/20'
-                    }`}>
-                      {isAllCompleted ? 'تکمیل شد ✓' : completedCount > 0 ? 'در حال اجرا' : 'آماده شروع'}
-                    </span>
-                  </div>
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    {completedCount} از {totalCount} مرحله انجام شده است ({progressPercent}٪ پیشرفت)
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
-                {completedCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleResetProgress}
-                    className="px-3 py-1.5 rounded-xl border text-xs font-bold text-slate-500 hover:text-rose-600 hover:border-rose-300 transition-colors cursor-pointer flex items-center gap-1.5"
-                    style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-surface)' }}
-                    title="پاک کردن تیک‌های انجام شده و شروع از گام اول"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>تنظیم مجدد</span>
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={handleMarkAllCompleted}
-                  className="px-3 py-1.5 rounded-xl border text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 transition-colors cursor-pointer flex items-center gap-1.5"
-                  style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-surface)' }}
-                  title="علامت‌گذاری تمامی مراحل به عنوان انجام‌شده"
-                >
-                  <CheckSquare className="w-3.5 h-3.5" />
-                  <span>تکمیل همه</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Dynamic Progress Bar Track */}
-            <div className="w-full h-2.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800 p-0.5">
-              <div
-                className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-500 shadow-xs"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-          </div>
-
           {/* View Mode Switcher: Flowchart Canvas vs Step Runner */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 rounded-2xl border bg-slate-100/80 dark:bg-slate-900/80 backdrop-blur-md" style={{ borderColor: 'var(--border-subtle)' }}>
             <div className="flex items-center gap-1.5">
@@ -668,12 +554,9 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
               steps={process.steps}
               activeStepIndex={activeStepIndex}
               completedStepKeys={completedStepKeys}
-              showCelebration={showCelebration}
               onSelectStep={(idx) => setActiveStepIndex(idx)}
               onToggleStepComplete={(stepKey, notes) => toggleStepCompleted(stepKey, notes)}
               onCompleteAndNext={(stepKey, notes) => handleCompleteAndNext(stepKey, notes)}
-              onResetProgress={handleResetProgress}
-              processSlug={process.slug}
               copiedField={copiedField}
               onCopyField={handleCopy}
               activeRun={activeRun}

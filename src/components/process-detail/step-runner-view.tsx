@@ -16,9 +16,6 @@ import {
   GitFork, 
   AlertTriangle, 
   Layers, 
-  Trophy, 
-  Printer, 
-  RotateCcw, 
   Square, 
   Copy, 
   Lightbulb, 
@@ -37,12 +34,9 @@ interface StepRunnerViewProps {
   steps: ProcessStep[];
   activeStepIndex: number;
   completedStepKeys: string[];
-  showCelebration: boolean;
   onSelectStep: (index: number) => void;
   onToggleStepComplete: (stepKey: string, operatorNotes?: string) => void;
   onCompleteAndNext: (stepKey: string, operatorNotes?: string) => void;
-  onResetProgress: () => void;
-  processSlug: string;
   copiedField: string | null;
   onCopyField: (text: string, label: string) => void;
   activeRun?: WorkflowRun | null;
@@ -55,12 +49,9 @@ export function StepRunnerView({
   steps,
   activeStepIndex,
   completedStepKeys,
-  showCelebration,
   onSelectStep,
   onToggleStepComplete,
   onCompleteAndNext,
-  onResetProgress,
-  processSlug,
   copiedField,
   onCopyField,
   activeRun,
@@ -280,41 +271,6 @@ export function StepRunnerView({
           })}
         </div>
       </div>
-
-      {/* Process Completion Celebration Card */}
-      {showCelebration && (
-        <div className="p-6 sm:p-8 rounded-3xl border-2 border-emerald-500/40 bg-emerald-500/10 text-emerald-950 dark:text-emerald-100 backdrop-blur-xl animate-in zoom-in-95 text-center space-y-4 shadow-xl">
-          <div className="w-16 h-16 rounded-3xl bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/30">
-            <Trophy className="w-8 h-8 animate-bounce" />
-          </div>
-          <div>
-            <h3 className="text-xl sm:text-2xl font-black">
-              تمامی مراحل فرایند با موفقیت انجام شد!
-            </h3>
-            <p className="text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 mt-1 max-w-md mx-auto">
-              تبریک! تمام {steps.length} گام اجرایی این فرایند با موفقیت سپری شد.
-            </p>
-          </div>
-          <div className="flex items-center justify-center gap-3 pt-2 flex-wrap">
-            <Link
-              href={activeRun ? `/process/${processSlug}/print?runId=${activeRun.id}` : `/process/${processSlug}/print`}
-              target="_blank"
-              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-emerald-400 text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 shadow-sm hover:scale-105 transition-all"
-            >
-              <Printer className="w-4 h-4" />
-              <span>چاپ تاییدیه و خروجی PDF</span>
-            </Link>
-            <button
-              type="button"
-              onClick={onResetProgress}
-              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-1.5 shadow-sm hover:scale-105 transition-all cursor-pointer"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>شروع دوباره فرایند</span>
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Active Step Dedicated Card */}
       {currentStep && (
