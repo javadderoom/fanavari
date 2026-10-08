@@ -246,8 +246,10 @@ export function AdminSidebar({ isOpenMobile = false, onCloseMobile }: AdminSideb
       {/* Bottom Footer Actions */}
       <div className="p-3 border-t space-y-2 mt-auto" style={{ borderColor: 'var(--border-subtle)' }}>
         {/* Switcher & Theme */}
-        <div className="flex items-center justify-between px-1">
-          <UserSwitcher />
+        <div className="flex items-center justify-between gap-2 px-1">
+          <div className="min-w-0 flex-1">
+            <UserSwitcher dropdownAlign="right" dropdownDirection="up" compact />
+          </div>
           <ThemeToggle />
         </div>
 

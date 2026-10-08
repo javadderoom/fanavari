@@ -5,16 +5,40 @@ import Link from 'next/link';
 import { useUserSession, DEMO_USERS } from './user-session-provider';
 import { Shield, ShieldAlert, User, ChevronDown, Check, Sparkles, LogOut, Settings } from 'lucide-react';
 
-export function UserSwitcher() {
+export function UserSwitcher({
+  dropdownAlign = 'left',
+  dropdownDirection = 'down',
+  compact = false,
+}: {
+  /** Which edge of the trigger the menu aligns to. */
+  dropdownAlign?: 'left' | 'right';
+  /** Whether the menu opens below ('down') or above ('up', for footers) the trigger. */
+  dropdownDirection?: 'down' | 'up';
+  /** Slim trigger (avatar + name only) for tight slots like the sidebar footer. */
+  compact?: boolean;
+} = {}) {
   const { currentUser, switchUser, isSuperAdmin, isAuthenticated, isDemoMode, logout } = useUserSession();
   const [isOpen, setIsOpen] = useState(false);
+
+  // No user at all (logged out, demo off): a login button, not a fake persona.
+  if (!isAuthenticated && !isDemoMode) {
+    return (
+      <Link
+        href="/login"
+        className="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all hover:scale-105 whitespace-nowrap"
+      >
+        <User className="w-3.5 h-3.5" />
+        <span>ورود / ثبت‌نام</span>
+      </Link>
+    );
+  }
 
   return (
     <div className="relative">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer hover:scale-105"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer hover:scale-105 min-w-0 max-w-full"
         style={{
           background: 'var(--bg-glass-card)',
           borderColor: isSuperAdmin ? 'rgba(239, 68, 68, 0.4)' : 'var(--border-glass)',
@@ -22,7 +46,7 @@ export function UserSwitcher() {
         }}
         title="تغییر حساب کاربری و سطح دسترسی سازمانی"
       >
-        <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-slate-200 dark:bg-slate-700">
+        <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-slate-200 dark:bg-slate-700 shrink-0">
           {isSuperAdmin ? (
             <Shield className="w-3 h-3 text-rose-500 fill-rose-500" />
           ) : (
@@ -30,26 +54,30 @@ export function UserSwitcher() {
           )}
         </div>
 
-        <span className="hidden sm:inline font-bold whitespace-nowrap">
+        <span className="hidden sm:inline font-bold whitespace-nowrap truncate min-w-0">
           {currentUser.name.split(' ')[0]}
         </span>
 
-        <span className="text-[10px] px-1.5 py-0.5 rounded-md font-mono whitespace-nowrap"
-          style={{
-            background: isSuperAdmin ? 'var(--badge-rose-bg)' : 'var(--accent-soft)',
-            color: isSuperAdmin ? 'var(--badge-rose-text)' : 'var(--accent-primary)',
-          }}
-        >
-          {isSuperAdmin ? '👑 Admin' : currentUser.roleName}
-        </span>
+        {!compact && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded-md font-mono whitespace-nowrap shrink-0"
+            style={{
+              background: isSuperAdmin ? 'var(--badge-rose-bg)' : 'var(--accent-soft)',
+              color: isSuperAdmin ? 'var(--badge-rose-text)' : 'var(--accent-primary)',
+            }}
+          >
+            {isSuperAdmin ? '👑 Admin' : currentUser.roleName}
+          </span>
+        )}
 
-        <ChevronDown className="w-3 h-3 text-slate-400" />
+        <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Dropdown Menu (kept inside the viewport via align/direction props) */}
       {isOpen && (
         <div
-          className="absolute left-0 mt-2 w-72 rounded-2xl glass-panel-strong shadow-2xl p-2 z-50 border animate-in fade-in zoom-in-95"
+          className={`absolute ${dropdownAlign === 'right' ? 'right-0' : 'left-0'} ${
+            dropdownDirection === 'up' ? 'bottom-full mb-2' : 'mt-2'
+          } w-72 max-w-[calc(100vw-2rem)] rounded-2xl glass-panel-strong shadow-2xl p-2 z-50 border animate-in fade-in zoom-in-95 max-h-[70vh] overflow-y-auto`}
           style={{ borderColor: 'var(--border-glass)' }}
           onMouseLeave={() => setIsOpen(false)}
         >
