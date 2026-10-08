@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useUserSession } from '@/components/user-session-provider';
 import { Permissions } from '@/lib/permissions';
 import { InformationEditorModal } from '@/components/information-editor-modal';
+import { DeleteImpactDialog } from '@/components/delete-impact-dialog';
 import { InformationPost, OrganizationEntity, SystemTool } from '@/types/process';
 import { notify } from '@/lib/notify';
 import { 
@@ -38,6 +39,14 @@ export default function DashboardInformationPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [postToEdit, setPostToEdit] = useState<InformationPost | null>(null);
+
+  // Delete-impact preview state
+  const [impactPost, setImpactPost] = useState<InformationPost | null>(null);
+  const [impactCounts, setImpactCounts] = useState<{
+    accessGrants: number;
+  } | null>(null);
+  const [isImpactLoading, setIsImpactLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const canManage = can(Permissions.MANAGE_INFORMATION) || can(Permissions.MANAGE_CATEGORIES) || isSuperAdmin;
 
@@ -99,16 +108,38 @@ export default function DashboardInformationPage() {
   };
 
   const handleDelete = async (post: InformationPost) => {
-    const confirmed = await notify.confirm({
-      title: 'حذف مطلب / اطلاعیه از سامانه',
-      message: `آیا از حذف «${post.title}» اطمینان کامل دارید؟ این عمل غیرقابل بازگشت است.`,
-      confirmText: 'بله، حذف شود',
-      cancelText: 'انصراف',
-      isDestructive: true,
-    });
+    // Step 1: open the impact preview and load live relation counts.
+    setImpactPost(post);
+    setImpactCounts(null);
+    setIsImpactLoading(true);
+    try {
+      const res = await fetch(
+        `/api/information/impact?id=${post.id || ''}&slug=${post.slug}`,
+        {
+          headers: {
+            'x-user-permissions': String(currentUser.permissions),
+          },
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'خطا در بررسی وابستگی‌ها');
+      }
+      const data = await res.json();
+      setImpactCounts(data.impact || null);
+    } catch (err: any) {
+      console.error('Error loading delete impact:', err);
+      notify.error(err.message || 'خطا در بررسی وابستگی‌های مطلب.');
+      setImpactPost(null);
+    } finally {
+      setIsImpactLoading(false);
+    }
+  };
 
-    if (!confirmed) return;
-
+  const handleConfirmDelete = async () => {
+    if (!impactPost) return;
+    const post = impactPost;
+    setIsDeleting(true);
     try {
       const res = await fetch(`/api/information?id=${post.id || ''}&slug=${post.slug}`, {
         method: 'DELETE',
@@ -123,10 +154,14 @@ export default function DashboardInformationPage() {
       }
 
       setPosts((prev) => prev.filter((p) => p.slug !== post.slug && p.id !== post.id));
+      setImpactPost(null);
+      setImpactCounts(null);
       notify.success(`مطلب «${post.title}» با موفقیت حذف گردید.`);
     } catch (err: any) {
       console.error('Error deleting post:', err);
       notify.error(err.message || 'خطا در حذف مطلب.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -468,6 +503,31 @@ export default function DashboardInformationPage() {
           notify.success('مطلب با موفقیت ذخیره شد.');
         }}
       />
+
+      {/* Delete impact preview: access grants are permanently destroyed */}
+      {impactPost && (
+        <DeleteImpactDialog
+          isOpen={Boolean(impactPost)}
+          entityKindLabel="مطلب"
+          entityName={impactPost.title}
+          survivors={[]}
+          destroyed={[
+            {
+              label: 'مجوزهای دسترسی این مطلب',
+              count: impactCounts?.accessGrants ?? 0,
+              hint: 'سطح دسترسی کاربران به این مطلب از بین می‌رود',
+            },
+          ]}
+          isLoading={isImpactLoading}
+          isConfirming={isDeleting}
+          onCancel={() => {
+            if (isDeleting) return;
+            setImpactPost(null);
+            setImpactCounts(null);
+          }}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
     </div>
   );
 }

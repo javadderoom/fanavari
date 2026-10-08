@@ -27,7 +27,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const process = await getDbProcessBySlug(decodedSlug);
-  if (!process) return { title: 'فرایند یافت نشد | سایدکار همراه' };
+  if (!process || process.isPublished === false)
+    return { title: 'فرایند یافت نشد | سایدکار همراه' };
 
   return {
     title: `سایدکار همراه: ${process.title} | سامانه فناوری`,
@@ -46,7 +47,7 @@ export default async function ProcessSidecarPage({ params }: Props) {
 
   const process = await getDbProcessBySlug(decodedSlug);
 
-  if (!process) {
+  if (!process || process.isPublished === false) {
     notFound();
   }
 

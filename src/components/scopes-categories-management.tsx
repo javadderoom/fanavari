@@ -7,6 +7,7 @@ import {
 } from '@/types/process';
 import { useUserSession } from './user-session-provider';
 import { Permissions } from '@/lib/permissions';
+import { TaxonomyReassignDialog } from './taxonomy-reassign-dialog';
 import { notify } from '@/lib/notify';
 import { 
   FolderTree, 
@@ -54,6 +55,23 @@ export function ScopesCategoriesManagement() {
   const [catDesc, setCatDesc] = useState('');
   const [catScopeId, setCatScopeId] = useState<string>('all'); // 'all' = null (Global)
   const [isSavingCat, setIsSavingCat] = useState(false);
+
+  // Scope delete-with-reassignment state
+  const [scopeTarget, setScopeTarget] = useState<ProcessScopeEntity | null>(null);
+  const [scopeImpact, setScopeImpact] = useState<{
+    processesUsingKey: number;
+    exclusiveCategories: { id: string; key: string; name: string }[];
+  } | null>(null);
+  const [scopeReplacement, setScopeReplacement] = useState('');
+  const [isScopeImpactLoading, setIsScopeImpactLoading] = useState(false);
+  const [isScopeDeleting, setIsScopeDeleting] = useState(false);
+
+  // Category delete-with-reassignment state
+  const [catTarget, setCatTarget] = useState<ProcessCategoryEntity | null>(null);
+  const [catImpact, setCatImpact] = useState<{ processesUsingKey: number } | null>(null);
+  const [catReplacement, setCatReplacement] = useState('');
+  const [isCatImpactLoading, setIsCatImpactLoading] = useState(false);
+  const [isCatDeleting, setIsCatDeleting] = useState(false);
 
   // Fetch all scopes and categories from API
   const fetchData = async () => {
@@ -162,31 +180,60 @@ export function ScopesCategoriesManagement() {
   };
 
   const handleDeleteScope = async (s: ProcessScopeEntity) => {
-    const confirmed = await notify.confirm({
-      title: 'حذف حوزه و ماهیت فرایند',
-      message: `آیا از حذف حوزه «${s.name}» اطمینان دارید؟ تمامی دسته‌بندی‌های اختصاصی این حوزه نیز حذف خواهند شد. فرایندهای مرتبط با این حوزه دسته‌بندی خود را حفظ می‌کنند.`,
-      confirmText: 'بله، حذف شود',
-      cancelText: 'انصراف',
-      isDestructive: true,
-    });
-
-    if (!confirmed) return;
-
+    // Step 1: open the reassign dialog and load live impact.
+    setScopeTarget(s);
+    setScopeImpact(null);
+    setScopeReplacement('');
+    setIsScopeImpactLoading(true);
     try {
-      const res = await fetch(`/api/scopes?id=${s.id}`, {
-        method: 'DELETE',
+      const res = await fetch(`/api/scopes/impact?id=${s.id}`, {
         headers: {
           'x-user-permissions': String(currentUser.permissions),
         },
       });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'خطا در بررسی وابستگی‌ها');
+      setScopeImpact(data.impact || { processesUsingKey: 0, exclusiveCategories: [] });
+    } catch (err: any) {
+      console.error('Error loading scope delete impact:', err);
+      notify.error(err.message || 'خطا در بررسی وابستگی‌های حوزه');
+      setScopeTarget(null);
+    } finally {
+      setIsScopeImpactLoading(false);
+    }
+  };
 
-      const data = await res.json();
+  const handleConfirmDeleteScope = async () => {
+    if (!scopeTarget) return;
+    setIsScopeDeleting(true);
+    try {
+      // Single transactional endpoint: remaps processes, moves exclusive
+      // categories, then deletes — or plain-deletes when nothing is affected.
+      const res = await fetch('/api/scopes/reassign-delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-permissions': String(currentUser.permissions),
+        },
+        body: JSON.stringify({
+          id: scopeTarget.id,
+          replacementScopeId: scopeReplacement || undefined,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'خطا در حذف حوزه');
 
       notify.success(data.message || 'حوزه با موفقیت حذف شد.');
+      setScopeTarget(null);
+      setScopeImpact(null);
+      setScopeReplacement('');
       fetchData();
     } catch (err: any) {
+      console.error('Error deleting scope:', err);
       notify.error(err.message || 'خطا در حذف حوزه');
+    } finally {
+      setIsScopeDeleting(false);
     }
   };
 
@@ -255,31 +302,69 @@ export function ScopesCategoriesManagement() {
   };
 
   const handleDeleteCategory = async (c: ProcessCategoryEntity) => {
-    const confirmed = await notify.confirm({
-      title: 'حذف دسته‌بندی موضوعی',
-      message: `آیا از حذف دسته‌بندی «${c.name}» اطمینان دارید؟`,
-      confirmText: 'بله، حذف شود',
-      cancelText: 'انصراف',
-      isDestructive: true,
-    });
-
-    if (!confirmed) return;
-
+    // Step 1: open the reassign dialog and load live impact.
+    setCatTarget(c);
+    setCatImpact(null);
+    setCatReplacement('');
+    setIsCatImpactLoading(true);
     try {
-      const res = await fetch(`/api/categories?id=${c.id}`, {
+      const res = await fetch(`/api/categories/impact?id=${c.id}`, {
+        headers: {
+          'x-user-permissions': String(currentUser.permissions),
+        },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'خطا در بررسی وابستگی‌ها');
+      setCatImpact(data.impact || { processesUsingKey: 0 });
+    } catch (err: any) {
+      console.error('Error loading category delete impact:', err);
+      notify.error(err.message || 'خطا در بررسی وابستگی‌های دسته‌بندی');
+      setCatTarget(null);
+    } finally {
+      setIsCatImpactLoading(false);
+    }
+  };
+
+  const handleConfirmDeleteCategory = async () => {
+    if (!catTarget) return;
+    setIsCatDeleting(true);
+    try {
+      // Remap processes first so no process keeps a dangling category key,
+      // then delete the category itself.
+      if ((catImpact?.processesUsingKey || 0) > 0) {
+        if (!catReplacement) throw new Error('برای انتقال فرایندها، دسته‌بندی جایگزین انتخاب کنید.');
+        const reRes = await fetch('/api/categories/reassign', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-permissions': String(currentUser.permissions),
+          },
+          body: JSON.stringify({ fromKey: catTarget.key, toKey: catReplacement }),
+        });
+        const reData = await reRes.json().catch(() => ({}));
+        if (!reRes.ok) throw new Error(reData.error || 'خطا در انتقال فرایندها');
+      }
+
+      const res = await fetch(`/api/categories?id=${catTarget.id}`, {
         method: 'DELETE',
         headers: {
           'x-user-permissions': String(currentUser.permissions),
         },
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'خطا در حذف دسته‌بندی');
 
       notify.success(data.message || 'دسته‌بندی با موفقیت حذف شد.');
+      setCatTarget(null);
+      setCatImpact(null);
+      setCatReplacement('');
       fetchData();
     } catch (err: any) {
+      console.error('Error deleting category:', err);
       notify.error(err.message || 'خطا در حذف دسته‌بندی');
+    } finally {
+      setIsCatDeleting(false);
     }
   };
 
@@ -786,6 +871,61 @@ export function ScopesCategoriesManagement() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Scope delete with reassignment */}
+      {scopeTarget && (
+        <TaxonomyReassignDialog
+          isOpen={Boolean(scopeTarget)}
+          kind="scope"
+          name={scopeTarget.name}
+          processesCount={scopeImpact?.processesUsingKey ?? 0}
+          movedCount={scopeImpact?.exclusiveCategories.length ?? 0}
+          replacementLabel="حوزه جایگزین برای انتقال فرایندها و دسته‌بندی‌ها"
+          replacementOptions={scopes
+            .filter((s) => s.id !== scopeTarget.id)
+            .map((s) => ({ value: s.id, label: s.name, hint: s.key }))}
+          replacement={scopeReplacement}
+          onReplacementChange={setScopeReplacement}
+          isLoading={isScopeImpactLoading}
+          isWorking={isScopeDeleting}
+          onCancel={() => {
+            if (isScopeDeleting) return;
+            setScopeTarget(null);
+            setScopeImpact(null);
+            setScopeReplacement('');
+          }}
+          onConfirm={handleConfirmDeleteScope}
+        />
+      )}
+
+      {/* Category delete with reassignment */}
+      {catTarget && (
+        <TaxonomyReassignDialog
+          isOpen={Boolean(catTarget)}
+          kind="category"
+          name={catTarget.name}
+          processesCount={catImpact?.processesUsingKey ?? 0}
+          replacementLabel="دسته‌بندی جایگزین برای انتقال فرایندها"
+          replacementOptions={categories
+            .filter((c) => c.id !== catTarget.id)
+            .map((c) => ({
+              value: c.key,
+              label: c.name,
+              hint: c.scopeName || (c.scopeId ? undefined : 'عمومی'),
+            }))}
+          replacement={catReplacement}
+          onReplacementChange={setCatReplacement}
+          isLoading={isCatImpactLoading}
+          isWorking={isCatDeleting}
+          onCancel={() => {
+            if (isCatDeleting) return;
+            setCatTarget(null);
+            setCatImpact(null);
+            setCatReplacement('');
+          }}
+          onConfirm={handleConfirmDeleteCategory}
+        />
       )}
     </div>
   );

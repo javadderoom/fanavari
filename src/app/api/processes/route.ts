@@ -23,6 +23,25 @@ export async function GET(req: NextRequest) {
 
     const isSuperAdmin = hasPermission(userPermissions, Permissions.ADMINISTRATOR);
 
+    // Archive filter: isPublished=false means archived (hidden from public catalog).
+    // ?status=archived | ?isPublished=false -> only archived
+    // ?status=all | ?includeArchived=true -> everything (dashboard use)
+    // default (?status=published or no param) -> only published
+    const statusParam = searchParams.get('status');
+    const isPublishedParam = searchParams.get('isPublished');
+    const includeArchived =
+      statusParam === 'all' ||
+      searchParams.get('includeArchived') === 'true' ||
+      searchParams.get('includeArchived') === '1';
+    let publishedFilter: Record<string, unknown> = { isPublished: true };
+    if (statusParam === 'archived' || isPublishedParam === 'false') {
+      publishedFilter = { isPublished: false };
+    } else if (includeArchived) {
+      publishedFilter = {};
+    } else if (statusParam === 'published' || isPublishedParam === 'true') {
+      publishedFilter = { isPublished: true };
+    }
+
     // Multi-Audience Zero-Leak ACL Filter:
     // If not super admin, non-public processes are completely hidden unless user matches any target grant
     const aclFilter = isSuperAdmin
@@ -41,6 +60,7 @@ export async function GET(req: NextRequest) {
       where: {
         AND: [
           scope ? { scope } : {},
+          publishedFilter,
           aclFilter,
           query
             ? {
@@ -58,6 +78,9 @@ export async function GET(req: NextRequest) {
           orderBy: { orderIndex: 'asc' },
           include: {
             errorGuides: true,
+            subProcess: {
+              select: { id: true, slug: true, title: true, isPublished: true },
+            },
           },
         },
         department: true,
@@ -111,6 +134,7 @@ export async function POST(req: NextRequest) {
       estimatedMinutes,
       steps,
       schedule,
+      isPublished,
     } = body;
     const currentUserId = req.headers.get('x-user-id');
 
@@ -222,6 +246,7 @@ export async function POST(req: NextRequest) {
             targetUrl: targetUrl !== undefined ? (targetUrl?.trim() || null) : existingProcess.targetUrl,
             estimatedMinutes: Number(estimatedMinutes) || existingProcess.estimatedMinutes,
             schedule: schedule !== undefined ? schedule : existingProcess.schedule,
+            ...(isPublished !== undefined ? { isPublished: Boolean(isPublished) } : {}),
             steps: {
               create: sanitizedSteps,
             },
@@ -229,7 +254,12 @@ export async function POST(req: NextRequest) {
           include: {
             steps: {
               orderBy: { orderIndex: 'asc' },
-              include: { errorGuides: true },
+              include: {
+                errorGuides: true,
+                subProcess: {
+                  select: { id: true, slug: true, title: true, isPublished: true },
+                },
+              },
             },
             department: true,
             systemTool: true,
@@ -265,6 +295,7 @@ export async function POST(req: NextRequest) {
         targetUrl: targetUrl?.trim() || null,
         estimatedMinutes: Number(estimatedMinutes) || 10,
         schedule: schedule || null,
+        ...(isPublished !== undefined ? { isPublished: Boolean(isPublished) } : {}),
         steps: {
           create: sanitizedSteps,
         },
@@ -272,7 +303,12 @@ export async function POST(req: NextRequest) {
       include: {
         steps: {
           orderBy: { orderIndex: 'asc' },
-          include: { errorGuides: true },
+          include: {
+            errorGuides: true,
+            subProcess: {
+              select: { id: true, slug: true, title: true, isPublished: true },
+            },
+          },
         },
         department: true,
         systemTool: true,

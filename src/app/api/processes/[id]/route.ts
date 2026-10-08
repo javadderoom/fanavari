@@ -32,6 +32,9 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
           orderBy: { orderIndex: 'asc' },
           include: {
             errorGuides: true,
+            subProcess: {
+              select: { id: true, slug: true, title: true, isPublished: true },
+            },
           },
         },
         department: true,
@@ -47,6 +50,18 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
 
     if (!process) {
       return NextResponse.json({ error: 'فرایند یافت نشد' }, { status: 404 });
+    }
+
+    // Archived processes (isPublished=false) are invisible to non-admins:
+    // return 404 (not 403) so their existence is not leaked. Users with
+    // EDIT_PROCESSES / ADMINISTRATOR can still fetch for preview & restore.
+    if (process.isPublished === false) {
+      const canManage =
+        hasPermission(userPermissions, Permissions.EDIT_PROCESSES) ||
+        hasPermission(userPermissions, Permissions.ADMINISTRATOR);
+      if (!canManage) {
+        return NextResponse.json({ error: 'فرایند یافت نشد' }, { status: 404 });
+      }
     }
 
     // Access control check for restricted processes
@@ -86,7 +101,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const { title, description, scope, category, visibility, targetSystem, targetUrl, estimatedMinutes, schedule } = body;
+    const { title, description, scope, category, visibility, targetSystem, targetUrl, estimatedMinutes, schedule, isPublished } = body;
 
     const updated = await prisma.process.update({
       where: { id },
@@ -96,6 +111,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
         scope,
         category,
         ...(visibility ? { visibility } : {}),
+        ...(isPublished !== undefined ? { isPublished: Boolean(isPublished) } : {}),
         targetSystem,
         targetUrl,
         estimatedMinutes: Number(estimatedMinutes) || 10,
@@ -104,7 +120,12 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       include: {
         steps: {
           orderBy: { orderIndex: 'asc' },
-          include: { errorGuides: true },
+          include: {
+            errorGuides: true,
+            subProcess: {
+              select: { id: true, slug: true, title: true, isPublished: true },
+            },
+          },
         },
         department: true,
         systemTool: true,

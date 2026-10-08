@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useUserSession } from '@/components/user-session-provider';
 import { Permissions } from '@/lib/permissions';
 import { DepartmentEditorModal } from '@/components/department-editor-modal';
+import { DeleteImpactDialog } from '@/components/delete-impact-dialog';
 import { OrganizationEntity } from '@/types/process';
 import { notify } from '@/lib/notify';
 import { 
@@ -27,6 +28,18 @@ export default function DashboardOrganizationsPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deptToEdit, setDeptToEdit] = useState<OrganizationEntity | null>(null);
+
+  // Delete-impact preview state
+  const [impactDept, setImpactDept] = useState<OrganizationEntity | null>(null);
+  const [impactCounts, setImpactCounts] = useState<{
+    processes: number;
+    informationPosts: number;
+    users: number;
+    processGrants: number;
+    infoGrants: number;
+  } | null>(null);
+  const [isImpactLoading, setIsImpactLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const canManage = can(Permissions.MANAGE_CATEGORIES) || isSuperAdmin;
 
@@ -69,20 +82,38 @@ export default function DashboardOrganizationsPage() {
   };
 
   const handleDelete = async (dept: OrganizationEntity) => {
-    const confirmed = await notify.confirm({
-      title: 'حذف سازمان از پایگاه داده',
-      message: `آیا از حذف سازمان «${dept.name}» اطمینان کامل دارید؟ ${
-        dept.processCount > 0
-          ? `این سازمان در حال حاضر به ${dept.processCount} فرایند متصل است. در صورت حذف، فرایندها بدون سازمان متولی باقی خواهند ماند.`
-          : ''
-      }`,
-      confirmText: 'بله، حذف شود',
-      cancelText: 'انصراف',
-      isDestructive: true,
-    });
+    // Step 1: open the impact preview and load live relation counts.
+    setImpactDept(dept);
+    setImpactCounts(null);
+    setIsImpactLoading(true);
+    try {
+      const res = await fetch(
+        `/api/departments/impact?id=${dept.id || ''}&slug=${dept.slug}`,
+        {
+          headers: {
+            'x-user-permissions': String(currentUser.permissions),
+          },
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'خطا در بررسی وابستگی‌ها');
+      }
+      const data = await res.json();
+      setImpactCounts(data.impact || null);
+    } catch (err: any) {
+      console.error('Error loading delete impact:', err);
+      notify.error(err.message || 'خطا در بررسی وابستگی‌های سازمان.');
+      setImpactDept(null);
+    } finally {
+      setIsImpactLoading(false);
+    }
+  };
 
-    if (!confirmed) return;
-
+  const handleConfirmDelete = async () => {
+    if (!impactDept) return;
+    const dept = impactDept;
+    setIsDeleting(true);
     try {
       const res = await fetch(`/api/departments?id=${dept.id || ''}&slug=${dept.slug}`, {
         method: 'DELETE',
@@ -97,10 +128,14 @@ export default function DashboardOrganizationsPage() {
       }
 
       setDepartments((prev) => prev.filter((d) => d.slug !== dept.slug && d.id !== dept.id));
+      setImpactDept(null);
+      setImpactCounts(null);
       notify.success(`سازمان «${dept.name}» با موفقیت از پایگاه داده حذف گردید.`);
     } catch (err: any) {
       console.error('Error deleting department:', err);
       notify.error(err.message || 'خطا در حذف سازمان.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -289,6 +324,52 @@ export default function DashboardOrganizationsPage() {
           notify.success('سازمان با موفقیت ذخیره شد.');
         }}
       />
+
+      {/* Delete impact preview: what breaks vs what is destroyed */}
+      {impactDept && (
+        <DeleteImpactDialog
+          isOpen={Boolean(impactDept)}
+          entityKindLabel="سازمان"
+          entityName={impactDept.name}
+          survivors={[
+            {
+              label: 'فرایندهای متصل',
+              count: impactCounts?.processes ?? 0,
+              hint: 'حفظ می‌شوند ولی بدون سازمان متولی می‌مانند',
+            },
+            {
+              label: 'اطلاعیه‌ها و بخشنامه‌های متصل',
+              count: impactCounts?.informationPosts ?? 0,
+              hint: 'حفظ می‌شوند ولی ارتباط سازمانی‌شان قطع می‌شود',
+            },
+            {
+              label: 'کاربران عضو این سازمان',
+              count: impactCounts?.users ?? 0,
+              hint: 'حفظ می‌شوند ولی عضویت سازمانی‌شان لغو می‌شود',
+            },
+          ]}
+          destroyed={[
+            {
+              label: 'مجوزهای دسترسی فرایندها',
+              count: impactCounts?.processGrants ?? 0,
+              hint: 'سطح دسترسی کاربران به فرایندهای محدود از بین می‌رود',
+            },
+            {
+              label: 'مجوزهای دسترسی اطلاعیه‌ها',
+              count: impactCounts?.infoGrants ?? 0,
+              hint: 'سطح دسترسی کاربران به مطالب محدود از بین می‌رود',
+            },
+          ]}
+          isLoading={isImpactLoading}
+          isConfirming={isDeleting}
+          onCancel={() => {
+            if (isDeleting) return;
+            setImpactDept(null);
+            setImpactCounts(null);
+          }}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
     </div>
   );
 }

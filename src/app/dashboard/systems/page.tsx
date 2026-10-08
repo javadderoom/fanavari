@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useUserSession } from '@/components/user-session-provider';
 import { Permissions } from '@/lib/permissions';
 import { SystemEditorModal } from '@/components/system-editor-modal';
+import { DeleteImpactDialog } from '@/components/delete-impact-dialog';
 import { SystemTool } from '@/types/process';
 import { notify } from '@/lib/notify';
 import { 
@@ -38,6 +39,15 @@ export default function DashboardSystemsPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [systemToEdit, setSystemToEdit] = useState<SystemTool | null>(null);
+
+  // Delete-impact preview state
+  const [impactTool, setImpactTool] = useState<SystemTool | null>(null);
+  const [impactCounts, setImpactCounts] = useState<{
+    processes: number;
+    informationPosts: number;
+  } | null>(null);
+  const [isImpactLoading, setIsImpactLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const canManage = can(Permissions.MANAGE_SYSTEMS) || can(Permissions.MANAGE_CATEGORIES) || isSuperAdmin;
 
@@ -87,20 +97,38 @@ export default function DashboardSystemsPage() {
   };
 
   const handleDelete = async (tool: SystemTool) => {
-    const confirmed = await notify.confirm({
-      title: 'حذف نرم‌افزار / سامانه از پایگاه داده',
-      message: `آیا از حذف سامانه «${tool.name}» اطمینان کامل دارید؟ ${
-        tool.processCount > 0
-          ? `این سامانه در حال حاضر به ${tool.processCount} فرایند متصل است. در صورت حذف، فرایندها بدون اتصال سامانه باقی خواهند ماند.`
-          : ''
-      }`,
-      confirmText: 'بله، حذف شود',
-      cancelText: 'انصراف',
-      isDestructive: true,
-    });
+    // Step 1: open the impact preview and load live relation counts.
+    setImpactTool(tool);
+    setImpactCounts(null);
+    setIsImpactLoading(true);
+    try {
+      const res = await fetch(
+        `/api/systems/impact?id=${tool.id || ''}&slug=${tool.slug}`,
+        {
+          headers: {
+            'x-user-permissions': String(currentUser.permissions),
+          },
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'خطا در بررسی وابستگی‌ها');
+      }
+      const data = await res.json();
+      setImpactCounts(data.impact || null);
+    } catch (err: any) {
+      console.error('Error loading delete impact:', err);
+      notify.error(err.message || 'خطا در بررسی وابستگی‌های سامانه.');
+      setImpactTool(null);
+    } finally {
+      setIsImpactLoading(false);
+    }
+  };
 
-    if (!confirmed) return;
-
+  const handleConfirmDelete = async () => {
+    if (!impactTool) return;
+    const tool = impactTool;
+    setIsDeleting(true);
     try {
       const res = await fetch(`/api/systems?id=${tool.id || ''}&slug=${tool.slug}`, {
         method: 'DELETE',
@@ -115,10 +143,14 @@ export default function DashboardSystemsPage() {
       }
 
       setSystems((prev) => prev.filter((s) => s.slug !== tool.slug && s.id !== tool.id));
+      setImpactTool(null);
+      setImpactCounts(null);
       notify.success(`سامانه «${tool.name}» با موفقیت از پایگاه داده حذف گردید.`);
     } catch (err: any) {
       console.error('Error deleting system:', err);
       notify.error(err.message || 'خطا در حذف سامانه.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -389,6 +421,36 @@ export default function DashboardSystemsPage() {
           notify.success('سامانه با موفقیت ذخیره شد.');
         }}
       />
+
+      {/* Delete impact preview: nothing is destroyed, links are unlinked */}
+      {impactTool && (
+        <DeleteImpactDialog
+          isOpen={Boolean(impactTool)}
+          entityKindLabel="سامانه"
+          entityName={impactTool.name}
+          survivors={[
+            {
+              label: 'فرایندهای متصل',
+              count: impactCounts?.processes ?? 0,
+              hint: 'حفظ می‌شوند ولی اتصال سامانه‌شان قطع می‌شود',
+            },
+            {
+              label: 'اطلاعیه‌ها و بخشنامه‌های متصل',
+              count: impactCounts?.informationPosts ?? 0,
+              hint: 'حفظ می‌شوند ولی ارتباط سامانه‌ای‌شان قطع می‌شود',
+            },
+          ]}
+          destroyed={[]}
+          isLoading={isImpactLoading}
+          isConfirming={isDeleting}
+          onCancel={() => {
+            if (isDeleting) return;
+            setImpactTool(null);
+            setImpactCounts(null);
+          }}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
     </div>
   );
 }

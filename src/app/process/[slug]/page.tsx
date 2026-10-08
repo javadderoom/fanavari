@@ -32,6 +32,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const process = await getDbProcessBySlug(decodedSlug);
   if (!process) return { title: 'فرایند یافت نشد | سامانه فناوری' };
+  // Archived processes are hidden from public routes (server components have
+  // no access to the localStorage demo session, so gate unconditionally).
+  if (process.isPublished === false) return { title: 'فرایند یافت نشد | سامانه فناوری' };
 
   return {
     title: `${process.title} | سامانه فناوری`,
@@ -50,7 +53,7 @@ export default async function ProcessPage({ params }: Props) {
 
   const process = await getDbProcessBySlug(decodedSlug);
 
-  if (!process) {
+  if (!process || process.isPublished === false) {
     notFound();
   }
 

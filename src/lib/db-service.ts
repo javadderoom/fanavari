@@ -22,6 +22,7 @@ export function mapPrismaProcess(p: any): Process {
     scope: (p.scope as any) || 'portal',
     category: (p.category as any) || 'hr',
     visibility: (p.visibility as any) || 'public',
+    isPublished: p.isPublished !== undefined ? Boolean(p.isPublished) : true,
     authorId: p.authorId || null,
     accessGrants: Array.isArray(p.accessGrants)
       ? p.accessGrants.map((g: any) => ({
@@ -65,7 +66,12 @@ export function mapPrismaProcess(p: any): Process {
     tags: [p.department?.name, p.department?.slug, p.systemTool?.name, 'ضمن خدمت'].filter(Boolean) as string[],
     schedule: p.schedule ? (typeof p.schedule === 'string' ? JSON.parse(p.schedule) : p.schedule) : undefined,
     updatedAt: new Date(p.updatedAt).toLocaleDateString('fa-IR'),
-    steps: (p.steps || []).map((step: any): ProcessStep => ({
+    steps: (p.steps || []).map((step: any): ProcessStep => {
+      // An archived (isPublished=false) linked sub-process must not surface in
+      // the parent at all — suppress every reference to it. When the relation
+      // wasn't loaded (undefined), keep the scalar fallback as before.
+      const subArchived = step.subProcess?.isPublished === false;
+      return {
       id: step.id,
       orderIndex: step.orderIndex,
       stepKey: step.stepKey,
@@ -85,11 +91,11 @@ export function mapPrismaProcess(p: any): Process {
         cause: 'خطای سیستمی / مغایرت در پایگاه داده پرسنلی',
         solution: err.solutionMarkdown,
       })),
-      subProcessId: step.subProcessId || null,
-      subProcessSlug: step.subProcess?.slug || step.subProcessSlug || null,
-      subProcessTitle: step.subProcess?.title || null,
-      subProcessStepCount: step.subProcess?.steps?.length || null,
-      subProcess: step.subProcess
+      subProcessId: subArchived ? null : step.subProcessId || null,
+      subProcessSlug: subArchived ? null : step.subProcess?.slug || step.subProcessSlug || null,
+      subProcessTitle: subArchived ? null : step.subProcess?.title || null,
+      subProcessStepCount: subArchived ? null : step.subProcess?.steps?.length || null,
+      subProcess: step.subProcess && !subArchived
         ? {
             id: step.subProcess.id,
             slug: step.subProcess.slug,
@@ -99,7 +105,8 @@ export function mapPrismaProcess(p: any): Process {
             targetSystem: step.subProcess.systemTool?.name,
           }
         : null,
-    })),
+      };
+    }),
   };
 }
 
@@ -141,6 +148,7 @@ export async function getDbProcesses(): Promise<Process[]> {
                 id: true,
                 slug: true,
                 title: true,
+                isPublished: true,
                 department: { select: { name: true } },
                 systemTool: { select: { name: true } },
                 steps: { select: { id: true } },
@@ -199,6 +207,7 @@ export async function getDbProcessBySlug(slug: string): Promise<Process | null> 
                 id: true,
                 slug: true,
                 title: true,
+                isPublished: true,
                 department: { select: { name: true } },
                 systemTool: { select: { name: true } },
                 steps: { select: { id: true } },
@@ -278,6 +287,7 @@ export async function getDbSystemToolBySlug(slug: string): Promise<{ tool: Syste
       },
       include: {
         processes: {
+          where: { isPublished: true },
           include: {
             steps: {
               orderBy: { orderIndex: 'asc' },

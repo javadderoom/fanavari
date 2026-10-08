@@ -183,6 +183,7 @@ export interface Process {
   scope: string; // 'organization' | 'software' | 'portal' or any dynamic scope key
   category: string; // 'hr' | 'finance' | etc. or any dynamic category key
   visibility?: ProcessVisibility; // 'public' | 'restricted'
+  isPublished?: boolean; // false = archived / hidden from public catalog
   authorId?: string | null;
   accessGrants?: ProcessAccessGrant[];
   departmentName: string;

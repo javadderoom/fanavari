@@ -352,8 +352,8 @@ export function StepRunnerView({
             </div>
           )}
 
-          {/* Hierarchical Sub-Process Drill-Down Card */}
-          {(currentStep.stepType === 'subprocess' || currentStep.subProcessSlug || currentStep.subProcess) && (
+          {/* Hierarchical Sub-Process Drill-Down Card (hidden when linked process is archived) */}
+          {(currentStep.subProcessSlug || currentStep.subProcess?.slug) && (
             <div className="mb-6 p-5 rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">

@@ -31,7 +31,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   }
 
   const process = await getDbProcessBySlug(decodedSlug);
-  if (!process) return { title: 'فرایند یافت نشد | نسخه چاپی' };
+  if (!process || process.isPublished === false)
+    return { title: 'فرایند یافت نشد | نسخه چاپی' };
 
   if (runId) {
     return {
@@ -58,7 +59,7 @@ export default async function ProcessPrintPage({ params, searchParams }: Props) 
 
   const process = await getDbProcessBySlug(decodedSlug);
 
-  if (!process) {
+  if (!process || process.isPublished === false) {
     notFound();
   }
 
