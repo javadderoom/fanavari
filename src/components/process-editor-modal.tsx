@@ -60,7 +60,6 @@ export function ProcessEditorModal({
   const [departmentName, setDepartmentName] = useState('وزارت آموزش و پرورش');
   const [targetSystem, setTargetSystem] = useState('');
   const [targetUrl, setTargetUrl] = useState('');
-  const [estimatedMinutes, setEstimatedMinutes] = useState(15);
   const [tagsInput, setTagsInput] = useState('');
 
   // Dynamic Scopes and Categories from database
@@ -124,7 +123,6 @@ export function ProcessEditorModal({
       setDepartmentName(processToEdit.departmentName);
       setTargetSystem(processToEdit.targetSystem);
       setTargetUrl(processToEdit.targetUrl || '');
-      setEstimatedMinutes(processToEdit.estimatedMinutes);
       setTagsInput(processToEdit.tags.join('، '));
       if (processToEdit.schedule) {
         setHasSchedule(true);
@@ -150,7 +148,6 @@ export function ProcessEditorModal({
         processToEdit.visibility === 'restricted' ||
         processToEdit.schedule || 
         (processToEdit.tags && processToEdit.tags.length > 0) || 
-        (processToEdit.estimatedMinutes && processToEdit.estimatedMinutes !== 10) ||
         processToEdit.targetUrl
       ));
       setSteps(
@@ -178,7 +175,6 @@ export function ProcessEditorModal({
       setDepartmentName('مدیریت منابع انسانی');
       setTargetSystem('سامانه جامع اداری');
       setTargetUrl('');
-      setEstimatedMinutes(15);
       setTagsInput('فرایند جدید، استاندارد سازمانی');
       setHasSchedule(false);
       setScheduleMonth('تیر');
@@ -313,7 +309,7 @@ export function ProcessEditorModal({
       targetSystem: targetSystem.trim() || 'سامانه سازمانی',
       targetSystemSlug: matchedSys ? matchedSys.slug : targetSystem.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       targetUrl: targetUrl.trim() || undefined,
-      estimatedMinutes: Number(estimatedMinutes) || 10,
+      estimatedMinutes: processToEdit?.estimatedMinutes || 10,
       totalSteps: steps.length,
       tags: tagsArray,
       schedule: schedulePayload,
@@ -486,8 +482,6 @@ export function ProcessEditorModal({
               setScheduleNotes={setScheduleNotes}
               targetUrl={targetUrl}
               setTargetUrl={setTargetUrl}
-              estimatedMinutes={estimatedMinutes}
-              setEstimatedMinutes={setEstimatedMinutes}
               tagsInput={tagsInput}
               setTagsInput={setTagsInput}
             />

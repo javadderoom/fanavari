@@ -14,7 +14,6 @@ import {
   FileText, 
   Layers, 
   Globe, 
-  Clock, 
   Tag, 
   CheckCircle2, 
   ExternalLink,
@@ -529,13 +528,8 @@ export function OmniSearch({
                         </span>
                       </div>
 
-                      {/* Score Indicator & Step count */}
+                      {/* Step count */}
                       <div className="flex items-center gap-2 self-start sm:self-auto text-xs" style={{ color: 'var(--text-muted)' }}>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          {process.estimatedMinutes} دقیقه
-                        </span>
-                        <span>•</span>
                         <span>{process.totalSteps} مرحله</span>
                       </div>
                     </div>

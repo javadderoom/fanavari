@@ -9,7 +9,6 @@ import { UiSnippetCard } from './ui-snippet-card';
 import { 
   Printer, 
   ArrowRight, 
-  Clock, 
   Laptop, 
   Building2, 
   Workflow, 
@@ -367,17 +366,6 @@ export function ProcessPrintView({ process, initialRun }: ProcessPrintViewProps)
 
               <span className="text-xs px-3 py-1 rounded-lg font-bold bg-slate-100 text-slate-800 border border-slate-300">
                 سامانه هدف: {process.targetSystem}
-              </span>
-
-              <span className="text-xs px-3 py-1 rounded-lg font-bold bg-slate-100 text-slate-800 border border-slate-300 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-slate-600" />
-                <span>
-                  زمان تخمینی استاندارد:{' '}
-                  <span dir="ltr" className="font-mono font-bold">
-                    {process.estimatedMinutes}
-                  </span>{' '}
-                  دقیقه
-                </span>
               </span>
 
               <span className="text-xs px-3 py-1 rounded-lg font-bold bg-blue-50 text-blue-900 border border-blue-200">

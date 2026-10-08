@@ -7,8 +7,7 @@ import {
   Globe, 
   Lock, 
   CalendarClock, 
-  Calendar, 
-  Clock 
+  Calendar 
 } from 'lucide-react';
 import { PersianMonth, PersianSeason, ProcessVisibility } from '@/types/process';
 import { PERSIAN_MONTHS, getSeasonForMonth } from './types';
@@ -36,8 +35,6 @@ interface AdvancedSettingsSectionProps {
   setScheduleNotes: (val: string) => void;
   targetUrl: string;
   setTargetUrl: (val: string) => void;
-  estimatedMinutes: number;
-  setEstimatedMinutes: (val: number) => void;
   tagsInput: string;
   setTagsInput: (val: string) => void;
 }
@@ -65,8 +62,6 @@ export function AdvancedSettingsSection({
   setScheduleNotes,
   targetUrl,
   setTargetUrl,
-  estimatedMinutes,
-  setEstimatedMinutes,
   tagsInput,
   setTagsInput,
 }: AdvancedSettingsSectionProps) {
@@ -306,22 +301,6 @@ export function AdvancedSettingsSection({
                 onChange={(e) => setTargetUrl(e.target.value)}
                 placeholder="https://... (پیش‌فرض از سامانه خوانده می‌شود)"
                 dir="ltr"
-                className="w-full p-2.5 rounded-xl border text-xs font-mono outline-none"
-                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
-              />
-            </div>
-
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">
-                <Clock className="w-3.5 h-3.5 text-amber-500" />
-                <span>مدت زمان تقریبی اجرا (دقیقه)</span>
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="480"
-                value={estimatedMinutes}
-                onChange={(e) => setEstimatedMinutes(Math.max(1, Number(e.target.value)))}
                 className="w-full p-2.5 rounded-xl border text-xs font-mono outline-none"
                 style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
               />

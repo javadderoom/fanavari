@@ -9,7 +9,6 @@ import { ImageHotspotViewer } from './image-hotspot-viewer';
 import { UiSnippetCard } from './ui-snippet-card';
 import { 
   X, 
-  Clock, 
   ExternalLink, 
   Copy, 
   Check, 
@@ -112,10 +111,6 @@ export function ProcessDetailModal({ process, initialStepIndex = 0, onClose }: P
                 style={{ background: 'var(--accent-soft)', color: 'var(--accent-primary)', border: '1px solid var(--accent-border)' }}
               >
                 {process.departmentName}
-              </span>
-              <span className="text-xs flex items-center gap-1 font-medium" style={{ color: 'var(--text-muted)' }}>
-                <Clock className="w-3.5 h-3.5" />
-                زمان تخمینی: {process.estimatedMinutes} دقیقه
               </span>
               <span className="text-xs px-2 py-0.5 rounded-md" style={{ background: 'var(--bg-input)', color: 'var(--text-secondary)' }}>
                 سامانه: {process.targetSystem}

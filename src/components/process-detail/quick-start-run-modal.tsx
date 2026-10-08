@@ -7,7 +7,6 @@ import {
   Play, 
   X, 
   ShieldCheck, 
-  Clock, 
   FileText, 
   User as UserIcon,
   Sparkles
@@ -123,9 +122,9 @@ export function QuickStartRunModal({
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="font-bold text-slate-500">تعداد گام‌ها / زمان تخمینی:</span>
+            <span className="font-bold text-slate-500">تعداد گام‌ها:</span>
             <span className="font-semibold text-slate-600 dark:text-slate-300">
-              {process.totalSteps} گام • حدود {process.estimatedMinutes} دقیقه
+              {process.totalSteps} گام
             </span>
           </div>
         </div>

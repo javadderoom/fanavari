@@ -23,7 +23,6 @@ import {
   CheckCircle2, 
   AlertCircle, 
   Sparkles, 
-  Clock, 
   ChevronRight,
   SlidersHorizontal,
   Flame,
@@ -762,16 +761,6 @@ function ProcessScheduleRow({
             <span className="flex items-center gap-1">
               <Laptop className="w-3.5 h-3.5 text-slate-400" />
               <span>{process.targetSystem}</span>
-            </span>
-            <span>•</span>
-            <span className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              <span>
-                <span dir="ltr" className="font-mono font-bold">
-                  {process.estimatedMinutes}
-                </span>{' '}
-                دقیقه
-              </span>
             </span>
           </div>
 

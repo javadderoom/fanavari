@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Process } from '@/types/process';
-import { Clock, Layers, ShieldAlert, ArrowLeft, ExternalLink, Sparkles, Laptop, Building2, Globe } from 'lucide-react';
+import { Layers, ShieldAlert, ArrowLeft, ExternalLink, Sparkles, Laptop, Building2, Globe } from 'lucide-react';
 
 interface ProcessCardProps {
   process: Process;
@@ -65,11 +65,6 @@ export function ProcessCard({ process, onSelect }: ProcessCardProps) {
             >
               {process.departmentName}
             </span>
-          </div>
-
-          <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
-            <Clock className="w-3.5 h-3.5" />
-            <span>{process.estimatedMinutes} دقیقه</span>
           </div>
         </div>
 

@@ -9,7 +9,6 @@ import {
   Lock, 
   Globe, 
   CheckCircle2, 
-  Clock, 
   Share2, 
   Printer, 
   ExternalLink,
@@ -105,11 +104,6 @@ export function ProcessHeaderBanner({
               style={{ background: 'var(--accent-soft)', color: 'var(--accent-primary)', border: '1px solid var(--accent-border)' }}
             >
               {process.departmentName}
-            </span>
-
-            <span className="text-xs flex items-center gap-1 font-semibold" style={{ color: 'var(--text-muted)' }}>
-              <Clock className="w-3.5 h-3.5" />
-              زمان تخمینی: {process.estimatedMinutes} دقیقه
             </span>
 
             <span
