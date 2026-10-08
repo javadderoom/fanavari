@@ -72,9 +72,8 @@ export async function createSession(
   return token;
 }
 
-/** Resolves the session cookie to an active, non-suspended user. */
-export async function getSessionUser(req: Request): Promise<SessionUser | null> {
-  const token = readSessionToken(req);
+/** Resolves a raw session token to an active, non-suspended user. */
+export async function getUserBySessionToken(token: string | null | undefined): Promise<SessionUser | null> {
   if (!token) return null;
 
   const session = await prisma.userSession.findUnique({
@@ -103,6 +102,11 @@ export async function getSessionUser(req: Request): Promise<SessionUser | null> 
     otpEnabled: u.otpEnabled,
     status: u.status,
   };
+}
+
+/** Resolves the session cookie to an active, non-suspended user. */
+export async function getSessionUser(req: Request): Promise<SessionUser | null> {
+  return getUserBySessionToken(readSessionToken(req));
 }
 
 export async function revokeSession(req: Request): Promise<void> {

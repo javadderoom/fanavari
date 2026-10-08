@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Vazirmatn } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { UserSessionProvider } from "@/components/user-session-provider";
 import { Toaster } from "@/lib/notify";
+import { getUserBySessionToken, SESSION_COOKIE } from "@/lib/session";
 import { Agentation } from "agentation";
 import "./globals.css";
 
@@ -18,16 +20,28 @@ export const metadata: Metadata = {
   description: "جستجو، مشاهده فلوچارت زنده و اجرای گام‌به‌گام فرایندهای سازمانی و اداری با راهنمای جامع خطایابی و ابزارهای کمکی",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Seed the client session with the server-resolved user so first paint
+  // already knows who is signed in (no /auth/me roundtrip flash). Reading
+  // cookies() makes this layout dynamic, which it already effectively is.
+  // Failures fall back to null — the provider revalidates client-side.
+  let initialUser = null;
+  try {
+    const store = await cookies();
+    initialUser = await getUserBySessionToken(store.get(SESSION_COOKIE)?.value);
+  } catch {
+    initialUser = null;
+  }
+
   return (
     <html lang="fa" dir="rtl" className={vazirmatn.variable} data-theme="light">
       <body className="font-sans antialiased min-h-screen">
         <ThemeProvider>
-          <UserSessionProvider>
+          <UserSessionProvider initialUser={initialUser}>
             {children}
             <Toaster />
             {process.env.NODE_ENV === "development" && <Agentation />}

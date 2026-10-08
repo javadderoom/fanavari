@@ -134,10 +134,20 @@ const UserContext = createContext<UserContextType>({
   isDemoMode: false,
 });
 
-export function UserSessionProvider({ children }: { children: React.ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<AppUser>(DEMO_ENABLED ? DEMO_USERS[0] : GUEST_USER);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+export function UserSessionProvider({
+  children,
+  initialUser,
+}: {
+  children: React.ReactNode;
+  /** Server-resolved session user, seeded from the root layout — first paint starts correct. */
+  initialUser?: SessionUser | null;
+}) {
+  const [currentUser, setCurrentUser] = useState<AppUser>(() =>
+    initialUser ? toAppUser(initialUser) : DEMO_ENABLED ? DEMO_USERS[0] : GUEST_USER
+  );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(Boolean(initialUser));
+  // Seeded from the server: no loading flash. Still revalidates silently below.
+  const [isLoading, setIsLoading] = useState<boolean>(initialUser === undefined);
 
   const refreshSession = useCallback(async () => {
     try {
@@ -165,8 +175,14 @@ export function UserSessionProvider({ children }: { children: React.ReactNode })
   }, []);
 
   useEffect(() => {
-    refreshSession().finally(() => setIsLoading(false));
-  }, [refreshSession]);
+    // Seeded from the server (user or logged-out): trust it — explicit
+    // refreshSession calls after login/logout/profile changes keep it fresh.
+    // Only revalidate when no seed was provided at all.
+    if (initialUser === undefined) {
+      refreshSession().finally(() => setIsLoading(false));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const switchUser = (userId: string) => {
     if (!DEMO_ENABLED) return;
