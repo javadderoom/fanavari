@@ -11,7 +11,7 @@ The platform is designed to handle two fundamental classes of procedural knowled
 ### 1.2. Strict Multi-Page Architecture (No Single-Page Monolith)
 To ensure optimal SEO, shareability, deep-linking, and focused user context, the application strictly adheres to a multi-page URL hierarchy:
 - `/`: Central Landing Page with Google-style Omni-Search, dynamic trending chips, live flow simulator, and featured catalog.
-- `/process/[slug]`: Dedicated procedural workspace with multi-view switcher (Flowchart Canvas / Step Stepper / Timeline), error matrix, copyable field presets, and persistent scratchpad.
+- `/process/[slug]`: Dedicated procedural workspace with step-by-step walkthrough (menu-path boxes, screenshots, error matrix, copyable fields, persistent scratchpad).
 - `/process/[slug]/print`: High-contrast, clean print view without navigation bars, designed specifically for A4 paper and PDF printing.
 - `/information`: Knowledge base of administrative circulars, guidelines, technical announcements, and directives.
 - `/information/[slug]`: Individual announcement/circular reading view with rich markdown/HTML rendering.
@@ -24,35 +24,25 @@ To ensure optimal SEO, shareability, deep-linking, and focused user context, the
 
 ## 2. Core Functional Modules
 
-### Module 1: Multi-Mode Process Visualization & Node Hierarchy
-The core engine provides three complementary view modes for every organizational procedure:
+### Module 1: Step Runner Walkthrough & Node Hierarchy
+The core engine is a single linear walkthrough view for every procedure
+(the macro flowchart canvas was removed Oct 2026 by owner decision):
 
-- **1.1. Interactive Flowchart Canvas (Macro View)**:
-  - Built with `@xyflow/react` (React Flow) with customized glassmorphic nodes.
-  - Pan, zoom (10% to 200%), fit-to-screen, and interactive mini-map.
-  - **Strict Node Geometries & Differentiation**:
-    - *Action Nodes* (Blue accent): Rectangular cards with target system URLs, step order badge, and software menu click sequence.
-    - *Decision Nodes* (Amber accent): Distinct diamond geometry representing conditional questions (e.g., *"آیا خطا رخ داد؟"* / *"نوع قرارداد چیست؟"*) with dual branching edges (*"بله" / "خیر"* or labeled condition branches).
-    - *Warning / Checkpoint Nodes* (Rose accent): High-contrast alert boxes highlighting mandatory audit checkpoints, security cautions, and irreversible actions.
-    - *End / Terminal Nodes* (Emerald accent): Rounded double-ring pill cards indicating successful completion with hand-off summaries.
-  - Animated edge connectors showing flow direction and branch conditions.
-  - Path highlighting: selecting an active node illuminates the exact upstream and downstream execution paths.
-
-- **1.2. Guided Step Runner (Micro / Walkthrough View)**:
+- **1.1. Guided Step Runner (Execution View)**:
   - Linear, distraction-free execution mode for active task completion.
   - Step navigation breadcrumb showing the exact software menu sequence as visual boxed chips (`HRMS > Settings > Employee Master > New`).
-  - Next/Previous controls with keyboard navigation (Arrow keys, Space to advance).
+  - Next/Previous controls with per-step completion checkboxes (persisted to localStorage and logged to active workflow runs).
   - Dedicated callouts for Step Tips (`نکات`), Warnings (`هشدارها`), and Prerequisites (`پیش‌نیازها`).
+  - Step-type badges (action / decision / warning / end / sub-process) shown inline.
 
-- **1.3. Process Timeline View Mode (Chronological Milestone View)**:
-  - An alternative linear chronological milestone view.
-  - Displays steps sequentially along a vertical or horizontal timeline with estimated durations, dependency markers, and completion status.
-  - Optimized for managers and auditors needing a fast overview of process stages and time allocation.
-
-- **1.4. Hierarchical Sub-Processes (زیر-فرایندها)**:
+- **1.2. Hierarchical Sub-Processes (زیر-فرایندها)**:
   - Any step can be designated as a sub-process parent node linked to another existing process.
-  - Renders with a distinct sub-flow badge on the canvas and in the stepper.
+  - Renders with a distinct sub-flow badge in the stepper.
   - One-click drill-down opens the child procedure in a nested drawer or focused view with persistent back-navigation breadcrumbs.
+
+> **Removed Oct 2026:** the macro flowchart canvas (1.1 old), the process
+> timeline view mode (never built), the runner progress bar/celebration UI,
+> and all estimated-time display.
 
 ---
 
@@ -130,39 +120,39 @@ Prevents employee work-stoppages when unexpected conditions occur:
 ---
 
 ### Module 7: Workflow Runs & Audit Compliance Log
-- **7.1. Workflow Run Instances**:
-  - Launch an official execution run with operator name, start timestamp, and checklist progress.
-- **7.2. Supervisor Approval Gates**:
-  - High-risk compliance steps requiring manager approval before proceeding.
-- **7.3. Audit Trail Reporting**:
-  - Exportable compliance logs fulfilling ISO 9001 quality management requirements.
+- **7.1. Workflow Run Instances** ✅: official execution runs with operator name,
+  start timestamp, checklist progress, and step logs.
+- **7.2. Supervisor Approval Gates** ❌: data fields exist but no UX enforces
+  manager approval before proceeding.
+- **7.3. Audit Trail Reporting** ✅: compliance audit sheet/certificate viewer
+  per run.
 
 ---
 
-### Module 8: Community Feedback & "Report UI Change"
-- **8.1. Outdated Step Reporting**:
-  - Any employee can click *"گزارش تغییر سامانه"* on a specific step to submit an updated screenshot and comment for admin review.
-- **8.2. Suggest an Edit Workflow**:
-  - Non-destructive change proposals that administrators can review and merge with one click.
+### Module 8: Community Feedback & "Report UI Change" ❌ NOT BUILT
+- **8.1. Outdated Step Reporting**: not implemented — no code exists.
+- **8.2. Suggest an Edit Workflow**: not implemented — no code exists.
 
 ---
 
 ### Module 9: Executive & Print-Ready Export (PDF / Print)
-- **9.1. Dedicated High-Contrast Print View**:
-  - Clean, dedicated `/process/[slug]/print` route without navigation bars or footers.
-  - Numbered step instructions, boxed menu click routes, and full error matrices optimized for A4 paper.
-- **9.2. ISO-Compliant Corporate PDF**:
-  - Exportable branded PDF with organization headers, document codes, version numbers, and approval signatures.
+- **9.1. Dedicated High-Contrast Print View** ✅:
+  - Clean `/process/[slug]/print` route without navigation bars, optimized for A4.
+- **9.2. ISO-Compliant Corporate PDF** ❌: not implemented — no branded export
+  with headers, version numbers, or approval signatures.
 
 ---
 
 ### Module 10: Process Builder & Taxonomy Studio (Admin Mode)
-- **10.1. Visual Process Builder & Step Inspector**:
-  - Drag-and-drop node placement on an infinite canvas.
-  - Interactive Menu Path Box Editor (`MenuPathEditor`) with visual tag chips, reordering arrows, and raw text toggle.
-  - Rich Markdown instruction editor with live preview.
-- **10.2. Thematic Category Management (مدیریت دسته‌بندی موضوعی)**:
-  - Admin management interface for creating, editing, and organizing thematic categories (e.g., مالی, منابع انسانی, فناوری اطلاعات, حقوقی).
-  - Real-time categorization of processes and circulars for simplified filtering.
-- **10.3. Version Control & Rollback**:
-  - Semantic versioning (v1.0, v1.1, v2.0) with change summary logs and one-click rollback.
+- **10.1. Visual Process Builder & Step Inspector**: form-based
+  `ProcessEditorModal` only (no drag-and-drop canvas). Includes the
+  `MenuPathEditor` chip editor and rich Markdown instruction editing.
+- **10.2. Thematic Category Management (مدیریت دسته‌بندی موضوعی)** ✅:
+  - Admin UI for creating, editing, and organizing thematic categories.
+- **10.3. Version Control & Rollback** ❌: not implemented.
+
+### Module 11: Authoring Chrome Extension (added Oct 2026, outside original spec)
+- **11.1. Interaction recorder (M1)** ✅: MV3 side panel recording click texts
+  and input labels (labels-only default), browser-login token auth, single-account
+  `/extension-auth` handoff; clicks land in menu-path boxes, inputs in step drafts.
+- **11.2. Screenshot attach (M2)** ❌: planned, not built.

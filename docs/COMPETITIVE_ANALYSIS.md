@@ -81,11 +81,12 @@ From this benchmark analysis, the following high-value capabilities have been id
 | :--- | :--- | :--- | :--- |
 | **1. Split-Screen / Sidecar Runner Mode** | Stonly & Tango | Operators can dock the step-by-step guide to the right side of their monitor while working on the target portal. | High (Phase 2) |
 | **2. Screenshot Annotation & Privacy Blur** | Scribe & Folge | Allows SOP creators to highlight target buttons with numbered badges and blur sensitive national IDs, phone numbers, and credentials. | High (Phase 3) |
-| **3. Change Request / "Report UI Change"** | Tango | When an external portal changes its layout or button names, employees can click one button to submit a visual report with a new screenshot. | High (Phase 3) |
-| **4. Actionable Workflow Runs & Audit Log** | Process Street | Users can start an official "Run" of an SOP, checking off steps as they complete them, with timestamps saved in Neon Postgres. | Medium (Phase 4) |
-| **5. Step Approval Gates** | Process Street | Enforces supervisor sign-off before critical steps (e.g., executing high-value bank transfers or granting root server access). | Medium (Phase 5) |
-| **6. ISO & Audit Print-Ready Export (PDF/HTML)** | Scribe & Folge | Generates an executive, beautifully styled Persian/English PDF document containing the flowchart, steps, and compliance metadata. | High (Phase 4) |
-| **7. AI Flow Generator from Plain Text / Notes** | Scribe & Guidde | Admins can paste raw meeting notes or circulars, and the AI structures them into flowchart nodes, steps, and error conditions. | Medium (Phase 5) |
+| **3. Change Request / "Report UI Change"** | Tango | Flag outdated steps with fresh screenshots. Status: ❌ no code exists (Phase 8). | High (Phase 8) |
+| **4. Actionable Workflow Runs & Audit Log** | Process Street | Official runs with timestamps in Postgres. Status: ✅ built (Phase 5). | Medium (Phase 5) |
+| **5. Step Approval Gates** | Process Street | Supervisor sign-off before critical steps. Status: ❌ fields only, no UX (Phase 5). | Medium (Phase 5) |
+| **6. ISO & Audit Print-Ready Export (PDF/HTML)** | Scribe & Folge | Branded Persian PDF with flowchart, steps, compliance metadata. Status: ❌ print view only. | High (Phase 6.2) |
+| **7. AI Flow Generator from Plain Text / Notes** | Scribe & Guidde | Paste circulars → draft steps. Status: ❌ not started. | Medium (Phase 6.3) |
+| **8. Authoring browser extension (recorder)** | Scribe (capture) | M1 done: click/label capture → step drafts. M2 screenshots pending. | High (Phase 7, added Oct 2026) |
 
 ---
 
@@ -93,7 +94,11 @@ From this benchmark analysis, the following high-value capabilities have been id
 
 Fanavari is strategically positioned to outperform these international tools in our target segment by uniting capabilities that no competitor has unified:
 
-1. **Dual Perspective (Canvas Flowchart + Execution Stepper)**: Neither Scribe nor Tango offers an interactive, zoomable, node-based flowchart canvas with decision branches alongside a distraction-free step runner.
+1. **Focused Step Runner + Sidecar (rescoped Oct 2026)**: where Scribe and Tango
+   force a tunnel view with no overview, Fanavari keeps a single distraction-free
+   linear walkthrough with menu-path breadcrumbs, error matrix, and scratchpad —
+   plus a dockable sidecar for dual-window operation. (The former macro flowchart
+   canvas was deliberately removed; visual overview is an explicit non-goal.)
 2. **Google-Grade Omni-Search Engine**: Competitors offer basic keyword searches. Fanavari provides deep-scanning relevance scoring that searches across step titles, menu paths, copyable fields, and exact error codes (`ERR-403`).
 3. **Per-Step Error & Troubleshooting Matrix**: International tools treat the "happy path" as the only path. Fanavari embeds root causes, solutions, and escalation contacts directly onto every step.
 4. **Contextual Scratchpad & Clipboard Presets**: First-class support for storing intermediate variables, test IDs, and operational data during execution.

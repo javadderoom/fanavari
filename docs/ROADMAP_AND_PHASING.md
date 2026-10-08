@@ -5,12 +5,18 @@ To ensure continuous delivery of demonstrable value while building toward an ent
 
 ```mermaid
 flowchart TD
-    P1["Phase 1: Foundation, Omni-Search & Knowledge Hub<br/>(COMPLETED)"] --> P2["Phase 2: Visual Canvas, Node Differentiation & Timeline<br/>(IN PROGRESS - P0/P1)"]
-    P2 --> P3["Phase 3: Media Studio, Sub-Processes & Taxonomies<br/>(P1/P2)"]
-    P3 --> P4["Phase 4: Sidecar Runner & Operator Tooling"]
-    P4 --> P5["Phase 5: Workflow Runs & Audit Compliance Log"]
-    P5 --> P6["Phase 6: No-Code Flow Builder & Enterprise Governance"]
+    P1["Phase 1: Foundation, Omni-Search & Knowledge Hub<br/>(COMPLETED)"] --> P2["Phase 2: Search, Content & Step Runner<br/>(COMPLETED, rescoped)"]
+    P2 --> P3["Phase 3: Media Studio, Sub-Processes & Taxonomies<br/>(COMPLETED)"]
+    P3 --> P4["Phase 4: Sidecar Runner & Operator Tooling<br/>(COMPLETED)"]
+    P4 --> P5["Phase 5: Workflow Runs & Audit Compliance Log<br/>(MOSTLY COMPLETE — approval gates missing)"]
+    P5 --> P6["Phase 6: No-Code Flow Builder & Enterprise Governance<br/>(NOT STARTED)"]
 ```
+
+> **Rescoping note (Oct 2026):** The macro flowchart canvas, the Process Runner
+> progress/celebration UI, and estimated-time display were deliberately removed
+> from the product at the owner's request. The process page is now a single
+> step-by-step walkthrough. Items below reflect that decision.
+
 
 ---
 
@@ -28,82 +34,98 @@ flowchart TD
 
 ---
 
-### Phase 2: Visual Canvas, Node Differentiation & Timeline (Status: ⏳ NEXT UP / IN PROGRESS)
-*Objective: Deliver high-fidelity visual flowcharting with BPMN-standard node distinction, timeline sequencing, and unified cross-entity search.*
+### Phase 2: Search, Content & Step Runner (Status: ✅ COMPLETED, rescoped)
+*Objective: high-quality linear walkthrough with unified cross-entity search.*
 
-#### Sprint 2A: Search & Content Quick Wins (Priority: P0 — Immediate)
-- [ ] **2A.1. Omni-Search Expansion for Announcements & Circulars**:
-  - Index `InformationPost` records alongside processes in the main search bar.
-  - Return dedicated badges (`بخشنامه`, `دستورالعمل`, `اطلاعیه`) with direct deep-links.
-- [ ] **2A.2. Real-Data Quick Suggestions & Trending Queries**:
-  - Replace static suggestion chips with real-time aggregates from the database (active systems, most searched keywords, popular process categories).
-- [ ] **2A.3. Step Pro-Tips & Callouts (`نکات و هشدارها`)**:
+#### Sprint 2A: Search & Content (Priority: P0 — Done)
+- [x] **2A.1. Omni-Search Expansion for Announcements & Circulars**:
+  - `InformationPost` records indexed alongside processes with dedicated badges and deep-links.
+- [x] **2A.2. Real-Data Quick Suggestions & Trending Queries**:
+  - Real-time aggregates from the database (systems, keywords, categories).
+- [x] **2A.3. Step Pro-Tips & Callouts (`نکات و هشدارها`)**:
   - Structured callout badges on steps (Tip `نکته`, Warning `هشدار`, Important `توجه`).
-- [ ] **2A.4. In-Text Cross-Linking**:
-  - Support linking directly to other processes (`/process/[slug]`), systems, or circulars inside step markdown instructions.
+- [x] **2A.4. In-Text Cross-Linking**:
+  - Links to other processes (`/process/[slug]`), systems, and circulars inside step markdown.
 
-#### Sprint 2B: Visual Flowchart & Timeline Overhaul (Priority: P1 — High)
-- [ ] **2B.1. Distinct Flowchart Node Geometries (`@xyflow/react`)**:
-  - **Action Node**: Standard rectangular card with menu breadcrumb, system badge, and icon.
-  - **Decision Node**: Amber diamond geometry with conditional exit branches (*"بله" / "خیر"* or labeled logic gates).
-  - **Warning / Checkpoint Node**: Rose-bordered alert node for critical compliance steps.
-  - **End / Terminal Node**: Rounded double-ring emerald pill with completion checkmark.
-- [ ] **2B.2. Process Timeline View Mode (`نمای تایم‌لاین فرایند`)**:
-  - Multi-view switcher on `/process/[slug]` (Flowchart Canvas / Step Stepper / **Timeline**).
-  - Chronological milestone tracker with step order, estimated durations, and completion markers.
-- [ ] **2B.3. Interactive Step Simulator Polish**:
-  - Interactive modal simulator with responsive step jumping, condition choice handling, and keyboard shortcuts.
-
----
-
-### Phase 3: Media Studio, Sub-Processes & Taxonomies (Priority: P1/P2)
-*Objective: Enrich step instructions with inline media and support hierarchical multi-level procedures.*
-
-- [ ] **3.1. Inline Single-Line Images & Lightbox**:
-  - Support inline micro-images (e.g., UI button icons, badges) inside step text lines.
-  - Full-screen lightbox zoom for complex ERP and administrative portal screenshots.
-- [ ] **3.2. Sub-Processes Architecture (`زیر-فرایندها`)**:
-  - Ability for a process step to link to or embed a child sub-process.
-  - Nested sub-flow badge with one-click drill-down and breadcrumb return navigation.
-- [ ] **3.3. Thematic Category & Tag Management (`مدیریت دسته‌بندی موضوعی`)**:
-  - Admin/Manager UI to dynamically create, edit, and organize process categories and organizational tags.
+#### Sprint 2B: Step Walkthrough Only (Priority: P1 — Done, rescoped)
+- [x] **2B.1. Step Runner Walkthrough**: linear guided execution (menu breadcrumbs,
+  screenshots, hotspots, copyable fields, error guides, checkboxes, prev/next).
+- [x] ~~**Distinct Flowchart Node Geometries (`@xyflow/react`)**~~ — **REMOVED (Oct 2026)**:
+  - The macro canvas (`flowchart-canvas.tsx`, `flowchart-nodes.tsx`) was deleted
+    by owner decision. The process page no longer has a canvas view.
+- [ ] **2B.2. Process Timeline View Mode (`نمای تایم‌لاین فرایند`)**: **NOT BUILT** —
+  never implemented (the `/timeline` route is the admin calendar, a different feature).
+- [x] **2B.3. Step Progression**: per-step completion checkboxes persisted to
+  localStorage + workflow-run logging. The runner **progress bar card and the
+  completion celebration card were REMOVED (Oct 2026)** as visual clutter.
+- [x] **Estimated-time display REMOVED (Oct 2026)** from all views and the
+  dashboard editor (DB column retained, unused by UI).
 
 ---
 
-### Phase 4: Sidecar Runner & Operator Productivity (Priority: P2)
-*Objective: Maximize employee productivity during live operation inside external software.*
+### Phase 3: Media Studio, Sub-Processes & Taxonomies (Status: ✅ COMPLETED)
+*Objective: rich step instructions with inline media and hierarchical procedures.*
 
-- [ ] **4.1. Dockable Sidecar Runner Mode**:
-  - Compact 380px vertical sidebar that docks to the side of the screen for dual-window operation with ERP/HRMS portals.
-- [ ] **4.2. Screenshot Hotspot Viewer & Privacy Blurring**:
-  - Numbered pins (1, 2, 3) pointing to exact input fields.
-  - Canvas blur shader tool for redacting national IDs, phone numbers, and credentials.
-- [ ] **4.3. Scratchpad Synchronization**:
-  - Auto-saved session scratchpad synchronized across browser reloads.
-
----
-
-### Phase 5: Workflow Runs & Audit Compliance Log (Priority: P3)
-*Objective: Transform passive documentation into tracked, compliant execution instances.*
-
-- [ ] **5.1. Tracked Workflow Run Instances**:
-  - Launch an official execution run with operator name, start timestamp, and checklist progress.
-- [ ] **5.2. Supervisor Approval Gates**:
-  - High-risk compliance steps requiring manager approval before proceeding.
-- [ ] **5.3. Audit Trail Reporting**:
-  - Exportable compliance logs fulfilling ISO 9001 quality management requirements.
+- [x] **3.1. Inline Images & Lightbox**:
+  - Inline micro-images inside step text; full-screen lightbox with zoom for
+    screenshots and hotspot pins (`ImageHotspotViewer`).
+- [x] **3.2. Sub-Processes Architecture (`زیر-فرایندها`)**:
+  - Steps link to child processes with drill-down drawer and breadcrumb return.
+- [x] **3.3. Thematic Category & Tag Management (`مدیریت دسته‌بندی موضوعی`)**:
+  - Admin UI (`/dashboard/scopes-categories`) to create/edit scopes and categories.
 
 ---
 
-### Phase 6: No-Code Flow Builder & Enterprise Governance (Priority: P3)
-*Objective: Empower department leads to author SOPs visually with version control and AI.*
+### Phase 4: Sidecar Runner & Operator Productivity (Status: ✅ COMPLETED)
+*Objective: live operation inside external software.*
 
-- [ ] **6.1. Visual Drag-and-Drop Canvas Builder**:
-  - Add, reorder, connect, and branch nodes visually.
-- [ ] **6.2. Executive ISO-Compliant PDF Export**:
-  - Branded executive PDF export with headers, flowchart diagrams, step manuals, and error matrices.
-- [ ] **6.3. AI Flow Assistant**:
-  - Paste raw circular text to automatically generate draft flowchart steps, branches, and error predictions.
+- [x] **4.1. Dockable Sidecar Runner Mode**:
+  - Compact sidebar + dedicated `/process/[slug]/sidecar` page for dual-window
+    operation with ERP/HRMS portals.
+- [x] **4.2. Screenshot Hotspot Viewer & Privacy Tools**:
+  - Numbered hotspot pins on screenshots; canvas blur/pixelation for national IDs,
+    phone numbers, and credentials (`ScreenshotEditorModal`).
+- [x] **4.3. Scratchpad Synchronization**:
+  - Auto-saved session scratchpad persisted across browser reloads.
+
+---
+
+### Phase 5: Workflow Runs & Audit Compliance Log (Status: ✅ MOSTLY COMPLETE)
+*Objective: tracked, compliant execution instances.*
+
+- [x] **5.1. Tracked Workflow Run Instances**:
+  - Official runs with operator name, timestamps, checklist progress, and step logs
+    (`/dashboard/runs`, runs tab, quick-start/completion modals).
+- [ ] **5.2. Supervisor Approval Gates**: **MISSING** — data fields exist
+  (`supervisorApprovalStatus`, step sign-off flags) but no UX blocks a step
+  pending supervisor approval.
+- [x] **5.3. Audit Trail Reporting**:
+  - Compliance audit sheet/certificate viewer modal per run.
+
+---
+
+### Phase 6: No-Code Flow Builder & Enterprise Governance (Status: ❌ NOT STARTED)
+*Objective: visual authoring with version control.*
+
+- [ ] **6.1. Visual Drag-and-Drop Canvas Builder**: not started (form-based
+  `ProcessEditorModal` is the only authoring UI, plus the Chrome extension).
+- [ ] **6.2. Executive ISO-Compliant PDF Export**: not started — only the
+  browser-print view (`/process/[slug]/print`) exists.
+- [ ] **6.3. AI Flow Assistant**: not started.
+
+### Phase 7 (unplanned): Authoring Chrome Extension (Status: ⏳ M1 DONE)
+*Added Oct 2026, outside the original roadmap.*
+- [x] **M1 — Interaction recorder**: MV3 side panel, per-site/all-sites optional
+  access, click-text + input-label capture (labels-only default, values on
+  confirm, passwords never), browser-login token auth (`User.extensionToken`),
+  `/extension-auth` single-account handoff, `steps/[stepId]/events` endpoint
+  (clicks → menu-path boxes, inputs → instruction drafts).
+- [ ] **M2 — Screenshot attach** (`captureVisibleTab` → upload → step image).
+- [ ] **M3 — Polish** (label heuristics, full-page stitch — only if authors ask).
+
+### Phase 8 (unplanned): Community Feedback (Status: ❌ NOT STARTED)
+- [ ] **8.1. "Report UI Change"**: employees cannot flag outdated steps — no code exists.
+- [ ] **8.2. Suggest-an-edit workflow**: no code exists.
 
 ---
 
@@ -121,13 +143,19 @@ flowchart TD
 | **08** | **Real-Data Quick Suggestions & Popular Searches** | Circular Req #4 | **P0** | Low | ✅ Complete |
 | **09** | **Step Notes & Callout Boxes (`نکات و هشدارها`)** | Circular Req | **P0** | Low | ✅ Complete |
 | **10** | **In-Text Cross-Linking to other processes/systems** | Circular Req #8 | **P1** | Medium | ✅ Complete |
-| **11** | **Distinct Node Types on Flowchart (Decision / End / Action)** | Circular Req / Phase 2 | **P1** | Medium | ✅ Complete |
+| **11** | **Distinct Node Types on Flowchart (Decision / End / Action)** | Circular Req / Phase 2 | **—** | Medium | 🗑️ Removed (Oct 2026, canvas deleted) |
 | **12** | Annual Administrative Timeline Calendar (`/timeline`) | Phase 1 / Foundation | **P0** | High | ✅ Active |
 | **13** | **Hierarchical Sub-Processes Architecture (`زیر-فرایندها`)** | Circular Req #1 | **P1** | High | ✅ Complete |
-| **14** | **Inline Single-Line Images & Screenshot Lightbox** | Circular Req #3 & #9 | **P2** | Medium | Pending |
-| **15** | **Thematic Category Management** | Circular Req #7 | **P2** | Medium | Pending |
+| **14** | **Inline Single-Line Images & Screenshot Lightbox** | Circular Req #3 & #9 | **P2** | Medium | ✅ Complete |
+| **15** | **Thematic Category Management** | Circular Req #7 | **P2** | Medium | ✅ Complete |
 | **16** | Dockable Sidecar runner mode | Phase 4 | P2 | Medium | ✅ Complete |
-| **18** | Screenshot Hotspot pins & privacy blur | Phase 4 | P2 | High | Pending |
-| **19** | Persistent Workflow Run instances & logs | Phase 5 | P3 | High | Pending |
+| **18** | Screenshot Hotspot pins & privacy blur | Phase 4 | P2 | High | ✅ Complete |
+| **19** | Persistent Workflow Run instances & logs | Phase 5 | P3 | High | ✅ Complete (gates missing) |
 | **20** | Visual No-Code Flow Builder studio | Phase 6 | P3 | High | Pending |
 | **21** | ISO corporate PDF export | Phase 6 | P3 | Medium | Pending |
+| **22** | Supervisor approval gates UX | Phase 5 | P2 | Medium | Pending (fields only) |
+| **23** | Report UI Change / suggest-an-edit | Phase 8 | P2 | Medium | Pending (no code) |
+| **24** | Process timeline view mode (process page) | Phase 2 | P3 | Medium | Pending (never built) |
+| **25** | Authoring Chrome extension M1 (recorder + token auth) | Phase 7 | P1 | High | ✅ Complete |
+| **26** | Extension M2 (screenshot attach) | Phase 7 | P2 | Medium | Pending |
+| **27** | Dashboard process-table pagination | Maintenance | P3 | Low | ✅ Complete |
