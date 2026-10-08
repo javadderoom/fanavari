@@ -104,6 +104,27 @@ export function mapPrismaProcess(p: any): Process {
 }
 
 /**
+ * Resolves a caller-supplied user id to a real database User id.
+ * The web app sends demo persona ids (e.g. "usr-admin") which do not exist
+ * in the User table — writing those into FK columns (authorId, grantedById,
+ * operatorId) throws P2003 violations. Returns null when unknown so callers
+ * fall back to nullable FKs, matching the runs routes' dbUser pattern.
+ */
+export async function resolveDbUserId(id: string | null | undefined): Promise<string | null> {
+  if (!id) return null;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    return user?.id || null;
+  } catch (error) {
+    console.error('Error in resolveDbUserId:', error);
+    return null;
+  }
+}
+
+/**
  * Fetch all processes directly from PostgreSQL database.
  */
 export async function getDbProcesses(): Promise<Process[]> {

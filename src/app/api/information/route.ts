@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
-import { mapPrismaInformationPost } from '@/lib/db-service';
+import { mapPrismaInformationPost, resolveDbUserId } from '@/lib/db-service';
 
 export async function GET(req: NextRequest) {
   try {
@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
         visibility: ['public', 'restricted'].includes(visibility) ? visibility : 'public',
         departmentId: departmentId && departmentId !== 'none' ? departmentId : null,
         systemToolId: systemToolId && systemToolId !== 'none' ? systemToolId : null,
-        authorId: currentUserId || null,
+        authorId: await resolveDbUserId(currentUserId),
         targetUrl: targetUrl ? targetUrl.trim() : null,
         publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
       },

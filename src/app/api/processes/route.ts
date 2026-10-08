@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
-import { mapPrismaProcess } from '@/lib/db-service';
+import { mapPrismaProcess, resolveDbUserId } from '@/lib/db-service';
 
 export async function GET(req: NextRequest) {
   try {
@@ -258,7 +258,7 @@ export async function POST(req: NextRequest) {
         scope: scope || 'organization',
         category: category || 'hr',
         visibility: visibility || 'public',
-        authorId: currentUserId || null,
+        authorId: await resolveDbUserId(currentUserId),
         departmentId: resolvedDeptId,
         systemToolId: resolvedSystemToolId,
         targetSystem: targetSystem?.trim() || 'سامانه سازمانی',

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
+import { resolveDbUserId } from '@/lib/db-service';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -116,6 +117,8 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     const body = await req.json();
     const currentUserId = req.headers.get('x-user-id');
     const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    // Demo persona ids are not real FK targets — resolve or fall back to null.
+    const grantedByDbId = await resolveDbUserId(currentUserId);
 
     const post = await prisma.informationPost.findFirst({
       where: { OR: [{ id }, { slug: id }] },
@@ -170,7 +173,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
             postId: post.id,
             userId: targetUserId,
             permission: validPermission,
-            grantedById: currentUserId || null,
+            grantedById: grantedByDbId,
           },
         });
       }
@@ -193,7 +196,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
             postId: post.id,
             departmentId: targetDepartmentId,
             permission: validPermission,
-            grantedById: currentUserId || null,
+            grantedById: grantedByDbId,
           },
         });
       }
@@ -217,7 +220,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
             postId: post.id,
             roleName: trimmedRole,
             permission: validPermission,
-            grantedById: currentUserId || null,
+            grantedById: grantedByDbId,
           },
         });
       }
@@ -236,7 +239,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
           claimToken: token,
           claimExpiresAt: expiresAt,
           permission: validPermission,
-          grantedById: currentUserId || null,
+          grantedById: grantedByDbId,
         },
       });
     }
