@@ -340,7 +340,7 @@ export default function DashboardProcessesPage() {
                       </span>
                     </td>
                     <td className="p-4 text-center">
-                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                      <span className="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                         {proc.steps?.length || proc.totalSteps} مرحله
                       </span>
                     </td>
