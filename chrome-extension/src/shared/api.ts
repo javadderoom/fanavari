@@ -48,13 +48,16 @@ export class FanavariApi {
     processId: string,
     stepId: string,
     events: RecordedEvent[]
-  ): Promise<{ appendedEvents: number }> {
+  ): Promise<{ appendedMenuSegments: number; appendedEvents: number }> {
     const res = await fetch(
       `${this.base}/api/processes/${encodeURIComponent(processId)}/steps/${encodeURIComponent(stepId)}/events`,
       { method: 'POST', headers: this.headers(true), body: JSON.stringify({ events }) }
     );
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `Server responded ${res.status}`);
-    return data;
+    return {
+      appendedMenuSegments: Number(data.appendedMenuSegments) || 0,
+      appendedEvents: Number(data.appendedEvents) || 0,
+    };
   }
 }

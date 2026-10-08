@@ -271,7 +271,10 @@ async function handleSend(): Promise<void> {
     setStatus('در حال ارسال...');
     const api = new FanavariApi(settings.serverUrl, settings.token);
     const result = await api.sendEvents(loadedProcessId, stepSelect.value, buffer.events);
-    setStatus(`✅ ${faNum(result.appendedEvents)} رویداد به گام ارسال شد.`);
+    const parts: string[] = [];
+    if (result.appendedMenuSegments > 0) parts.push(`${faNum(result.appendedMenuSegments)} باکس مسیر`);
+    if (result.appendedEvents > 0) parts.push(`${faNum(result.appendedEvents)} یادداشت به دستورالعمل`);
+    setStatus(`✅ ارسال شد: ${parts.join('، ')}.`);
     await clearBuffer();
     await refreshRecording();
   } catch (err) {

@@ -26,6 +26,18 @@ function sanitizeLine(text: string, max = 140): string {
   return (text || '').replace(/[\r\n]+/g, ' ').trim().slice(0, max);
 }
 
+/**
+ * Cleans a click label for use as a menu-path segment. The MenuPathDisplay
+ * parser treats >, ›, », → as delimiters, so those are neutralized to keep
+ * one click == one box.
+ */
+function sanitizeMenuSegment(text: string, max = 80): string {
+  return sanitizeLine(text, max)
+    .replace(/[>›»→]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function formatEventsMarkdown(events: RecordedEvent[]): string {
   const lines = events.map((ev, idx) => {
     const label = sanitizeLine(ev.label) || '(بدون عنوان)';
@@ -43,8 +55,11 @@ function formatEventsMarkdown(events: RecordedEvent[]): string {
 }
 
 /**
- * Appends interaction-recorder events from the authoring extension
- * to a step as reviewable draft markdown.
+ * Appends interaction-recorder events from the authoring extension to a step.
+ * Clicks extend the step's hierarchical menu path (`targetMenuPath`,
+ * rendered as «مسیر گام‌به‌گام کلیک در منوی سامانه» boxes); input and
+ * navigation events are appended as reviewable draft markdown to the step
+ * instructions («دستورالعمل اجرایی و شرح تفصیلی گام»).
  * Auth: `x-extension-token` (or dashboard `x-user-id` headers).
  */
 export async function POST(req: NextRequest, { params }: RouteContext) {
@@ -75,23 +90,50 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
           OR: [{ id }, { slug: decodeURIComponent(id) }],
         },
       },
-      select: { id: true, contentMarkdown: true, processId: true },
+      select: { id: true, stepKey: true, title: true, contentMarkdown: true, targetMenuPath: true, processId: true },
     });
 
     if (!step) {
       return NextResponse.json({ error: 'Step not found' }, { status: 404 });
     }
 
-    const stamp = new Date().toLocaleString('fa-IR');
-    const block = [
-      '',
-      `📝 ثبت افزونه نویسندگی — ${stamp} (توسط ${user.name})`,
-      formatEventsMarkdown(events),
-    ].join('\n');
+    const clickEvents = events.filter((ev) => ev.type === 'click');
+    const noteEvents = events.filter((ev) => ev.type !== 'click');
+
+    const stepUpdate: { contentMarkdown?: string; targetMenuPath?: string } = {};
+    let appendedMenuSegments = 0;
+
+    // Clicks → hierarchical menu-path boxes (deduped against the tail).
+    if (clickEvents.length > 0) {
+      const existing = (step.targetMenuPath || '')
+        .split('>')
+        .map((seg) => seg.trim())
+        .filter((seg) => seg.length > 0);
+      for (const ev of clickEvents) {
+        const segment = sanitizeMenuSegment(ev.label);
+        if (!segment) continue;
+        if (existing.length === 0 || existing[existing.length - 1] !== segment) {
+          existing.push(segment);
+          appendedMenuSegments++;
+        }
+      }
+      stepUpdate.targetMenuPath = existing.join(' > ');
+    }
+
+    // Inputs / navigations → step instructions draft.
+    if (noteEvents.length > 0) {
+      const stamp = new Date().toLocaleString('fa-IR');
+      const block = [
+        '',
+        `📝 ثبت افزونه نویسندگی — ${stamp} (توسط ${user.name})`,
+        formatEventsMarkdown(noteEvents),
+      ].join('\n');
+      stepUpdate.contentMarkdown = `${step.contentMarkdown || ''}\n${block}`;
+    }
 
     const updated = await prisma.step.update({
       where: { id: step.id },
-      data: { contentMarkdown: `${step.contentMarkdown || ''}\n${block}` },
+      data: stepUpdate,
       select: { id: true, stepKey: true, title: true },
     });
 
@@ -100,7 +142,12 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
       data: { updatedAt: new Date() },
     });
 
-    return NextResponse.json({ success: true, step: updated, appendedEvents: events.length });
+    return NextResponse.json({
+      success: true,
+      step: updated,
+      appendedMenuSegments,
+      appendedEvents: noteEvents.length,
+    });
   } catch (error) {
     console.error('Error appending step events:', error);
     return NextResponse.json({ error: 'Failed to append events' }, { status: 500 });
