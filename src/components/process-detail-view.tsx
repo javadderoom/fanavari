@@ -9,7 +9,6 @@ import { ProcessAccessModal } from './process-access-modal';
 import { ProcessHeaderBanner } from './process-detail/process-header-banner';
 import { ProcessErrorMatrixTab } from './process-detail/process-error-matrix-tab';
 import { ProcessScratchpadTab } from './process-detail/process-scratchpad-tab';
-import { FlowchartCanvas } from './process-detail/flowchart-canvas';
 import { StepRunnerView } from './process-detail/step-runner-view';
 import { QuickStartRunModal } from './process-detail/quick-start-run-modal';
 import { RunCompletionModal } from './process-detail/run-completion-modal';
@@ -27,7 +26,6 @@ import {
   Check, 
   AlertTriangle, 
   Lightbulb, 
-  Layers, 
   GitFork, 
   CheckCircle2, 
   ShieldAlert, 
@@ -44,7 +42,6 @@ import {
   Sparkles,
   Lock,
   Globe,
-  Compass,
   Award
 } from 'lucide-react';
 
@@ -59,7 +56,6 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<'flow' | 'errors' | 'scratchpad' | 'runs'>('flow');
-  const [flowViewMode, setFlowViewMode] = useState<'canvas' | 'stepper'>('canvas');
   const [activeRun, setActiveRun] = useState<WorkflowRun | null>(null);
   const [isQuickStartModalOpen, setIsQuickStartModalOpen] = useState(false);
   const [completedRunForModal, setCompletedRunForModal] = useState<WorkflowRun | null>(null);
@@ -495,79 +491,26 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
         </button>
       </div>
 
-      {/* Tab 1: Flowchart & Step Walkthrough (Interactive Process Runner Mode) */}
+      {/* Tab 1: Step-by-Step Walkthrough */}
       {activeTab === 'flow' && (
         <div className="space-y-6">
-          {/* View Mode Switcher: Flowchart Canvas vs Step Runner */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 rounded-2xl border bg-slate-100/80 dark:bg-slate-900/80 backdrop-blur-md" style={{ borderColor: 'var(--border-subtle)' }}>
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setFlowViewMode('canvas')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  flowViewMode === 'canvas'
-                    ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
-                }`}
-              >
-                <Compass className="w-4 h-4" />
-                <span>بوم تعاملی فلوچارت (Macro Canvas)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFlowViewMode('stepper')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  flowViewMode === 'stepper'
-                    ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
-                }`}
-              >
-                <Layers className="w-4 h-4" />
-                <span>رانر گام‌به‌گام (Step Runner)</span>
-              </button>
-            </div>
-            <div className="text-[11px] text-slate-400 font-medium px-2 flex items-center gap-1">
-              {flowViewMode === 'canvas' ? (
-                <span>🔍 درگ ماوس برای حرکت و اسکرول برای زوم ۲ بعدی</span>
-              ) : (
-                <span>📋 راهنمای اجرای خطی و چک‌لیست مراحل</span>
-              )}
-            </div>
-          </div>
-
-          {/* Flow View Mode: 2D Interactive Canvas */}
-          {flowViewMode === 'canvas' && (
-            <FlowchartCanvas
-              steps={process.steps}
-              activeStepIndex={activeStepIndex}
-              completedStepKeys={completedStepKeys}
-              onSelectStep={(idx) => setActiveStepIndex(idx)}
-              onToggleCompleteStep={(stepKey) => toggleStepCompleted(stepKey)}
-              onSwitchToRunner={() => setFlowViewMode('stepper')}
-              onDrillDownSubProcess={handleDrillDownSubProcess}
-            />
-          )}
-
-          {/* Flow View Mode: Step Runner Walkthrough */}
-          {flowViewMode === 'stepper' && (
-            <StepRunnerView
-              steps={process.steps}
-              activeStepIndex={activeStepIndex}
-              completedStepKeys={completedStepKeys}
-              onSelectStep={(idx) => setActiveStepIndex(idx)}
-              onToggleStepComplete={(stepKey, notes) => toggleStepCompleted(stepKey, notes)}
-              onCompleteAndNext={(stepKey, notes) => handleCompleteAndNext(stepKey, notes)}
-              copiedField={copiedField}
-              onCopyField={handleCopy}
-              activeRun={activeRun}
-              onDisconnectRun={() => {
-                setActiveRun(null);
-                notify.info('اتصال به اجرای رسمی قطع گردید.');
-              }}
-              onFinishActiveRun={handleFinishActiveRun}
-              onDrillDownSubProcess={handleDrillDownSubProcess}
-            />
-          )}
+          <StepRunnerView
+            steps={process.steps}
+            activeStepIndex={activeStepIndex}
+            completedStepKeys={completedStepKeys}
+            onSelectStep={(idx) => setActiveStepIndex(idx)}
+            onToggleStepComplete={(stepKey, notes) => toggleStepCompleted(stepKey, notes)}
+            onCompleteAndNext={(stepKey, notes) => handleCompleteAndNext(stepKey, notes)}
+            copiedField={copiedField}
+            onCopyField={handleCopy}
+            activeRun={activeRun}
+            onDisconnectRun={() => {
+              setActiveRun(null);
+              notify.info('اتصال به اجرای رسمی قطع گردید.');
+            }}
+            onFinishActiveRun={handleFinishActiveRun}
+            onDrillDownSubProcess={handleDrillDownSubProcess}
+          />
         </div>
       )}
 
@@ -598,7 +541,6 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
           onActivateRun={(run) => {
             setActiveRun(run);
             setActiveTab('flow');
-            setFlowViewMode('stepper');
             notify.success(`اجرای رسمی #${run.runNumber} در کنسول فعال گردید.`);
           }}
         />
@@ -656,7 +598,6 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
         onRunStarted={(run) => {
           setActiveRun(run);
           setActiveTab('flow');
-          setFlowViewMode('stepper');
           notify.success(`اجرای رسمی #${run.runNumber} با موفقیت آغاز گردید!`);
         }}
       />
