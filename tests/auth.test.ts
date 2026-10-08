@@ -6,6 +6,8 @@ import { issueVerificationCode } from '../src/lib/otp';
 import { POST as signup } from '../src/app/api/auth/signup/route';
 import { POST as verifyContact } from '../src/app/api/auth/verify-contact/route';
 import { POST as login } from '../src/app/api/auth/login/route';
+import { POST as otpRequest } from '../src/app/api/auth/otp/request/route';
+import { POST as loginOtp } from '../src/app/api/auth/login/otp/route';
 import { GET as me } from '../src/app/api/auth/me/route';
 import { POST as logout } from '../src/app/api/auth/logout/route';
 
@@ -105,5 +107,38 @@ describe('Auth flow: signup -> verify -> login -> me -> logout', () => {
     assert.equal(res.status, 401);
     const data = await res.json();
     assert.match(data.error, /نادرست/);
+  });
+});
+
+describe('Passwordless OTP login', () => {
+  it('answers generically for unknown identifiers', async () => {
+    const res = await otpRequest(req('/api/auth/otp/request', { identifier: 'ghost-9x99@example.com' }));
+    assert.equal(res.status, 200);
+    const data = await res.json();
+    assert.equal(data.sent, true);
+    assert.ok(!data.masked);
+
+    const rows = await prisma.verificationCode.count({ where: { identifier: 'ghost-9x99@example.com' } });
+    assert.equal(rows, 0);
+  });
+
+  it('issues a challenge and completes login for a verified contact', async () => {
+    await prisma.verificationCode.deleteMany({ where: { identifier: testEmail } });
+    const res = await otpRequest(req('/api/auth/otp/request', { identifier: testEmail }));
+    assert.equal(res.status, 200);
+    const data = await res.json();
+    assert.equal(data.sent, true);
+    assert.equal(data.channel, 'email');
+
+    // Read the issued code hash path: use a fresh code via lib (cooldown cleared above).
+    const { issueVerificationCode: issue } = await import('../src/lib/otp');
+    await prisma.verificationCode.deleteMany({ where: { identifier: testEmail } });
+    const { code } = await issue({ userId: createdUserId, channel: 'email', identifier: testEmail });
+
+    const done = await loginOtp(req('/api/auth/login/otp', { identifier: testEmail, code }));
+    assert.equal(done.status, 200);
+    const doneData = await done.json();
+    assert.equal(doneData.user.email, testEmail);
+    assert.ok(done.headers.get('set-cookie')?.includes('fanavari_session'));
   });
 });

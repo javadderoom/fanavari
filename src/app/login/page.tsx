@@ -13,6 +13,7 @@ export default function LoginPage() {
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [method, setMethod] = useState<'password' | 'otp'>('password');
   const [stage, setStage] = useState<'credentials' | 'otp'>('credentials');
   const [otpChannel, setOtpChannel] = useState<'sms' | 'email'>('sms');
   const [otpMasked, setOtpMasked] = useState('');
@@ -64,6 +65,33 @@ export default function LoginPage() {
     }
   };
 
+  const handleOtpRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!identifier.trim()) {
+      notify.error('شماره موبایل یا ایمیل را وارد کنید.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/auth/otp/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: identifier.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'خطا در ارسال کد');
+      setOtpChannel(data.channel === 'email' ? 'email' : 'sms');
+      setOtpMasked(data.masked || '');
+      setOtpIdentifier(data.identifier || identifier.trim());
+      notify.success(data.message || 'کد ورود ارسال شد.');
+      setStage('otp');
+    } catch (err: any) {
+      notify.error(err.message || 'خطا در ارسال کد');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (code.trim().length < 4) {
@@ -109,12 +137,67 @@ export default function LoginPage() {
             <p className="text-xs text-slate-500">
               {stage === 'otp'
                 ? `کد ارسال‌شده به ${otpMasked} را وارد کنید`
-                : 'با شماره موبایل یا ایمیل و گذرواژه وارد شوید'}
+                : method === 'otp'
+                  ? 'کد یک‌بارمصرف به شماره یا ایمیل تأییدشده شما ارسال می‌شود'
+                  : 'با شماره موبایل یا ایمیل و گذرواژه وارد شوید'}
             </p>
           </div>
         </div>
 
-        {stage === 'credentials' ? (
+        {stage === 'credentials' && (
+          <div className="grid grid-cols-2 gap-2 mb-5">
+            {(
+              [
+                { key: 'password', label: 'گذرواژه' },
+                { key: 'otp', label: 'کد یک‌بارمصرف' },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => setMethod(opt.key)}
+                className={`py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                  method === opt.key ? 'bg-blue-600 text-white border-blue-600' : ''
+                }`}
+                style={method === opt.key ? undefined : { borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {stage === 'credentials' && method === 'otp' ? (
+          <form onSubmit={handleOtpRequest} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                شماره موبایل یا ایمیل تأییدشده
+              </label>
+              <input
+                type="text"
+                dir="auto"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="0912... یا name@mail.com"
+                className={inputClass}
+                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              <span>ارسال کد ورود</span>
+            </button>
+            <div className="flex items-center justify-between text-xs font-bold pt-1">
+              <Link href="/signup" className="text-blue-600 hover:underline">
+                ثبت‌نام حساب جدید
+              </Link>
+            </div>
+          </form>
+        ) : stage === 'credentials' ? (
           <form onSubmit={handleCredentials} className="space-y-4">
             <div>
               <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
@@ -191,7 +274,7 @@ export default function LoginPage() {
               onClick={() => setStage('credentials')}
               className="w-full text-xs font-bold text-slate-500 hover:underline cursor-pointer"
             >
-              بازگشت به ورود با گذرواژه
+              بازگشت
             </button>
           </form>
         )}
