@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
       orderBy: { updatedAt: 'desc' },
     });
 
-    return NextResponse.json(processes.map(mapPrismaProcess));
+    return NextResponse.json(processes.map((p) => mapPrismaProcess(p, { redactGrants: !isSuperAdmin })));
   } catch (error) {
     console.error('Error fetching processes:', error);
     return NextResponse.json({ error: 'Failed to fetch processes' }, { status: 500 });
@@ -264,7 +264,7 @@ export async function POST(req: NextRequest) {
         });
       });
 
-      return NextResponse.json(mapPrismaProcess(updated), { status: 200 });
+      return NextResponse.json(mapPrismaProcess(updated, { redactGrants: !isSuperAdmin }), { status: 200 });
     }
 
     // Brand new process creation: ensure slug uniqueness
@@ -312,7 +312,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(mapPrismaProcess(created), { status: 201 });
+    return NextResponse.json(mapPrismaProcess(created, { redactGrants: !isSuperAdmin }), { status: 201 });
   } catch (error: any) {
     console.error('Error saving process in /api/processes:', error);
     return NextResponse.json({ error: error.message || 'Failed to save process' }, { status: 500 });

@@ -2,9 +2,14 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useUserSession } from './user-session-provider';
+import { canAccessDashboard } from '@/lib/permissions';
 import { GitBranch, Heart, Database, ShieldCheck, ArrowUp } from 'lucide-react';
 
 export function Footer() {
+  const { isAuthenticated, isDemoMode, currentUser } = useUserSession();
+  const showDashboard =
+    isDemoMode || (isAuthenticated && canAccessDashboard(currentUser.permissions));
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -90,9 +95,11 @@ export function Footer() {
             <Link href="/organizations" className="hover:text-blue-600 transition-colors">
               سازمان‌ها
             </Link>
-            <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
-              داشبورد مدیریت
-            </Link>
+            {showDashboard && (
+              <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
+                داشبورد مدیریت
+              </Link>
+            )}
           </div>
         </div>
 

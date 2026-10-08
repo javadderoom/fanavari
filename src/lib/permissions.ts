@@ -39,6 +39,29 @@ export const PERMISSION_LABELS: Record<PermissionKey, { fa: string; en: string; 
 };
 
 /**
+ * Management surface gate: the dashboard (and its links) is visible only to
+ * admins and authors — anyone holding a content/organization/user management
+ * bit. Plain viewers (VIEW_PROCESSES only) and guests stay on public pages.
+ */
+const DASHBOARD_BITS = [
+  Permissions.CREATE_PROCESSES,
+  Permissions.EDIT_PROCESSES,
+  Permissions.DELETE_PROCESSES,
+  Permissions.MANAGE_STEPS,
+  Permissions.MANAGE_ERRORS,
+  Permissions.MANAGE_CATEGORIES,
+  Permissions.MANAGE_SYSTEMS,
+  Permissions.MANAGE_USERS,
+  Permissions.VIEW_AUDIT_LOGS,
+  Permissions.MANAGE_INFORMATION,
+] as const;
+
+export function canAccessDashboard(userBitfield: number): boolean {
+  if (hasPermission(userBitfield, Permissions.ADMINISTRATOR)) return true;
+  return DASHBOARD_BITS.some((bit) => hasPermission(userBitfield, bit));
+}
+
+/**
  * Checks if a bitfield has a specific permission bit enabled.
  * If the user has ADMINISTRATOR bit, this always evaluates to true.
  */

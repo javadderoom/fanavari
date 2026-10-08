@@ -6,6 +6,7 @@ import {
   addPermission,
   removePermission,
   getActivePermissions,
+  canAccessDashboard,
   ROLE_PRESETS,
   PERMISSION_LABELS,
   PermissionKey,
@@ -167,6 +168,22 @@ describe('Permissions Bitwise System', () => {
         assert.ok(meta.en && meta.en.length > 0, `English label should exist for ${key}`);
         assert.ok(meta.description && meta.description.length > 0, `Description should exist for ${key}`);
       }
+    });
+  });
+
+  describe('canAccessDashboard', () => {
+    it('should hide the dashboard from guests and plain viewers', () => {
+      assert.equal(canAccessDashboard(Permissions.NONE), false);
+      assert.equal(canAccessDashboard(Permissions.VIEW_PROCESSES), false);
+    });
+
+    it('should show the dashboard to admins and authors', () => {
+      assert.equal(canAccessDashboard(Permissions.ADMINISTRATOR), true);
+      assert.equal(canAccessDashboard(ROLE_PRESETS.SUPER_ADMIN.bitfield), true);
+      assert.equal(canAccessDashboard(ROLE_PRESETS.PROCESS_MANAGER.bitfield), true);
+      assert.equal(canAccessDashboard(ROLE_PRESETS.PROCESS_EDITOR.bitfield), true);
+      assert.equal(canAccessDashboard(Permissions.MANAGE_USERS), true);
+      assert.equal(canAccessDashboard(Permissions.VIEW_AUDIT_LOGS), true);
     });
   });
 });

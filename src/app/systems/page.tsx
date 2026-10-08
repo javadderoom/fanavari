@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 
 export default async function SystemsPage() {
   const tools = await getDbSystemTools();
-  const processes = await getDbProcesses();
+  const processes = await getDbProcesses({ redactGrants: true });
 
   const getToolIcon = (icon: string) => {
     switch (icon) {

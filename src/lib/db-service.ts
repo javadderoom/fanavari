@@ -12,20 +12,25 @@ import {
 
 /**
  * Maps a Prisma process record to the frontend Process interface.
+ * With redactGrants, access grants keep only the targeting fields the viewer
+ * needs for own-access matching (userId/departmentId/roleName/permission) —
+ * nested user PII and invite claim tokens are stripped.
  */
-export function mapPrismaProcess(p: any): Process {
-  return {
-    id: p.id,
-    slug: p.slug,
-    title: p.title,
-    description: p.description,
-    scope: (p.scope as any) || 'portal',
-    category: (p.category as any) || 'hr',
-    visibility: (p.visibility as any) || 'public',
-    isPublished: p.isPublished !== undefined ? Boolean(p.isPublished) : true,
-    authorId: p.authorId || null,
-    accessGrants: Array.isArray(p.accessGrants)
-      ? p.accessGrants.map((g: any) => ({
+export function mapPrismaProcess(p: any, opts?: { redactGrants?: boolean }): Process {
+  const redact = opts?.redactGrants === true;
+  const mapGrant = (g: any) =>
+    redact
+      ? {
+          id: g.id,
+          processId: g.processId,
+          userId: g.userId || null,
+          departmentId: g.departmentId || null,
+          departmentName: g.department?.name || null,
+          roleName: g.roleName || null,
+          permission: (g.permission as any) || 'view',
+          createdAt: g.createdAt,
+        }
+      : {
           id: g.id,
           processId: g.processId,
           userId: g.userId || null,
@@ -53,8 +58,18 @@ export function mapPrismaProcess(p: any): Process {
           permission: (g.permission as any) || 'view',
           grantedById: g.grantedById || null,
           createdAt: g.createdAt,
-        }))
-      : [],
+        };
+  return {
+    id: p.id,
+    slug: p.slug,
+    title: p.title,
+    description: p.description,
+    scope: (p.scope as any) || 'portal',
+    category: (p.category as any) || 'hr',
+    visibility: (p.visibility as any) || 'public',
+    isPublished: p.isPublished !== undefined ? Boolean(p.isPublished) : true,
+    authorId: p.authorId || null,
+    accessGrants: Array.isArray(p.accessGrants) ? p.accessGrants.map(mapGrant) : [],
     departmentName: p.department?.name || 'سازمان نامشخص',
     departmentSlug: p.department?.slug || undefined,
     estimatedMinutes: p.estimatedMinutes || 10,
@@ -134,7 +149,7 @@ export async function resolveDbUserId(id: string | null | undefined): Promise<st
 /**
  * Fetch all processes directly from PostgreSQL database.
  */
-export async function getDbProcesses(): Promise<Process[]> {
+export async function getDbProcesses(opts?: { redactGrants?: boolean }): Promise<Process[]> {
   try {
     const list = await prisma.process.findMany({
       where: { isPublished: true },
@@ -168,7 +183,7 @@ export async function getDbProcesses(): Promise<Process[]> {
       orderBy: { createdAt: 'desc' },
     });
 
-    return list.map(mapPrismaProcess);
+    return list.map((p) => mapPrismaProcess(p, opts));
   } catch (error) {
     console.error('Error in getDbProcesses:', error);
     return [];
@@ -178,7 +193,7 @@ export async function getDbProcesses(): Promise<Process[]> {
 /**
  * Fetch single process by slug directly from PostgreSQL database.
  */
-export async function getDbProcessBySlug(slug: string): Promise<Process | null> {
+export async function getDbProcessBySlug(slug: string, opts?: { redactGrants?: boolean }): Promise<Process | null> {
   try {
     if (!slug) return null;
     const rawSlug = slug.trim();
@@ -227,7 +242,7 @@ export async function getDbProcessBySlug(slug: string): Promise<Process | null> 
     });
 
     if (!item) return null;
-    return mapPrismaProcess(item);
+    return mapPrismaProcess(item, opts);
   } catch (error) {
     console.error(`Error in getDbProcessBySlug(${slug}):`, error);
     return null;
@@ -312,7 +327,7 @@ export async function getDbSystemToolBySlug(slug: string): Promise<{ tool: Syste
         websiteUrl: tool.websiteUrl || undefined,
         processCount: tool.processes.length,
       },
-      processes: tool.processes.map(mapPrismaProcess),
+      processes: tool.processes.map((p) => mapPrismaProcess(p, { redactGrants: true })),
     };
   } catch (error) {
     console.error(`Error in getDbSystemToolBySlug(${slug}):`, error);
@@ -381,21 +396,23 @@ export async function getDbErrorGuides(): Promise<any[]> {
 
 /**
  * Maps a Prisma information post record to frontend InformationPost interface.
+ * redactGrants behaves as in mapPrismaProcess.
  */
-export function mapPrismaInformationPost(p: any): InformationPost {
-  return {
-    id: p.id,
-    title: p.title,
-    slug: p.slug,
-    summary: p.summary || null,
-    content: p.content,
-    type: p.type || 'announcement',
-    priority: p.priority || 'normal',
-    isPinned: Boolean(p.isPinned),
-    isPublished: p.isPublished !== undefined ? Boolean(p.isPublished) : true,
-    visibility: (p.visibility as any) || 'public',
-    accessGrants: Array.isArray(p.accessGrants)
-      ? p.accessGrants.map((g: any) => ({
+export function mapPrismaInformationPost(p: any, opts?: { redactGrants?: boolean }): InformationPost {
+  const redact = opts?.redactGrants === true;
+  const mapGrant = (g: any) =>
+    redact
+      ? {
+          id: g.id,
+          postId: g.postId,
+          userId: g.userId || null,
+          departmentId: g.departmentId || null,
+          departmentName: g.department?.name || null,
+          roleName: g.roleName || null,
+          permission: (g.permission as any) || 'view',
+          createdAt: g.createdAt,
+        }
+      : {
           id: g.id,
           postId: g.postId,
           userId: g.userId || null,
@@ -423,8 +440,19 @@ export function mapPrismaInformationPost(p: any): InformationPost {
           permission: (g.permission as any) || 'view',
           grantedById: g.grantedById || null,
           createdAt: g.createdAt,
-        }))
-      : [],
+        };
+  return {
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    summary: p.summary || null,
+    content: p.content,
+    type: p.type || 'announcement',
+    priority: p.priority || 'normal',
+    isPinned: Boolean(p.isPinned),
+    isPublished: p.isPublished !== undefined ? Boolean(p.isPublished) : true,
+    visibility: (p.visibility as any) || 'public',
+    accessGrants: Array.isArray(p.accessGrants) ? p.accessGrants.map(mapGrant) : [],
     departmentId: p.departmentId || null,
     departmentName: p.department?.name || null,
     departmentSlug: p.department?.slug || null,
@@ -450,6 +478,7 @@ export async function getDbInformationPosts(options?: {
   systemSlug?: string;
   limit?: number;
   includeDrafts?: boolean;
+  redactGrants?: boolean;
 }): Promise<InformationPost[]> {
   try {
     const where: any = {};
@@ -482,7 +511,7 @@ export async function getDbInformationPosts(options?: {
       take: options?.limit,
     });
 
-    return posts.map(mapPrismaInformationPost);
+    return posts.map((p) => mapPrismaInformationPost(p, { redactGrants: options?.redactGrants }));
   } catch (error) {
     console.error('Error in getDbInformationPosts:', error);
     return [];
@@ -492,7 +521,7 @@ export async function getDbInformationPosts(options?: {
 /**
  * Fetch a single information post by slug directly from PostgreSQL database.
  */
-export async function getDbInformationPostBySlug(slug: string): Promise<InformationPost | null> {
+export async function getDbInformationPostBySlug(slug: string, opts?: { redactGrants?: boolean }): Promise<InformationPost | null> {
   try {
     if (!slug) return null;
     const rawSlug = slug.trim();
@@ -525,7 +554,7 @@ export async function getDbInformationPostBySlug(slug: string): Promise<Informat
     });
 
     if (!post) return null;
-    return mapPrismaInformationPost(post);
+    return mapPrismaInformationPost(post, opts);
   } catch (error) {
     console.error('Error in getDbInformationPostBySlug:', error);
     return null;

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default async function TimelinePage() {
   const [processes, departments] = await Promise.all([
-    getDbProcesses(),
+    getDbProcesses({ redactGrants: true }),
     getDbDepartments(),
   ]);
 

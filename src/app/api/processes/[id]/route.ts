@@ -75,7 +75,11 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
       }
     }
 
-    return NextResponse.json(mapPrismaProcess(process));
+    return NextResponse.json(
+      mapPrismaProcess(process, {
+        redactGrants: !hasPermission(userPermissions, Permissions.ADMINISTRATOR),
+      })
+    );
   } catch (error: any) {
     console.error('Error fetching process by ID:', error);
     return NextResponse.json({ error: error.message || 'خطا در دریافت فرایند' }, { status: 500 });
@@ -130,7 +134,11 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       },
     });
 
-    return NextResponse.json(mapPrismaProcess(updated));
+    return NextResponse.json(
+      mapPrismaProcess(updated, {
+        redactGrants: !hasPermission(userPermissions, Permissions.ADMINISTRATOR),
+      })
+    );
   } catch (error: any) {
     console.error('Error updating process:', error);
     return NextResponse.json({ error: error.message || 'Failed to update process' }, { status: 500 });

@@ -3,6 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useUserSession } from './user-session-provider';
+import { canAccessDashboard } from '@/lib/permissions';
 import { 
   Home, 
   Megaphone, 
@@ -30,6 +32,11 @@ const NAV_ITEMS: NavItem[] = [
 
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const { isAuthenticated, isDemoMode, currentUser } = useUserSession();
+  // Guests and plain viewers never see the dashboard tab.
+  const showDashboard =
+    isDemoMode || (isAuthenticated && canAccessDashboard(currentUser.permissions));
+  const items = showDashboard ? NAV_ITEMS : NAV_ITEMS.filter((i) => i.href !== '/dashboard');
 
   return (
     <nav
@@ -45,7 +52,7 @@ export function MobileBottomNav() {
       }}
     >
       <div className="max-w-md mx-auto px-2 h-16 flex items-center justify-around">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const Icon = item.icon;
           const isActive = item.exact
             ? pathname === item.href

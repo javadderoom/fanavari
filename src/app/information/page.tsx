@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default async function InformationPage() {
   const [posts, departments, systems] = await Promise.all([
-    getDbInformationPosts(),
+    getDbInformationPosts({ redactGrants: true }),
     getDbDepartments(),
     getDbSystemTools(),
   ]);

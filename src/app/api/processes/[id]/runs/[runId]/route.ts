@@ -12,6 +12,10 @@ interface Params {
 export async function GET(request: NextRequest, { params }: Params) {
   try {
     const { id, runId } = await params;
+    const { source } = await resolveApiUser(request);
+    if (source === 'anonymous') {
+      return NextResponse.json({ error: 'برای مشاهده سوابق اجرا وارد شوید.' }, { status: 403 });
+    }
 
     const run = await prisma.workflowRun.findFirst({
       where: {
@@ -67,6 +71,10 @@ export async function GET(request: NextRequest, { params }: Params) {
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
     const { id, runId } = await params;
+    const { source } = await resolveApiUser(request);
+    if (source === 'anonymous') {
+      return NextResponse.json({ error: 'برای ثبت عملیات وارد شوید.' }, { status: 403 });
+    }
     const { dbUserId: userId } = await resolveApiUser(request);
     const body = await request.json().catch(() => ({}));
 
@@ -234,6 +242,10 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 export async function DELETE(request: NextRequest, { params }: Params) {
   try {
     const { id, runId } = await params;
+    const { source } = await resolveApiUser(request);
+    if (source === 'anonymous') {
+      return NextResponse.json({ error: 'برای این عملیات وارد شوید.' }, { status: 403 });
+    }
 
     const existingRun = await prisma.workflowRun.findFirst({
       where: {

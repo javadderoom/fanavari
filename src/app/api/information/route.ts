@@ -19,10 +19,32 @@ export async function GET(req: NextRequest) {
     const statusParam = searchParams.get('status'); // 'published' | 'draft' | 'all'
     const isPublishedParam = searchParams.get('isPublished');
 
+    const {
+      id: userId,
+      roleName: userRole,
+      departmentId: userDeptId,
+      permissions: userPermissions,
+    } = await resolveApiUser(req);
+    const isSuperAdmin = hasPermission(userPermissions, Permissions.ADMINISTRATOR);
+    const canManageInfo =
+      isSuperAdmin || hasPermission(userPermissions, Permissions.MANAGE_INFORMATION);
+
+    // Drafts are privileged: explicit draft requests from unprivileged callers
+    // are rejected, and unfiltered requests default to published-only
+    // (mirrors the process archive behavior).
+    if ((statusParam === 'draft' || isPublishedParam === 'false') && !canManageInfo) {
+      return NextResponse.json(
+        { error: 'دسترسی غیرمجاز: مشاهده پیش‌نویس‌ها نیازمند مجوز مدیریت اطلاعات است.' },
+        { status: 403 }
+      );
+    }
+
     const where: any = {};
     if (statusParam === 'draft' || isPublishedParam === 'false') {
       where.isPublished = false;
-    } else if (statusParam === 'published' || isPublishedParam === 'true') {
+    } else if (statusParam === 'all' || searchParams.get('includeDrafts') === 'true') {
+      if (!canManageInfo) where.isPublished = true;
+    } else {
       where.isPublished = true;
     }
     if (type) where.type = type;
@@ -32,14 +54,6 @@ export async function GET(req: NextRequest) {
     else if (departmentSlug) where.department = { slug: departmentSlug };
     if (systemToolId) where.systemToolId = systemToolId;
     else if (systemSlug) where.systemTool = { slug: systemSlug };
-
-    const {
-      id: userId,
-      roleName: userRole,
-      departmentId: userDeptId,
-      permissions: userPermissions,
-    } = await resolveApiUser(req);
-    const isSuperAdmin = hasPermission(userPermissions, Permissions.ADMINISTRATOR);
 
     // Multi-Audience Zero-Leak ACL Filter:
     // If not super admin, non-public posts are completely hidden unless user matches any target grant
@@ -89,7 +103,9 @@ export async function GET(req: NextRequest) {
     });
 
 
-    return NextResponse.json(posts.map(mapPrismaInformationPost));
+    return NextResponse.json(
+      posts.map((p) => mapPrismaInformationPost(p, { redactGrants: !isSuperAdmin }))
+    );
   } catch (error) {
     console.error('Error fetching information posts:', error);
     return NextResponse.json({ error: 'Failed to fetch information posts' }, { status: 500 });
@@ -183,7 +199,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(mapPrismaInformationPost(created), { status: 201 });
+    return NextResponse.json(mapPrismaInformationPost(created, { redactGrants: true }), { status: 201 });
   } catch (error: any) {
     console.error('Error creating information post:', error);
     return NextResponse.json(
@@ -292,7 +308,7 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(mapPrismaInformationPost(updated));
+    return NextResponse.json(mapPrismaInformationPost(updated, { redactGrants: true }));
   } catch (error: any) {
     console.error('Error updating information post:', error);
     return NextResponse.json(

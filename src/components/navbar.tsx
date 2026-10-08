@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from './theme-toggle';
 import { UserSwitcher } from './user-switcher';
+import { useUserSession } from './user-session-provider';
+import { canAccessDashboard } from '@/lib/permissions';
 import { MobileBottomNav } from './mobile-bottom-nav';
 import { 
   Search, 
@@ -27,6 +29,11 @@ interface NavbarProps {
 
 export function Navbar({ onSearchClick }: NavbarProps) {
   const pathname = usePathname();
+  const { isAuthenticated, isDemoMode, currentUser } = useUserSession();
+  // Dashboard is admins-and-authors only (demo mode bypasses for development);
+  // the layout itself bounces everyone else.
+  const showDashboard =
+    isDemoMode || (isAuthenticated && canAccessDashboard(currentUser.permissions));
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<'processes' | 'operations' | null>(null);
 
@@ -301,7 +308,8 @@ export function Navbar({ onSearchClick }: NavbarProps) {
               )}
             </div>
 
-            {/* Direct Link: داشبورد مدیریت */}
+            {/* Direct Link: داشبورد مدیریت (authenticated/demo only) */}
+            {showDashboard && (
             <Link
               href="/dashboard"
               className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl transition-all duration-150 whitespace-nowrap ${
@@ -313,6 +321,7 @@ export function Navbar({ onSearchClick }: NavbarProps) {
               <LayoutDashboard className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
               <span className="whitespace-nowrap">داشبورد</span>
             </Link>
+            )}
           </nav>
 
           {/* Action Controls */}
@@ -458,7 +467,8 @@ export function Navbar({ onSearchClick }: NavbarProps) {
               </div>
             </div>
 
-            {/* Section 3: مدیریت */}
+            {/* Section 3: مدیریت (authenticated/demo only) */}
+            {showDashboard && (
             <div className="pt-2 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
               <Link
                 href="/dashboard"
@@ -474,6 +484,7 @@ export function Navbar({ onSearchClick }: NavbarProps) {
                 <span className="whitespace-nowrap">داشبورد مدیریت</span>
               </Link>
             </div>
+            )}
           </div>
         )}
       </header>

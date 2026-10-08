@@ -50,8 +50,8 @@ export default function DashboardPermissionsPage() {
       };
 
       const [procsRes, postsRes, deptsRes] = await Promise.all([
-        fetch('/api/processes', { headers }),
-        fetch('/api/information', { credentials: 'omit', headers }),
+        fetch('/api/processes?status=all', { headers }),
+        fetch('/api/information?status=all', { credentials: 'omit', headers }),
         fetch('/api/departments', { credentials: 'omit' }),
       ]);
 

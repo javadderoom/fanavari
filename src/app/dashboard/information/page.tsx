@@ -54,7 +54,8 @@ export default function DashboardInformationPage() {
     setIsLoading(true);
     try {
       const [infoRes, deptRes, sysRes] = await Promise.all([
-        fetch('/api/information').then((r) => r.json()),
+        // status=all: privileged callers (managers) also receive drafts for the tabs.
+        fetch('/api/information?status=all').then((r) => r.json()),
         fetch('/api/departments').then((r) => r.json()),
         fetch('/api/systems').then((r) => r.json()),
       ]);

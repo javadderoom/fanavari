@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { resolveApiUser } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    // Run audit data is internal: guests get nothing.
+    const { source } = await resolveApiUser(request);
+    if (source === 'anonymous') {
+      return NextResponse.json({ error: 'برای مشاهده سوابق اجرا وارد شوید.' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || undefined;
     const approvalStatus = searchParams.get('approvalStatus') || undefined;

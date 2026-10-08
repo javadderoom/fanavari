@@ -12,6 +12,10 @@ interface Params {
 export async function GET(request: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
+    const { source } = await resolveApiUser(request);
+    if (source === 'anonymous') {
+      return NextResponse.json({ error: 'برای مشاهده سوابق اجرا وارد شوید.' }, { status: 403 });
+    }
 
     // Resolve process by id or slug
     const process = await prisma.process.findFirst({
@@ -75,7 +79,10 @@ export async function GET(request: NextRequest, { params }: Params) {
 export async function POST(request: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
-    const { dbUserId: userId } = await resolveApiUser(request);
+    const { dbUserId: userId, source } = await resolveApiUser(request);
+    if (source === 'anonymous') {
+      return NextResponse.json({ error: 'برای ثبت اجرای جدید وارد شوید.' }, { status: 403 });
+    }
     const body = await request.json().catch(() => ({}));
 
     // Resolve process

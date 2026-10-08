@@ -30,7 +30,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     // fallback
   }
 
-  const process = await getDbProcessBySlug(decodedSlug);
+  const process = await getDbProcessBySlug(decodedSlug, { redactGrants: true });
   if (!process || process.isPublished === false)
     return { title: 'فرایند یافت نشد | نسخه چاپی' };
 
@@ -57,7 +57,7 @@ export default async function ProcessPrintPage({ params, searchParams }: Props) 
     // fallback
   }
 
-  const process = await getDbProcessBySlug(decodedSlug);
+  const process = await getDbProcessBySlug(decodedSlug, { redactGrants: true });
 
   if (!process || process.isPublished === false) {
     notFound();

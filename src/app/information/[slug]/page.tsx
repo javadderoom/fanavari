@@ -28,8 +28,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // fallback
   }
 
-  const post = await getDbInformationPostBySlug(decodedSlug);
+  const post = await getDbInformationPostBySlug(decodedSlug, { redactGrants: true });
   if (!post) {
+    return { title: 'مطلب اطلاعاتی یافت نشد | سامانه فناوری' };
+  }
+  // Drafts are privileged content — never render or describe them publicly
+  // (server components cannot see the localStorage session, so gate fully).
+  if (post.isPublished === false) {
     return { title: 'مطلب اطلاعاتی یافت نشد | سامانه فناوری' };
   }
 
@@ -48,9 +53,9 @@ export default async function InformationDetailPage({ params }: Props) {
     // fallback
   }
 
-  const post = await getDbInformationPostBySlug(decodedSlug);
+  const post = await getDbInformationPostBySlug(decodedSlug, { redactGrants: true });
 
-  if (!post) {
+  if (!post || post.isPublished === false) {
     notFound();
   }
 
