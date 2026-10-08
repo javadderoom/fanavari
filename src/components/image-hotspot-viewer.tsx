@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Hotspot } from '@/types/process';
 import { 
   Maximize2, 
   X, 
-  Info, 
   MousePointerClick, 
   ZoomIn, 
   ZoomOut, 
@@ -28,6 +28,23 @@ export function ImageHotspotViewer({
   const [activeHotspotIndex, setActiveHotspotIndex] = useState<number | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
+
+  // Lock body scroll + close on Escape while fullscreen is open.
+  // Rendered via portal so ancestor transforms (e.g. .glass-card:hover)
+  // can't hijack `position: fixed` and cause a hover blink loop.
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsLightboxOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isLightboxOpen]);
 
   const hasHotspots = hotspots && hotspots.length > 0;
 
@@ -182,104 +199,119 @@ export function ImageHotspotViewer({
       </div>
 
       {/* ======================================================================= */}
-      {/* Fullscreen Lightbox Modal                                                */}
+      {/* Fullscreen Lightbox Modal (portaled to body to avoid ancestor         */}
+      {/* transform/hover blink loops, e.g. .glass-card:hover)                   */}
       {/* ======================================================================= */}
-      {isLightboxOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-black/90 backdrop-blur-xl animate-in fade-in">
-          {/* Modal Header */}
-          <div className="p-4 flex items-center justify-between border-b border-white/10 text-white">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-black">{alt}</span>
-              {hasHotspots && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-600 text-white font-bold">
-                  {hotspots.length} نقطه راهنما
-                </span>
-              )}
-            </div>
-
-            {/* Zoom and Close Controls */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 bg-white/10 p-1 rounded-xl border border-white/15">
-                <button
-                  type="button"
-                  onClick={handleZoomIn}
-                  className="p-1.5 rounded-lg hover:bg-white/20 text-white cursor-pointer"
-                  title="بزرگنمایی"
-                >
-                  <ZoomIn className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleZoomOut}
-                  className="p-1.5 rounded-lg hover:bg-white/20 text-white cursor-pointer"
-                  title="کوچک‌نمایی"
-                >
-                  <ZoomOut className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleResetZoom}
-                  className="p-1.5 rounded-lg hover:bg-white/20 text-white cursor-pointer text-xs font-mono"
-                  title="بازنشانی اندازه"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </button>
-                <span className="px-2 text-xs font-mono text-white/80">
-                  {Math.round(zoomLevel * 100)}%
-                </span>
+      {isLightboxOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[100] flex flex-col bg-black/90 backdrop-blur-xl animate-in fade-in"
+            onClick={() => setIsLightboxOpen(false)}
+          >
+            {/* Modal Header */}
+            <div
+              className="p-4 flex items-center justify-between border-b border-white/10 text-white"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-black">{alt}</span>
+                {hasHotspots && (
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-600 text-white font-bold">
+                    {hotspots.length} نقطه راهنما
+                  </span>
+                )}
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsLightboxOpen(false)}
-                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white cursor-pointer transition-colors"
-                title="بستن پنجره"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Modal Image Body with Zoom */}
-          <div className="flex-1 overflow-auto p-4 sm:p-8 flex items-center justify-center relative">
-            <div 
-              className="relative transition-transform duration-200"
-              style={{ transform: `scale(${zoomLevel})` }}
-            >
-              <img
-                src={imageUrl}
-                alt={alt}
-                className="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl border border-white/20"
-              />
-
-              {/* Hotspots in Lightbox */}
-              {hasHotspots &&
-                hotspots.map((spot, idx) => (
-                  <div
-                    key={idx}
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer"
-                    style={{
-                      left: `${spot.x}%`,
-                      top: `${spot.y}%`,
-                    }}
-                    onClick={() => setActiveHotspotIndex(activeHotspotIndex === idx ? null : idx)}
+              {/* Zoom and Close Controls */}
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 bg-white/10 p-1 rounded-xl border border-white/15">
+                  <button
+                    type="button"
+                    onClick={handleZoomIn}
+                    className="p-1.5 rounded-lg hover:bg-white/20 text-white cursor-pointer"
+                    title="بزرگنمایی"
                   >
-                    <button
-                      type="button"
-                      className={`w-8 h-8 rounded-full flex items-center justify-center font-mono font-black text-sm shadow-xl transition-all cursor-pointer ${
-                        activeHotspotIndex === idx
-                          ? 'bg-amber-500 text-slate-950 scale-125 ring-4 ring-amber-300'
-                          : 'bg-blue-600 text-white hover:scale-110 ring-2 ring-white'
-                      }`}
-                    >
-                      {idx + 1}
-                    </button>
-                  </div>
-                ))}
+                    <ZoomIn className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleZoomOut}
+                    className="p-1.5 rounded-lg hover:bg-white/20 text-white cursor-pointer"
+                    title="کوچک‌نمایی"
+                  >
+                    <ZoomOut className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetZoom}
+                    className="p-1.5 rounded-lg hover:bg-white/20 text-white cursor-pointer text-xs font-mono"
+                    title="بازنشانی اندازه"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="px-2 text-xs font-mono text-white/80">
+                    {Math.round(zoomLevel * 100)}%
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsLightboxOpen(false)}
+                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white cursor-pointer transition-colors"
+                  title="بستن پنجره"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+
+            {/* Modal Image Body with Zoom */}
+            <div className="flex-1 overflow-auto p-4 sm:p-8 grid place-items-center relative">
+              <div
+                className="relative transition-transform duration-200 m-auto"
+                style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'center center' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img
+                  src={imageUrl}
+                  alt={alt}
+                  className="max-w-[88vw] max-h-[76vh] object-contain rounded-2xl shadow-2xl border border-white/20 select-none"
+                  draggable={false}
+                />
+
+                {/* Hotspots in Lightbox */}
+                {hasHotspots &&
+                  hotspots.map((spot, idx) => (
+                    <div
+                      key={idx}
+                      className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer"
+                      style={{
+                        left: `${Math.min(Math.max(spot.x, 2), 98)}%`,
+                        top: `${Math.min(Math.max(spot.y, 2), 98)}%`,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveHotspotIndex(activeHotspotIndex === idx ? null : idx);
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className={`w-8 h-8 rounded-full flex items-center justify-center font-mono font-black text-sm shadow-xl transition-all cursor-pointer ${
+                          activeHotspotIndex === idx
+                            ? 'bg-amber-500 text-slate-950 scale-125 ring-4 ring-amber-300'
+                            : 'bg-blue-600 text-white hover:scale-110 ring-2 ring-white'
+                        }`}
+                      >
+                        {idx + 1}
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
