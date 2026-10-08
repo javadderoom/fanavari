@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Fanavari Authoring Recorder",
+  "version": "0.1.0",
+  "description": "Record clicks and field labels on any portal and send them to Fanavari as step drafts.",
+  "default_locale": "en",
+  "permissions": ["activeTab", "sidePanel", "storage", "scripting"],
+  "optional_host_permissions": ["<all_urls>"],
+  "action": {
+    "default_title": "Fanavari Recorder"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  }
+}

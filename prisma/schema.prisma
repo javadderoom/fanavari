@@ -13,6 +13,7 @@ model User {
   roleName      String         @default("User") // "Super Admin" | "Manager" | "Editor" | "Viewer"
   permissions   Int            @default(1) // Discord-style bitfield flags (Int supports 31 bit flags)
   avatarUrl     String?
+  extensionToken String?  @unique // Hashed browser-login token for the authoring Chrome extension
   departmentId  String?
   department    Department?    @relation(fields: [departmentId], references: [id])
   createdAt     DateTime       @default(now())

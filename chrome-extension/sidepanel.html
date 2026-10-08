@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fanavari Recorder</title>
+  <link rel="stylesheet" href="./src/sidepanel/main.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>ثبت تعامل‌ها</h1>
+      <span id="conn-badge" class="badge">متصل نیست</span>
+    </header>
+
+    <section id="auth-section" class="card">
+      <h2>اتصال به سامانه</h2>
+      <label>نشانی سامانه
+        <input id="server-url" type="url" dir="ltr" placeholder="https://fanavari.example.com" />
+      </label>
+      <div class="row">
+        <button id="login-btn" class="primary">ورود با مرورگر</button>
+        <button id="logout-btn" class="ghost hidden">قطع اتصال</button>
+      </div>
+      <p id="auth-user" class="muted"></p>
+    </section>
+
+    <section class="card">
+      <h2>دسترسی به سایت‌ها</h2>
+      <p id="tab-origin" class="muted" dir="ltr"></p>
+      <div class="row">
+        <button id="grant-site-btn">دسترسی به همین سایت</button>
+        <button id="grant-all-btn">دسترسی به همه سایت‌ها</button>
+      </div>
+      <ul id="grants-list"></ul>
+    </section>
+
+    <section class="card">
+      <h2>ضبط</h2>
+      <div class="row">
+        <button id="record-btn" class="primary">شروع ضبط در این برگه</button>
+        <button id="clear-btn" class="ghost">پاک‌سازی</button>
+      </div>
+      <label class="check">
+        <input id="values-toggle" type="checkbox" />
+        ثبت مقادیر تایپ‌شده هم انجام شود (با تأیید)
+      </label>
+      <p class="muted">پیش‌فرض فقط برچسب‌ها ثبت می‌شود؛ رمزها هرگز ثبت نمی‌شوند.</p>
+    </section>
+
+    <section class="card">
+      <h2>مقصد ارسال</h2>
+      <label>فرایند
+        <select id="process-select"><option value="">— انتخاب —</option></select>
+      </label>
+      <label>گام
+        <select id="step-select"><option value="">— انتخاب —</option></select>
+      </label>
+      <button id="refresh-btn" class="ghost">به‌روزرسانی فهرست</button>
+    </section>
+
+    <section class="card">
+      <h2>رویدادها (<span id="event-count">۰</span>)</h2>
+      <ul id="events-list"></ul>
+      <button id="send-btn" class="primary">ارسال به گام</button>
+      <p id="status" class="muted"></p>
+    </section>
+  </div>
+  <script type="module" src="./src/sidepanel/main.ts"></script>
+</body>
+</html>

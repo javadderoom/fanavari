@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "Fanavari Authoring Recorder",
+    "description": "Extension name"
+  },
+  "appDescription": {
+    "message": "Record clicks and field labels on any portal and send them to Fanavari as step drafts.",
+    "description": "Extension description"
+  }
+}
