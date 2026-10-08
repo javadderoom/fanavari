@@ -1,7 +1,10 @@
 // Safe Prisma Migration Deployment Script for Vercel & CI/CD
+// Uses DIRECT_URL (non-pooled) when available: `prisma migrate deploy`
+// holds a pg_advisory_lock, which breaks on PgBouncer-style pooler
+// endpoints (e.g. Neon's "-pooler" URL) with P1002 timeouts.
 const { execSync } = require('child_process');
 
-const dbUrl = process.env.DATABASE_URL;
+const dbUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
 
 if (!dbUrl || dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1')) {
   if (process.env.VERCEL) {
