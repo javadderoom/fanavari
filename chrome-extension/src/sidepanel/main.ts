@@ -357,6 +357,8 @@ function init(): void {
   void (async () => {
     const s = await getSettings();
     (document.getElementById('values-toggle') as HTMLInputElement).checked = s.captureValues;
+    // Heal dynamic script registrations (they vanish on extension reload).
+    await sendToBackground({ type: 'BG_SYNC_SCRIPTS' }).catch(() => {});
     await refreshAuth();
     await refreshAccess();
     await refreshRecording();

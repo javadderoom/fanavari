@@ -102,6 +102,13 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
     });
   };
 
+  const handleCloseSidecar = () => {
+    setIsSidecarOpen(false);
+    try {
+      localStorage.setItem('fanavari-sidecar-open', 'false');
+    } catch (e) {}
+  };
+
   // Scratchpad state with localStorage
   const [scratchpadNote, setScratchpadNote] = useState('');
   const [isSavedNotice, setIsSavedNotice] = useState(false);
@@ -566,7 +573,7 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
       <SidecarRunner
         process={currentProcess}
         isOpen={isSidecarOpen}
-        onClose={() => setIsSidecarOpen(false)}
+        onClose={handleCloseSidecar}
         activeStepIndex={activeStepIndex}
         onSelectStep={(idx) => setActiveStepIndex(idx)}
         completedStepKeys={completedStepKeys}

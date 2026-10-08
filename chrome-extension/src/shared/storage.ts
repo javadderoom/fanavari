@@ -11,6 +11,7 @@ const DEFAULT_BUFFER: SessionBuffer = {
   events: [],
   recordingTabId: null,
   startedAt: null,
+  captureValues: false,
 };
 
 export async function getSettings(): Promise<ExtSettings> {
@@ -44,6 +45,8 @@ export async function appendEvent(event: RecordedEvent): Promise<void> {
   await chrome.storage.local.set({ buffer });
 }
 
+/** Empties recorded events but keeps an ongoing session alive. */
 export async function clearBuffer(): Promise<void> {
-  await chrome.storage.local.set({ buffer: { ...DEFAULT_BUFFER } });
+  const current = await getBuffer();
+  await chrome.storage.local.set({ buffer: { ...current, events: [] } });
 }

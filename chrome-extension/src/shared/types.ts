@@ -26,6 +26,8 @@ export interface SessionBuffer {
   events: RecordedEvent[];
   recordingTabId: number | null;
   startedAt: number | null;
+  /** Honored by freshly injected recorders after a page load. */
+  captureValues: boolean;
 }
 
 export type PanelMessage =

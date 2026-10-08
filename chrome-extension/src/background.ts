@@ -1,4 +1,4 @@
-import { appendEvent, getBuffer, saveBuffer, saveSettings } from './shared/storage';
+import { appendEvent, getBuffer, getSettings, saveBuffer, saveSettings } from './shared/storage';
 import type { PanelMessage, RecordedEvent } from './shared/types';
 
 const RECORDER_ID = 'fanavari-recorder';
@@ -51,7 +51,35 @@ async function syncRelayScript(serverOrigin: string): Promise<void> {
 chrome.permissions.onAdded.addListener(() => void syncRecorderScripts());
 chrome.permissions.onRemoved.addListener(() => void syncRecorderScripts());
 
-chrome.runtime.onMessage.addListener((msg: PanelMessage | Record<string, unknown>, _sender, sendResponse) => {
+/**
+ * Dynamically registered scripts (persistAcrossSessions: false) vanish on
+ * extension reload/update/browser restart while the *grants* persist.
+ * Re-register on every worker startup so recording keeps working without
+ * asking the author to re-grant access.
+ */
+async function healRegistrations(): Promise<void> {
+  try {
+    await syncRecorderScripts();
+  } catch {
+    // Permissions API momentarily unavailable — panel open heals it.
+  }
+  try {
+    const settings = await getSettings();
+    const origin = settings.serverUrl.replace(/\/+$/, '');
+    const hasRelayAccess = await chrome.permissions.contains({ origins: [`${origin}/*`] });
+    if (hasRelayAccess) {
+      await syncRelayScript(origin);
+    }
+  } catch {
+    // No server configured yet — nothing to heal.
+  }
+}
+
+chrome.runtime.onStartup.addListener(() => void healRegistrations());
+chrome.runtime.onInstalled.addListener(() => void healRegistrations());
+void healRegistrations();
+
+chrome.runtime.onMessage.addListener((msg: PanelMessage | Record<string, unknown>, sender, sendResponse) => {
   (async () => {
     const type = (msg as { type?: string }).type;
 
@@ -79,13 +107,31 @@ chrome.runtime.onMessage.addListener((msg: PanelMessage | Record<string, unknown
       }
     } else if (type === 'BG_START_TAB') {
       const { tabId, captureValues } = msg as { tabId: number; captureValues: boolean };
-      try {
+      const startRecording = async (): Promise<void> => {
         await chrome.tabs.sendMessage(tabId, { type: 'START_RECORDING', captureValues });
-        await saveBuffer({ recordingTabId: tabId, startedAt: Date.now() });
-        sendResponse({ ok: true });
+      };
+      try {
+        await startRecording();
       } catch {
-        sendResponse({ ok: false, error: 'NO_ACCESS' });
+        // Tab was already open before the recorder was registered (dynamic
+        // registration only covers new navigations). Inject on demand, then
+        // retry — this works wherever the author already granted access.
+        try {
+          await chrome.scripting.executeScript({ target: { tabId }, files: ['recorder.js'] });
+          await startRecording();
+        } catch {
+          sendResponse({ ok: false, error: 'NO_ACCESS' });
+          return;
+        }
       }
+      await saveBuffer({ recordingTabId: tabId, startedAt: Date.now(), captureValues });
+      sendResponse({ ok: true });
+    } else if (type === 'BG_AM_I_RECORDING') {
+      // Asked by a freshly injected recorder after a page load/navigation.
+      const buffer = await getBuffer();
+      const tabId = sender.tab?.id ?? null;
+      const recording = tabId !== null && buffer.recordingTabId === tabId;
+      sendResponse({ recording, captureValues: recording ? buffer.captureValues : false });
     } else if (type === 'BG_STOP_TAB') {
       const buffer = await getBuffer();
       if (buffer.recordingTabId !== null) {

@@ -9,6 +9,13 @@ import type { RecordedEvent, TabMessage } from '../shared/types';
 let recording = false;
 let captureValues = false;
 
+// executeScript fallback may inject twice — install listeners exactly once.
+const INSTALLED_FLAG = '__fanavariRecorderInstalled';
+if ((window as unknown as Record<string, unknown>)[INSTALLED_FLAG]) {
+  throw new Error('already installed');
+}
+(window as unknown as Record<string, unknown>)[INSTALLED_FLAG] = true;
+
 function pageRef(): string {
   try {
     return `${location.origin}${location.pathname}`;
@@ -127,6 +134,23 @@ chrome.runtime.onMessage.addListener((msg: TabMessage, _sender, sendResponse) =>
   }
   return false;
 });
+
+// A page load wipes in-memory flags. Ask the background whether this tab
+// is mid-session and resume silently (covers full navigations; SPA
+// route changes never unload us so they keep recording uninterrupted).
+chrome.runtime
+  .sendMessage({ type: 'BG_AM_I_RECORDING' })
+  .then((res: unknown) => {
+    const state = res as { recording?: boolean; captureValues?: boolean } | undefined;
+    if (state?.recording) {
+      recording = true;
+      captureValues = state.captureValues === true;
+      // Mark the page transition so step drafts show where navigation happened.
+      const title = document.title.replace(/\s+/g, ' ').trim().slice(0, 120);
+      emit({ type: 'navigation', label: title || location.pathname, page: pageRef(), at: Date.now() });
+    }
+  })
+  .catch(() => {});
 
 // Use 'change' (committed values) instead of per-keystroke 'input'
 // to avoid flooding the buffer with partial typing.
