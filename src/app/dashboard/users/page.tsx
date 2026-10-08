@@ -485,7 +485,7 @@ export default function DashboardUsersPage() {
                 <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                   {userToEdit ? 'گذرواژه جدید (خالی = بدون تغییر، کاربر از همه نشست‌ها خارج می‌شود)' : 'گذرواژه *'}
                 </label>
-                <input type="password" value={fPassword} onChange={(e) => setFPassword(e.target.value)} placeholder="حداقل ۸ کاراکتر" className={inputClass} style={inputStyle} />
+                <input dir="ltr" type="password" value={fPassword} onChange={(e) => setFPassword(e.target.value)} placeholder="حداقل ۸ کاراکتر" className={inputClass} style={inputStyle} />
               </div>
 
               <div className="grid grid-cols-2 gap-3">

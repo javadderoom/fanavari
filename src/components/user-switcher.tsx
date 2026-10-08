@@ -85,7 +85,6 @@ export function UserSwitcher({
             <span className="text-[11px] font-bold block" style={{ color: 'var(--text-muted)' }}>
               {isAuthenticated ? currentUser.name : 'حساب کاربری'}
             </span>
-            <span className="text-[10px] text-blue-500 font-mono">RBAC + Dept</span>
           </div>
 
           {isAuthenticated ? (

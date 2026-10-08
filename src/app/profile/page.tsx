@@ -277,9 +277,9 @@ export default function ProfilePage() {
                 <span>تغییر گذرواژه</span>
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="گذرواژه فعلی" className={inputClass} style={inputStyle} />
-                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="گذرواژه جدید" className={inputClass} style={inputStyle} />
-                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="تکرار جدید" className={inputClass} style={inputStyle} />
+                <input dir="ltr" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="گذرواژه فعلی" className={inputClass} style={inputStyle} />
+                <input dir="ltr" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="گذرواژه جدید" className={inputClass} style={inputStyle} />
+                <input dir="ltr" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="تکرار جدید" className={inputClass} style={inputStyle} />
               </div>
               <button type="submit" disabled={isChangingPassword} className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 cursor-pointer disabled:opacity-50">
                 {isChangingPassword ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'تغییر گذرواژه'}
@@ -297,7 +297,7 @@ export default function ProfilePage() {
                 {!currentUser.phoneVerified && !currentUser.emailVerified && ' — ابتدا یک راه تماس را تأیید کنید.'}
               </p>
               <div className="flex flex-col sm:flex-row gap-2">
-                <input type="password" value={otpPassword} onChange={(e) => setOtpPassword(e.target.value)} placeholder="گذرواژه فعلی جهت تأیید" className={`${inputClass} flex-1`} style={inputStyle} />
+                <input dir="ltr" type="password" value={otpPassword} onChange={(e) => setOtpPassword(e.target.value)} placeholder="گذرواژه فعلی جهت تأیید" className={`${inputClass} flex-1`} style={inputStyle} />
                 {currentUser.otpEnabled ? (
                   <button type="button" onClick={() => handleToggleOtp(false)} disabled={isTogglingOtp} className="px-4 py-2 rounded-xl text-xs font-bold border border-rose-500/30 text-rose-600 cursor-pointer disabled:opacity-50 shrink-0">
                     غیرفعال‌سازی

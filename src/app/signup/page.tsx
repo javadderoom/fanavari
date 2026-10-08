@@ -143,8 +143,9 @@ export default function SignupPage() {
               <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                 گذرواژه *
               </label>
-              <input
-                type="password"
+                <input
+                  dir="ltr"
+                  type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="حداقل ۸ کاراکتر"
@@ -156,8 +157,9 @@ export default function SignupPage() {
               <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                 تکرار گذرواژه *
               </label>
-              <input
-                type="password"
+                <input
+                  dir="ltr"
+                  type="password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 placeholder="تکرار گذرواژه"

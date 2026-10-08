@@ -128,16 +128,18 @@ export default function ForgotPasswordPage() {
               style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input
-                type="password"
+                <input
+                  dir="ltr"
+                  type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="گذرواژه جدید"
                 className={inputClass}
                 style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
               />
-              <input
-                type="password"
+                <input
+                  dir="ltr"
+                  type="password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 placeholder="تکرار گذرواژه"

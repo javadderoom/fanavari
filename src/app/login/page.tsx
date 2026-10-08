@@ -218,6 +218,7 @@ export default function LoginPage() {
                 گذرواژه
               </label>
               <input
+                dir="ltr"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
