@@ -9,6 +9,7 @@ import {
 import { MenuPathDisplay } from '../menu-path-display';
 import { StepContentRenderer, hasValidStepContent } from '../step-content-renderer';
 import { ImageHotspotViewer } from '../image-hotspot-viewer';
+import { UiSnippetCard } from '../ui-snippet-card';
 import { 
   Check, 
   CheckCircle2, 
@@ -469,37 +470,11 @@ export function StepRunnerView({
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {currentStep.uiSnippets.map((snippet, sIdx) => (
-                  <div
+                  <UiSnippetCard
                     key={snippet.id || sIdx}
-                    className="p-3 rounded-xl border flex items-center gap-3 transition-all hover:scale-[1.01]"
-                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
-                  >
-                    <div className="w-12 h-12 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 flex items-center justify-center shrink-0 shadow-xs">
-                      <img
-                        src={snippet.iconUrl}
-                        alt={snippet.title}
-                        className="w-full h-full object-contain"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
-                          {snippet.title}
-                        </span>
-                        {snippet.badgeText && (
-                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20" dir="ltr">
-                            {snippet.badgeText}
-                          </span>
-                        )}
-                      </div>
-                      {snippet.description && (
-                        <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
-                          {snippet.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                    snippet={snippet}
+                    imageHeightClass="h-28"
+                  />
                 ))}
               </div>
             </div>

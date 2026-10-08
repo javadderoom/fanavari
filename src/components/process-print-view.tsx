@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Process, WorkflowRun, WorkflowStepLog } from '@/types/process';
 import { MenuPathDisplay } from './menu-path-display';
 import { StepContentRenderer, hasValidStepContent } from './step-content-renderer';
+import { UiSnippetCard } from './ui-snippet-card';
 import { 
   Printer, 
   ArrowRight, 
@@ -623,17 +624,11 @@ export function ProcessPrintView({ process, initialRun }: ProcessPrintViewProps)
                       </h5>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {step.uiSnippets.map((snippet, sIdx) => (
-                          <div key={sIdx} className="p-2 rounded-lg border border-slate-300 bg-white print:border-black flex items-center gap-2">
-                            <div className="w-8 h-8 rounded border border-slate-200 bg-slate-50 p-0.5 flex items-center justify-center shrink-0">
-                              <img src={snippet.iconUrl} alt={snippet.title} className="w-full h-full object-contain" />
-                            </div>
-                            <div className="min-w-0">
-                              <span className="text-xs font-bold text-slate-900 block truncate">{snippet.title}</span>
-                              {snippet.badgeText && (
-                                <span className="text-[9px] font-mono font-bold text-slate-600 block" dir="ltr">{snippet.badgeText}</span>
-                              )}
-                            </div>
-                          </div>
+                          <UiSnippetCard
+                            key={snippet.id || sIdx}
+                            snippet={snippet}
+                            imageHeightClass="h-24"
+                          />
                         ))}
                       </div>
                     </div>
