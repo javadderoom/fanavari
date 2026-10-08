@@ -4,7 +4,7 @@
 // endpoints (e.g. Neon's "-pooler" URL) with P1002 timeouts.
 const { execSync } = require('child_process');
 
-const dbUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
+const dbUrl = process.env.DIRECT_URL || process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
 
 if (!dbUrl || dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1')) {
   if (process.env.VERCEL) {
