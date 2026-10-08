@@ -21,8 +21,12 @@ import {
   Laptop,
   ShieldCheck,
   Lock,
-  Globe
+  Globe,
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
+
+const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
 export default function DashboardProcessesPage() {
   const { currentUser, can, isSuperAdmin } = useUserSession();
@@ -32,6 +36,8 @@ export default function DashboardProcessesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSystemFilter, setSelectedSystemFilter] = useState('all');
   const [selectedDeptFilter, setSelectedDeptFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [processToEdit, setProcessToEdit] = useState<Process | null>(null);
@@ -96,6 +102,27 @@ export default function DashboardProcessesPage() {
       );
     });
   }, [processes, searchQuery, selectedSystemFilter, selectedDeptFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProcesses.length / pageSize));
+  const safePage = Math.min(Math.max(currentPage, 1), totalPages);
+  const pagedProcesses = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filteredProcesses.slice(start, start + pageSize);
+  }, [filteredProcesses, safePage, pageSize]);
+
+  const pageRangeStart = filteredProcesses.length === 0 ? 0 : (safePage - 1) * pageSize + 1;
+  const pageRangeEnd = Math.min(safePage * pageSize, filteredProcesses.length);
+
+  // Compact page-number window (RTL-friendly, max 5 numbers)
+  const pageNumbers = useMemo(() => {
+    const windowSize = 5;
+    let start = Math.max(1, safePage - Math.floor(windowSize / 2));
+    const end = Math.min(totalPages, start + windowSize - 1);
+    start = Math.max(1, end - windowSize + 1);
+    const nums: number[] = [];
+    for (let i = start; i <= end; i++) nums.push(i);
+    return nums;
+  }, [safePage, totalPages]);
 
   const handleOpenCreate = () => {
     setProcessToEdit(null);
@@ -167,7 +194,7 @@ export default function DashboardProcessesPage() {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             placeholder="جستجو بر اساس عنوان، سامانه، سازمان یا اسلاگ..."
             className="w-full pr-10 pl-4 py-2 rounded-xl text-xs border outline-none focus:ring-2 focus:ring-blue-500 transition-all"
             style={{
@@ -182,7 +209,7 @@ export default function DashboardProcessesPage() {
           {/* System Filter */}
           <select
             value={selectedSystemFilter}
-            onChange={(e) => setSelectedSystemFilter(e.target.value)}
+            onChange={(e) => { setSelectedSystemFilter(e.target.value); setCurrentPage(1); }}
             className="px-3 py-2 rounded-xl text-xs border outline-none cursor-pointer"
             style={{
               background: 'var(--bg-input)',
@@ -201,7 +228,7 @@ export default function DashboardProcessesPage() {
           {/* Department Filter */}
           <select
             value={selectedDeptFilter}
-            onChange={(e) => setSelectedDeptFilter(e.target.value)}
+            onChange={(e) => { setSelectedDeptFilter(e.target.value); setCurrentPage(1); }}
             className="px-3 py-2 rounded-xl text-xs border outline-none cursor-pointer"
             style={{
               background: 'var(--bg-input)',
@@ -257,6 +284,7 @@ export default function DashboardProcessesPage() {
             )}
           </div>
         ) : (
+          <>
           <div className="overflow-x-auto">
             <table className="w-full text-right border-collapse text-xs">
               <thead>
@@ -273,7 +301,7 @@ export default function DashboardProcessesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
-                {filteredProcesses.map((proc) => (
+                {pagedProcesses.map((proc) => (
                   <tr 
                     key={proc.id} 
                     className="hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition-colors"
@@ -359,6 +387,75 @@ export default function DashboardProcessesPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Footer */}
+          <div
+            className="p-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3"
+            style={{ borderColor: 'var(--border-subtle)' }}
+          >
+            <span className="text-[11px] font-semibold text-slate-500">
+              نمایش {pageRangeStart} تا {pageRangeEnd} از {filteredProcesses.length} فرایند
+            </span>
+
+            <div className="flex items-center gap-1.5">
+              <select
+                value={pageSize}
+                onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                className="px-2 py-1.5 rounded-lg text-[11px] border outline-none cursor-pointer font-bold"
+                style={{
+                  background: 'var(--bg-input)',
+                  borderColor: 'var(--border-subtle)',
+                  color: 'var(--text-primary)',
+                }}
+                title="تعداد ردیف در هر صفحه"
+              >
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <option key={size} value={size}>
+                    {size} در صفحه
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                disabled={safePage <= 1}
+                onClick={() => setCurrentPage(safePage - 1)}
+                className="p-1.5 rounded-lg border transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-default hover:bg-slate-100 dark:hover:bg-slate-800"
+                style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}
+                title="صفحه قبلی"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              {pageNumbers.map((num) => (
+                <button
+                  key={num}
+                  type="button"
+                  onClick={() => setCurrentPage(num)}
+                  className={`min-w-8 px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                    num === safePage
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                      : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                  style={num === safePage ? undefined : { borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}
+                >
+                  {num}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                disabled={safePage >= totalPages}
+                onClick={() => setCurrentPage(safePage + 1)}
+                className="p-1.5 rounded-lg border transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-default hover:bg-slate-100 dark:hover:bg-slate-800"
+                style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}
+                title="صفحه بعدی"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          </>
         )}
       </div>
 
