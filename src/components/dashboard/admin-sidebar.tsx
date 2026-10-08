@@ -18,7 +18,8 @@ import {
   GitBranch, 
   ChevronLeft,
   X,
-  Award
+  Award,
+  Users
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -108,6 +109,12 @@ export function AdminSidebar({ isOpenMobile = false, onCloseMobile }: AdminSideb
     {
       group: 'دسترسی و امنیت',
       items: [
+        {
+          href: '/dashboard/users',
+          label: 'کاربران سامانه',
+          icon: Users,
+          color: 'text-sky-500',
+        },
         {
           href: '/dashboard/permissions',
           label: 'نقش‌ها و دسترسی‌ها',

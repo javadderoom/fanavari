@@ -40,9 +40,10 @@ export async function GET(req: NextRequest) {
       orderBy: { name: 'asc' },
     });
 
-    // Mask emails to prevent harvesting
+    // Mask emails to prevent harvesting (phone-only accounts have no email)
     const sanitized = matchedUsers.map((u) => {
-      const parts = u.email.split('@');
+      const rawEmail = u.email || '';
+      const parts = rawEmail.split('@');
       const maskedLocal = parts[0].length > 2
         ? parts[0].substring(0, 2) + '***'
         : parts[0] + '***';

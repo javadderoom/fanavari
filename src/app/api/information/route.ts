@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
+import { resolveApiUser } from '@/lib/api-auth';
 import { mapPrismaInformationPost, resolveDbUserId } from '@/lib/db-service';
 
 export async function GET(req: NextRequest) {
@@ -32,18 +33,12 @@ export async function GET(req: NextRequest) {
     if (systemToolId) where.systemToolId = systemToolId;
     else if (systemSlug) where.systemTool = { slug: systemSlug };
 
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
-    const userId = req.headers.get('x-user-id');
-    const rawRole = req.headers.get('x-user-role');
-    let userRole = rawRole;
-    if (rawRole) {
-      try {
-        userRole = decodeURIComponent(rawRole);
-      } catch (e) {
-        userRole = rawRole;
-      }
-    }
-    const userDeptId = req.headers.get('x-user-dept');
+    const {
+      id: userId,
+      roleName: userRole,
+      departmentId: userDeptId,
+      permissions: userPermissions,
+    } = await resolveApiUser(req);
     const isSuperAdmin = hasPermission(userPermissions, Permissions.ADMINISTRATOR);
 
     // Multi-Audience Zero-Leak ACL Filter:
@@ -103,7 +98,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { id: currentUserId, permissions: userPermissions } = await resolveApiUser(req);
 
     const isAllowed =
       hasPermission(userPermissions, Permissions.MANAGE_INFORMATION) ||
@@ -117,7 +112,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const currentUserId = req.headers.get('x-user-id');
     const body = await req.json();
     const {
       title,
@@ -201,7 +195,7 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { permissions: userPermissions } = await resolveApiUser(req);
 
     const isAllowed =
       hasPermission(userPermissions, Permissions.MANAGE_INFORMATION) ||
@@ -310,7 +304,7 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { permissions: userPermissions } = await resolveApiUser(req);
 
     const isAllowed =
       hasPermission(userPermissions, Permissions.MANAGE_INFORMATION) ||

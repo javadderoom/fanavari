@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { resolveApiUser } from '@/lib/api-auth';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -10,7 +11,8 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     const { id } = await params;
     const body = await req.json();
     const { claimToken } = body;
-    const currentUserId = req.headers.get('x-user-id');
+    // Grants bind to real database users only (demo personas have no DB row).
+    const { dbUserId: currentUserId } = await resolveApiUser(req);
 
     if (!claimToken || !claimToken.trim()) {
       return NextResponse.json({ error: 'توکن دعوت ارسال نشده است.' }, { status: 400 });

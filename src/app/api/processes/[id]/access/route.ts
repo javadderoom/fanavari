@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
-import { resolveDbUserId } from '@/lib/db-service';
+import { resolveApiUser } from '@/lib/api-auth';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -39,8 +39,7 @@ async function canManageProcessAccess(processId: string, userId?: string | null,
 export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
-    const userId = req.headers.get('x-user-id');
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { id: userId, permissions: userPermissions } = await resolveApiUser(req);
 
     // Find process
     const process = await prisma.process.findFirst({
@@ -111,10 +110,8 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
     const body = await req.json();
-    const currentUserId = req.headers.get('x-user-id');
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
-    // Demo persona ids are not real FK targets — resolve or fall back to null.
-    const grantedByDbId = await resolveDbUserId(currentUserId);
+    const { id: currentUserId, dbUserId: grantedByDbId, permissions: userPermissions } =
+      await resolveApiUser(req);
 
     const process = await prisma.process.findFirst({
       where: { OR: [{ id }, { slug: id }] },
@@ -288,8 +285,7 @@ export async function DELETE(req: NextRequest, { params }: RouteContext) {
     const targetUserId = searchParams.get('userId');
     const targetDepartmentId = searchParams.get('departmentId');
     const targetRoleName = searchParams.get('roleName');
-    const currentUserId = req.headers.get('x-user-id');
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { id: currentUserId, permissions: userPermissions } = await resolveApiUser(req);
 
     const process = await prisma.process.findFirst({
       where: { OR: [{ id }, { slug: id }] },

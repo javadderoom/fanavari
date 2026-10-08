@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
+import { resolveApiUser } from '@/lib/api-auth';
 
 export async function GET() {
   try {
@@ -31,7 +32,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { permissions: userPermissions } = await resolveApiUser(req);
 
     // Check if user has MANAGE_CATEGORIES or ADMINISTRATOR permission
     const isAllowed =
@@ -104,7 +105,7 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { permissions: userPermissions } = await resolveApiUser(req);
 
     const isAllowed =
       hasPermission(userPermissions, Permissions.MANAGE_CATEGORIES) ||
@@ -189,7 +190,7 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { permissions: userPermissions } = await resolveApiUser(req);
 
     const isAllowed =
       hasPermission(userPermissions, Permissions.MANAGE_CATEGORIES) ||

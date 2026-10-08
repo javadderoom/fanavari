@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useUserSession, DEMO_USERS } from './user-session-provider';
-import { Shield, ShieldAlert, User, ChevronDown, Check, Sparkles } from 'lucide-react';
+import { Shield, ShieldAlert, User, ChevronDown, Check, Sparkles, LogOut, Settings } from 'lucide-react';
 
 export function UserSwitcher() {
-  const { currentUser, switchUser, isSuperAdmin } = useUserSession();
+  const { currentUser, switchUser, isSuperAdmin, isAuthenticated, isDemoMode, logout } = useUserSession();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -54,9 +55,49 @@ export function UserSwitcher() {
         >
           <div className="px-3 py-2 border-b mb-1 flex items-center justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
             <span className="text-[11px] font-bold block" style={{ color: 'var(--text-muted)' }}>
-              تغییر پرسونای تستی سازمانی:
+              {isAuthenticated ? currentUser.name : 'حساب کاربری'}
             </span>
             <span className="text-[10px] text-blue-500 font-mono">RBAC + Dept</span>
+          </div>
+
+          {isAuthenticated ? (
+            <div className="space-y-1 mb-1">
+              <Link
+                href="/profile"
+                onClick={() => setIsOpen(false)}
+                className="w-full p-2.5 rounded-xl text-right flex items-center gap-2.5 text-xs transition-colors cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <Settings className="w-4 h-4 text-slate-400" />
+                <span className="font-bold" style={{ color: 'var(--text-primary)' }}>حساب کاربری من</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  setIsOpen(false);
+                }}
+                className="w-full p-2.5 rounded-xl text-right flex items-center gap-2.5 text-xs transition-colors cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-950/50 text-rose-600"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="font-bold">خروج از حساب</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              onClick={() => setIsOpen(false)}
+              className="block p-2.5 rounded-xl text-center text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 mb-1"
+            >
+              ورود / ثبت‌نام
+            </Link>
+          )}
+
+          {isDemoMode && (
+          <>
+          <div className="px-3 py-2 border-b mb-1 flex items-center justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
+            <span className="text-[11px] font-bold block" style={{ color: 'var(--text-muted)' }}>
+              تغییر پرسونای تستی سازمانی:
+            </span>
           </div>
 
           <div className="space-y-1">
@@ -76,7 +117,7 @@ export function UserSwitcher() {
                 >
                   <div className="flex items-center gap-2.5">
                     <img 
-                      src={user.avatarUrl} 
+                      src={user.avatarUrl || undefined} 
                       alt="" 
                       className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0 border border-slate-300 dark:border-slate-600" 
                     />
@@ -111,6 +152,8 @@ export function UserSwitcher() {
               );
             })}
           </div>
+          </>
+          )}
         </div>
       )}
     </div>

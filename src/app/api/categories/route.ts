@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
+import { resolveApiUser } from '@/lib/api-auth';
 import { formatToSlug } from '@/lib/slug-utils';
 
 export async function GET(req: NextRequest) {
@@ -87,7 +88,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { permissions: userPermissions } = await resolveApiUser(req);
     if (
       !hasPermission(userPermissions, Permissions.MANAGE_CATEGORIES) &&
       !hasPermission(userPermissions, Permissions.CREATE_PROCESSES)
@@ -154,7 +155,7 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { permissions: userPermissions } = await resolveApiUser(req);
     if (
       !hasPermission(userPermissions, Permissions.MANAGE_CATEGORIES) &&
       !hasPermission(userPermissions, Permissions.EDIT_PROCESSES)
@@ -216,7 +217,7 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { permissions: userPermissions } = await resolveApiUser(req);
     if (!hasPermission(userPermissions, Permissions.MANAGE_CATEGORIES)) {
       return NextResponse.json(
         { error: 'Forbidden: Insufficient permissions to delete category' },

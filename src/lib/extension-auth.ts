@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from 'crypto';
 import { prisma } from './prisma';
+import { getSessionUser, isDemoAuthAllowed } from './session';
 import { Permissions, hasPermission } from './permissions';
 
 export const EXTENSION_TOKEN_PREFIX = 'fanx_';
@@ -12,17 +13,30 @@ export function hashExtensionToken(rawToken: string): string {
 export interface ExtensionUser {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   roleName: string;
   permissions: number;
 }
 
 /**
- * Resolves the calling author from either an extension token
- * (`x-extension-token: fanx_...`) or the dashboard headers
- * (`x-user-id` + `x-user-permissions`). Returns null when unknown.
+ * Resolves the calling author server-side. Priority:
+ *  1. Session cookie (real dashboard login).
+ *  2. Extension token (`x-extension-token: fanx_...`, cryptographic).
+ *  3. Demo dashboard headers — only when demo auth is allowed.
+ * Returns null when unknown.
  */
 export async function resolveExtensionUser(req: Request): Promise<ExtensionUser | null> {
+  const sessionUser = await getSessionUser(req).catch(() => null);
+  if (sessionUser) {
+    return {
+      id: sessionUser.id,
+      name: sessionUser.name,
+      email: sessionUser.email,
+      roleName: sessionUser.roleName,
+      permissions: sessionUser.permissions,
+    };
+  }
+
   const rawToken = req.headers.get('x-extension-token');
   if (rawToken && rawToken.startsWith(EXTENSION_TOKEN_PREFIX)) {
     const user = await prisma.user.findFirst({
@@ -31,6 +45,8 @@ export async function resolveExtensionUser(req: Request): Promise<ExtensionUser 
     });
     if (user) return user;
   }
+
+  if (!isDemoAuthAllowed()) return null;
 
   const userId = req.headers.get('x-user-id');
   if (userId) {

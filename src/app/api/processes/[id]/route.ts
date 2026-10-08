@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
+import { resolveApiUser } from '@/lib/api-auth';
 import { mapPrismaProcess } from '@/lib/db-service';
 
 interface RouteContext {
@@ -10,18 +11,12 @@ interface RouteContext {
 export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
-    const userId = req.headers.get('x-user-id');
-    const rawRole = req.headers.get('x-user-role');
-    let userRole = rawRole;
-    if (rawRole) {
-      try {
-        userRole = decodeURIComponent(rawRole);
-      } catch (e) {
-        userRole = rawRole;
-      }
-    }
-    const userDeptId = req.headers.get('x-user-dept');
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const {
+      id: userId,
+      roleName: userRole,
+      departmentId: userDeptId,
+      permissions: userPermissions,
+    } = await resolveApiUser(req);
 
     const process = await prisma.process.findFirst({
       where: {
@@ -91,7 +86,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
     const body = await req.json();
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { permissions: userPermissions } = await resolveApiUser(req);
 
     // Discord-style bitfield check: Requires EDIT_PROCESSES or ADMINISTRATOR
     if (!hasPermission(userPermissions, Permissions.EDIT_PROCESSES)) {
@@ -145,7 +140,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
 export async function DELETE(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { permissions: userPermissions } = await resolveApiUser(req);
 
     // Discord-style bitfield check: Requires DELETE_PROCESSES or ADMINISTRATOR
     if (!hasPermission(userPermissions, Permissions.DELETE_PROCESSES)) {

@@ -1,5 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+
+// This suite exercises demo header-trust, which is deny-by-default —
+// opt in explicitly (mirrors local dev .env, never production).
+process.env.ALLOW_DEMO_LOGIN = 'true';
+
 import { NextRequest } from 'next/server';
 import { POST as createDepartment } from '../src/app/api/departments/route';
 import { Permissions } from '../src/lib/permissions';

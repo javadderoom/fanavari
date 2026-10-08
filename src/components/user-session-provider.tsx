@@ -1,18 +1,39 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Permissions, hasPermission, ROLE_PRESETS } from '@/lib/permissions';
+import type { SessionUser } from '@/lib/session';
 
 export interface AppUser {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
   roleName: string;
-  departmentId?: string;
-  departmentName?: string;
+  departmentId?: string | null;
+  departmentName?: string | null;
   permissions: number; // Bitfield integer
-  avatarUrl?: string;
+  avatarUrl?: string | null;
+  otpEnabled?: boolean;
 }
+
+/** Demo personas are deny-by-default: only when explicitly enabled. */
+const DEMO_ENABLED =
+  process.env.NEXT_PUBLIC_ALLOW_DEMO_LOGIN === 'true' ||
+  process.env.ALLOW_DEMO_LOGIN === 'true';
+
+const GUEST_USER: AppUser = {
+  id: 'guest',
+  name: 'کاربر مهمان',
+  email: '',
+  roleName: 'مهمان',
+  departmentId: null,
+  departmentName: null,
+  permissions: Permissions.VIEW_PROCESSES,
+  avatarUrl: undefined,
+};
 
 export const DEMO_USERS: AppUser[] = [
   {
@@ -67,51 +88,122 @@ export const DEMO_USERS: AppUser[] = [
   },
 ];
 
+function toAppUser(s: SessionUser): AppUser {
+  return {
+    id: s.id,
+    name: s.name,
+    email: s.email || '',
+    phone: s.phone,
+    emailVerified: s.emailVerified,
+    phoneVerified: s.phoneVerified,
+    roleName: s.roleName,
+    departmentId: s.departmentId,
+    departmentName: s.departmentName,
+    permissions: s.permissions,
+    avatarUrl: s.avatarUrl,
+    otpEnabled: s.otpEnabled,
+  };
+}
+
 interface UserContextType {
   currentUser: AppUser;
+  /** True when the user holds a real server session (not demo/guest). */
+  isAuthenticated: boolean;
+  /** True while the initial /auth/me check is running. */
+  isLoading: boolean;
+  /** Demo-only persona switching (disabled unless demo logins allowed). */
   switchUser: (userId: string) => void;
   loginAsSuperAdmin: (password?: string) => boolean;
+  logout: () => Promise<void>;
+  refreshSession: () => Promise<void>;
   can: (permission: number) => boolean;
   isSuperAdmin: boolean;
+  isDemoMode: boolean;
 }
 
 const UserContext = createContext<UserContextType>({
-  currentUser: DEMO_USERS[0],
+  currentUser: GUEST_USER,
+  isAuthenticated: false,
+  isLoading: true,
   switchUser: () => {},
-  loginAsSuperAdmin: () => true,
-  can: () => true,
-  isSuperAdmin: true,
+  loginAsSuperAdmin: () => false,
+  logout: async () => {},
+  refreshSession: async () => {},
+  can: () => false,
+  isSuperAdmin: false,
+  isDemoMode: false,
 });
 
 export function UserSessionProvider({ children }: { children: React.ReactNode }) {
-  // Default is Super Admin (the user)
-  const [currentUser, setCurrentUser] = useState<AppUser>(DEMO_USERS[0]);
+  const [currentUser, setCurrentUser] = useState<AppUser>(DEMO_ENABLED ? DEMO_USERS[0] : GUEST_USER);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const savedUserId = localStorage.getItem('fanavari-active-user');
-    if (savedUserId) {
-      const found = DEMO_USERS.find(u => u.id === savedUserId);
-      if (found) setCurrentUser(found);
+  const refreshSession = useCallback(async () => {
+    try {
+      const res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.user) {
+          setCurrentUser(toAppUser(data.user));
+          setIsAuthenticated(true);
+          return;
+        }
+      }
+    } catch {
+      // No session — fall through to demo/guest fallback.
+    }
+    setIsAuthenticated(false);
+    if (DEMO_ENABLED) {
+      const savedUserId =
+        typeof window !== 'undefined' ? localStorage.getItem('fanavari-active-user') : null;
+      const found = DEMO_USERS.find((u) => u.id === savedUserId);
+      setCurrentUser(found || DEMO_USERS[0]);
+    } else {
+      setCurrentUser(GUEST_USER);
     }
   }, []);
 
+  useEffect(() => {
+    refreshSession().finally(() => setIsLoading(false));
+  }, [refreshSession]);
+
   const switchUser = (userId: string) => {
-    const found = DEMO_USERS.find(u => u.id === userId);
+    if (!DEMO_ENABLED) return;
+    const found = DEMO_USERS.find((u) => u.id === userId);
     if (found) {
       setCurrentUser(found);
+      setIsAuthenticated(false);
       localStorage.setItem('fanavari-active-user', found.id);
     }
   };
 
   const loginAsSuperAdmin = (password?: string): boolean => {
-    // Master password check (or empty for quick login)
+    // Demo-only quick login. Real admins sign in via /login in production.
+    if (!DEMO_ENABLED) return false;
     if (!password || password === 'admin' || password === 'fanavari1403' || password === 'fanavari') {
       const adminUser = DEMO_USERS[0];
       setCurrentUser(adminUser);
+      setIsAuthenticated(false);
       localStorage.setItem('fanavari-active-user', adminUser.id);
       return true;
     }
     return false;
+  };
+
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch {
+      // Ignore network errors — still clear local state.
+    }
+    setIsAuthenticated(false);
+    if (DEMO_ENABLED) {
+      localStorage.removeItem('fanavari-active-user');
+      setCurrentUser(DEMO_USERS[0]);
+    } else {
+      setCurrentUser(GUEST_USER);
+    }
   };
 
   const can = (permission: number): boolean => {
@@ -121,7 +213,20 @@ export function UserSessionProvider({ children }: { children: React.ReactNode })
   const isSuperAdmin = (currentUser.permissions & Permissions.ADMINISTRATOR) === Permissions.ADMINISTRATOR;
 
   return (
-    <UserContext.Provider value={{ currentUser, switchUser, loginAsSuperAdmin, can, isSuperAdmin }}>
+    <UserContext.Provider
+      value={{
+        currentUser,
+        isAuthenticated,
+        isLoading,
+        switchUser,
+        loginAsSuperAdmin,
+        logout,
+        refreshSession,
+        can,
+        isSuperAdmin,
+        isDemoMode: DEMO_ENABLED && !isAuthenticated,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

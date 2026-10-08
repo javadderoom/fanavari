@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
+import { resolveApiUser } from '@/lib/api-auth';
 import { mapPrismaProcess, resolveDbUserId } from '@/lib/db-service';
 
 export async function GET(req: NextRequest) {
@@ -8,18 +9,12 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get('q') || '';
     const scope = searchParams.get('scope');
-    const userId = req.headers.get('x-user-id');
-    const rawRole = req.headers.get('x-user-role');
-    let userRole = rawRole;
-    if (rawRole) {
-      try {
-        userRole = decodeURIComponent(rawRole);
-      } catch (e) {
-        userRole = rawRole;
-      }
-    }
-    const userDeptId = req.headers.get('x-user-dept');
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const {
+      id: userId,
+      roleName: userRole,
+      departmentId: userDeptId,
+      permissions: userPermissions,
+    } = await resolveApiUser(req);
 
     const isSuperAdmin = hasPermission(userPermissions, Permissions.ADMINISTRATOR);
 
@@ -105,7 +100,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { id: currentUserId, permissions: userPermissions } = await resolveApiUser(req);
 
     // Permissions check: Require CREATE_PROCESSES, EDIT_PROCESSES, or ADMINISTRATOR
     const isSuperAdmin = hasPermission(userPermissions, Permissions.ADMINISTRATOR);
@@ -136,7 +131,6 @@ export async function POST(req: NextRequest) {
       schedule,
       isPublished,
     } = body;
-    const currentUserId = req.headers.get('x-user-id');
 
     if (!title || !title.trim()) {
       return NextResponse.json({ error: 'Process title is required' }, { status: 400 });

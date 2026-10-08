@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
+import { resolveApiUser } from '@/lib/api-auth';
 
 /**
  * POST /api/scopes/reassign-delete { id, replacementScopeId? }
@@ -11,7 +12,7 @@ import { Permissions, hasPermission } from '@/lib/permissions';
  */
 export async function POST(req: NextRequest) {
   try {
-    const userPermissions = Number(req.headers.get('x-user-permissions') || '0');
+    const { permissions: userPermissions } = await resolveApiUser(req);
     if (!hasPermission(userPermissions, Permissions.MANAGE_CATEGORIES)) {
       return NextResponse.json(
         { error: 'Forbidden: Insufficient permissions to manage taxonomy' },

@@ -2,11 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 import path from 'path';
 import fs from 'fs/promises';
+import { Permissions, hasPermission } from '@/lib/permissions';
+import { resolveApiUser } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    // Uploads back content authoring — require a real (or demo-mode) editor.
+    const { permissions } = await resolveApiUser(req);
+    const canUpload =
+      hasPermission(permissions, Permissions.EDIT_PROCESSES) ||
+      hasPermission(permissions, Permissions.MANAGE_INFORMATION) ||
+      hasPermission(permissions, Permissions.ADMINISTRATOR);
+    if (!canUpload) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions (EDIT_PROCESSES required)' },
+        { status: 403 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as Blob | null;
     const folder = (formData.get('folder') as string) || 'images';

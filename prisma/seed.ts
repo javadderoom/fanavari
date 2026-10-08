@@ -1,46 +1,75 @@
 import 'dotenv/config';
 import { prisma } from '../src/lib/prisma';
 import { ROLE_PRESETS } from '../src/lib/permissions';
+import { hashPassword } from '../src/lib/password';
+
+// Development-only credential for seeded accounts. Production accounts are
+// created via signup or the admin Users page with their own passwords.
+const SEED_DEV_PASSWORD = 'Fanavari123';
 
 async function main() {
   console.log('Seeding Fanavari PostgreSQL database with production entities...');
 
-  // 1. Ensure Standard Role Users Exist
+  // 1. Ensure Standard Role Users Exist (active, verified, dev-login capable)
+  const devPasswordHash = await hashPassword(SEED_DEV_PASSWORD);
+  const seedUserData = {
+    status: 'active',
+    emailVerifiedAt: new Date(),
+    passwordHash: devPasswordHash,
+  };
+
   const superAdmin = await prisma.user.upsert({
     where: { email: 'admin@fanavari.local' },
-    update: {},
+    update: { status: 'active', emailVerifiedAt: new Date() },
     create: {
       email: 'admin@fanavari.local',
       name: 'مدیر ارشد سامانه (Super Admin)',
       roleName: ROLE_PRESETS.SUPER_ADMIN.name,
       permissions: ROLE_PRESETS.SUPER_ADMIN.bitfield,
       avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin',
+      ...seedUserData,
     },
   });
 
   await prisma.user.upsert({
     where: { email: 'editor@fanavari.local' },
-    update: {},
+    update: { status: 'active', emailVerifiedAt: new Date() },
     create: {
       email: 'editor@fanavari.local',
       name: 'کارشناس تدوین فرایند',
       roleName: ROLE_PRESETS.PROCESS_EDITOR.name,
       permissions: ROLE_PRESETS.PROCESS_EDITOR.bitfield,
       avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=editor',
+      ...seedUserData,
     },
   });
 
   await prisma.user.upsert({
     where: { email: 'viewer@fanavari.local' },
-    update: {},
+    update: { status: 'active', emailVerifiedAt: new Date() },
     create: {
       email: 'viewer@fanavari.local',
       name: 'پرسنل سازمانی (کاربر عادی)',
       roleName: ROLE_PRESETS.EMPLOYEE_VIEWER.name,
       permissions: ROLE_PRESETS.EMPLOYEE_VIEWER.bitfield,
       avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=viewer',
+      ...seedUserData,
     },
   });
+
+  // Backfill: rows seeded before passwords existed get the dev credential
+  // (only when they have none — never overwrites a real password).
+  const seedEmails = ['admin@fanavari.local', 'editor@fanavari.local', 'viewer@fanavari.local'];
+  const withoutPassword = await prisma.user.findMany({
+    where: { email: { in: seedEmails }, passwordHash: null },
+    select: { id: true },
+  });
+  if (withoutPassword.length > 0) {
+    await prisma.user.updateMany({
+      where: { id: { in: withoutPassword.map((u) => u.id) } },
+      data: { passwordHash: devPasswordHash },
+    });
+  }
 
   // 2. Organization: وزارت آموزش و پرورش
   const meduDept = await prisma.department.upsert({
@@ -178,6 +207,7 @@ async function main() {
   }
 
   console.log('Seeding completed successfully!');
+  console.log(`Seed accounts (password: ${SEED_DEV_PASSWORD}): admin@fanavari.local, editor@fanavari.local, viewer@fanavari.local`);
 }
 
 main()

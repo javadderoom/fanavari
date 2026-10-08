@@ -8,11 +8,19 @@ datasource db {
 
 model User {
   id            String         @id @default(uuid())
-  email         String         @unique
+  email         String?        @unique
+  phone         String?        @unique // Normalized E.164 (+98...) — see normalizePhone in lib/otp.ts
   name          String
   roleName      String         @default("User") // "Super Admin" | "Manager" | "Editor" | "Viewer"
   permissions   Int            @default(1) // Discord-style bitfield flags (Int supports 31 bit flags)
   avatarUrl     String?
+  passwordHash  String?        // bcrypt hash — null for OTP-only accounts
+  otpEnabled    Boolean        @default(false) // Require OTP as second factor after password
+  emailVerifiedAt DateTime?
+  phoneVerifiedAt DateTime?
+  personnelCode String?
+  status        String         @default("pending") // "pending" | "active" | "suspended"
+  lastLoginAt   DateTime?
   extensionToken String?  @unique // Hashed browser-login token for the authoring Chrome extension
   departmentId  String?
   department    Department?    @relation(fields: [departmentId], references: [id])
@@ -27,6 +35,9 @@ model User {
   createdInfoAccessGrants  InformationAccessGrant[] @relation("InfoGrantedByUser")
   operatedRuns             WorkflowRun[]            @relation("RunOperator")
   supervisedRuns           WorkflowRun[]            @relation("RunSupervisor")
+  verificationCodes      VerificationCode[]
+  authSessions           UserSession[]
+  authAuditLogs          AuthAuditLog[]
 }
 
 model Department {
@@ -276,5 +287,50 @@ model WorkflowStepLog {
 
   @@index([runId])
   @@index([stepKey])
+}
+
+model AuthAuditLog {
+  id               String   @id @default(uuid())
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action           String   // "signup" | "verify" | "login" | "login-otp" | "logout" | "password-change" | "password-reset-request" | "password-reset-confirm" | "otp-toggle" | "contact-add"
+  identifierMasked String?
+  success          Boolean  @default(true)
+  ip               String?
+  userAgent        String?
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+  @@index([action, createdAt])
+}
+
+model VerificationCode {
+  id         String    @id @default(uuid())
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel    String    // "sms" | "email"
+  identifier String    // Normalized phone (+98...) or lowercase email
+  codeHash   String    // SHA-256 hex of the OTP code
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([identifier, channel])
+  @@index([userId])
+}
+
+model UserSession {
+  id               String    @id @default(uuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionTokenHash String    @unique // SHA-256 hex of the opaque session token (cookie stores the raw token)
+  userAgent        String?
+  ip               String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@index([userId])
 }
 

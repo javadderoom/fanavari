@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { resolveApiUser } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +12,7 @@ interface Params {
 export async function GET(request: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
-    const userId = request.headers.get('x-user-id') || null;
+    const { dbUserId: userId } = await resolveApiUser(request);
 
     if (!userId) {
       return NextResponse.json({ session: null });
@@ -37,10 +38,12 @@ export async function POST(request: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const userId = request.headers.get('x-user-id') || body.userId || null;
+    // Sessions belong to real database users; everyone else stays local-only.
+    // (body.userId is never trusted — it is client-controlled.)
+    const { dbUserId: userId } = await resolveApiUser(request);
 
     if (!userId) {
-      // For anonymous users, client stores in localStorage
+      // For anonymous/demo users, client stores in localStorage
       return NextResponse.json({ success: true, localOnly: true });
     }
 
