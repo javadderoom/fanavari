@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useUserSession } from './user-session-provider';
 import { canAccessDashboard } from '@/lib/permissions';
-import { GitBranch, Heart, Database, ShieldCheck, ArrowUp } from 'lucide-react';
+import { GitBranch, Heart, ArrowUp } from 'lucide-react';
 
 export function Footer() {
   const { isAuthenticated, isDemoMode, currentUser } = useUserSession();
@@ -43,22 +43,6 @@ export function Footer() {
                 مستندسازی و اجرای هوشمند و بصری فرایندهای سازمانی
               </p>
             </div>
-          </div>
-
-          {/* Enterprise Status Badges */}
-          <div className="flex items-center flex-wrap gap-3 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border"
-              style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
-            >
-              <Database className="w-3.5 h-3.5 text-blue-500" />
-              <span>پایگاه داده سازمانی: فعال</span>
-            </span>
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border"
-              style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
-              <span>امنیت و یکپارچگی: تایید شده</span>
-            </span>
           </div>
 
           {/* Scroll to Top */}

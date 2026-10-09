@@ -104,16 +104,6 @@ export function Navbar({ onSearchClick }: NavbarProps) {
                 <span className="text-xl font-black tracking-tight whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>
                   فرآیندنما
                 </span>
-                <span 
-                  className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider whitespace-nowrap"
-                  style={{
-                    background: 'var(--accent-soft)',
-                    color: 'var(--accent-primary)',
-                    border: '1px solid var(--accent-border)'
-                  }}
-                >
-                  MVP
-                </span>
               </div>
             </div>
           </Link>
