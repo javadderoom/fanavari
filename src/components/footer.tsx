@@ -79,6 +79,9 @@ export function Footer() {
             <Link href="/organizations" className="hover:text-blue-600 transition-colors">
               سازمان‌ها
             </Link>
+            <Link href="/guide" className="hover:text-blue-600 transition-colors text-blue-600 dark:text-blue-400 font-bold">
+              آموزش و راهنمای سامانه
+            </Link>
             {showDashboard && (
               <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
                 داشبورد مدیریت

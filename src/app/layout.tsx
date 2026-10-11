@@ -6,6 +6,8 @@ import { UserSessionProvider } from "@/components/user-session-provider";
 import { Toaster } from "@/lib/notify";
 import { getUserBySessionToken, SESSION_COOKIE } from "@/lib/session";
 import { PwaRegistrar } from "@/components/pwa-registrar";
+import { OnboardingProvider } from "@/components/onboarding/onboarding-context";
+import { SpotlightTour } from "@/components/onboarding/spotlight-tour";
 import { Agentation } from "agentation";
 import "./globals.css";
 
@@ -99,9 +101,12 @@ export default async function RootLayout({
       <body className="font-sans antialiased min-h-screen">
         <ThemeProvider>
           <UserSessionProvider initialUser={initialUser}>
-            {children}
+            <OnboardingProvider>
+              {children}
+              <SpotlightTour />
+              <PwaRegistrar />
+            </OnboardingProvider>
             <Toaster />
-            <PwaRegistrar />
             {process.env.NODE_ENV === "development" && <Agentation />}
           </UserSessionProvider>
         </ThemeProvider>

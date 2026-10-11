@@ -20,8 +20,11 @@ import {
   X,
   Home,
   Workflow,
-  ChevronDown
+  ChevronDown,
+  BookOpen,
+  Compass
 } from 'lucide-react';
+import { useOnboardingTour } from './onboarding/onboarding-context';
 
 interface NavbarProps {
   onSearchClick?: () => void;
@@ -34,6 +37,7 @@ export function Navbar({ onSearchClick }: NavbarProps) {
   // the layout itself bounces everyone else.
   const showDashboard =
     isDemoMode || (isAuthenticated && canAccessDashboard(currentUser.permissions));
+  const { startTour } = useOnboardingTour();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<'processes' | 'operations' | null>(null);
 
@@ -117,6 +121,7 @@ export function Navbar({ onSearchClick }: NavbarProps) {
             {/* Category 1: فرایندها و سامانه‌ها (Dropdown) */}
             <div className="relative">
               <button
+                data-tour="nav-systems"
                 type="button"
                 onClick={() => setOpenDropdown((prev) => (prev === 'processes' ? null : 'processes'))}
                 className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl transition-all duration-150 cursor-pointer select-none whitespace-nowrap ${
@@ -339,6 +344,20 @@ export function Navbar({ onSearchClick }: NavbarProps) {
               </button>
             )}
 
+            {/* Guide & Tutorial Link */}
+            <Link
+              href="/guide"
+              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                pathname === '/guide'
+                  ? 'text-blue-600 dark:text-blue-400 bg-blue-500/10 dark:bg-blue-400/15 font-black shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-500/10'
+              }`}
+              title="مرکز آموزش و راهنمای سامانه"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+              <span>راهنما</span>
+            </Link>
+
             {/* User Session Switcher (Discord Bitfield) */}
             <UserSwitcher />
 
@@ -454,6 +473,40 @@ export function Navbar({ onSearchClick }: NavbarProps) {
                   <Megaphone className="w-4 h-4 text-indigo-500 shrink-0" />
                   <span className="whitespace-nowrap">اعلامیه‌ها و بخشنامه‌ها</span>
                 </Link>
+              </div>
+            </div>
+
+            {/* Section: آموزش و راهنما */}
+            <div>
+              <span className="text-[11px] font-bold text-slate-400 block px-2 mb-1.5">
+                آموزش و یادگیری
+              </span>
+              <div className="flex flex-col gap-1">
+                <Link
+                  href="/guide"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                    pathname === '/guide'
+                      ? 'text-blue-600 dark:text-blue-400 bg-blue-500/10 dark:bg-blue-400/15 font-black'
+                      : 'hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-500/10'
+                  }`}
+                  style={{ color: pathname === '/guide' ? undefined : 'var(--text-primary)' }}
+                >
+                  <BookOpen className="w-4 h-4 text-blue-500 shrink-0" />
+                  <span className="whitespace-nowrap">مرکز آموزش و راهنمای سامانه</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    startTour();
+                  }}
+                  className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 cursor-pointer text-right w-full"
+                >
+                  <Compass className="w-4 h-4 text-blue-500 shrink-0" />
+                  <span className="whitespace-nowrap">شروع تور تعاملی در صفحه</span>
+                </button>
               </div>
             </div>
 

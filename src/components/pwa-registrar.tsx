@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Download, X, Smartphone, Check } from 'lucide-react';
+import { useOnboardingTour } from './onboarding/onboarding-context';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -9,6 +10,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function PwaRegistrar() {
+  const { isActive: isTourActive } = useOnboardingTour();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isDismissed, setIsDismissed] = useState(true);
@@ -100,8 +102,8 @@ export function PwaRegistrar() {
     } catch (e) {}
   };
 
-  // Only render if install prompt is available, not already standalone, and not dismissed
-  if (!isInstallable || isInstalled || isDismissed) {
+  // Only render if install prompt is available, not already standalone, not dismissed, and tour not active
+  if (!isInstallable || isInstalled || isDismissed || isTourActive) {
     return null;
   }
 

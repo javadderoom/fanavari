@@ -147,7 +147,9 @@ function HomePageContent() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             {/* Hero Top Pill */}
             <div className="flex justify-center mb-6">
-              <div className="inline-flex items-center text-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold shadow-xs transition-transform hover:scale-105"
+              <div 
+                data-tour="pwa-install"
+                className="inline-flex items-center text-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold shadow-xs transition-transform hover:scale-105"
                 style={{
                   background: 'var(--bg-glass-strong)',
                   border: '1px solid var(--border-glass)',
@@ -179,7 +181,7 @@ function HomePageContent() {
             </div>
 
             {/* Omni-Search Box (Google-style, prominent) */}
-            <div className="mb-8">
+            <div className="mb-8" data-tour="omni-search">
               <OmniSearch 
                 processes={processes} 
                 announcements={announcements}
@@ -297,7 +299,7 @@ function HomePageContent() {
               </h2>
             </div>
 
-            <div className="w-full md:w-auto overflow-x-auto pb-1 no-scrollbar">
+            <div className="w-full md:w-auto overflow-x-auto pb-1 no-scrollbar" data-tour="scope-filter">
               {/* Category Filter Pills */}
               <div className="flex items-center gap-1.5 flex-nowrap md:flex-wrap">
                 {CATEGORIES.map((cat) => {
@@ -372,7 +374,7 @@ function HomePageContent() {
               <p className="text-sm text-gray-500 mt-1">فرایندها مستقیماً از پایگاه داده بازیابی می‌شوند.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-tour="process-card">
               {filteredProcesses.map((process) => (
                 <ProcessCard
                   key={process.id}

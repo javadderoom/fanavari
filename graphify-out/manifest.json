@@ -445,8 +445,8 @@
     "semantic_hash": ""
   },
   "src/app/layout.tsx": {
-    "mtime": 1791719535.7600799,
-    "ast_hash": "06c58606ab7baba70cb3812e5af00735",
+    "mtime": 1791721619.8096442,
+    "ast_hash": "65636348aab28c8df1a0639978321e83",
     "semantic_hash": ""
   },
   "src/app/organizations/page.tsx": {
@@ -455,8 +455,8 @@
     "semantic_hash": ""
   },
   "src/app/page.tsx": {
-    "mtime": 1791714371.4887593,
-    "ast_hash": "9400309f08a25e37e51eb365eee96c02",
+    "mtime": 1791721120.1783502,
+    "ast_hash": "145ce967ea29bed7446e51c196cca5e5",
     "semantic_hash": ""
   },
   "src/app/process/[slug]/page.tsx": {
@@ -485,8 +485,8 @@
     "semantic_hash": ""
   },
   "src/components/footer.tsx": {
-    "mtime": 1791537041.2359872,
-    "ast_hash": "367c87bc9cb2e09ada46872707405688",
+    "mtime": 1791721220.2084248,
+    "ast_hash": "a2cbad0a010b74c41effb3ba17c52129",
     "semantic_hash": ""
   },
   "src/components/information-client-view.tsx": {
@@ -510,8 +510,8 @@
     "semantic_hash": ""
   },
   "src/components/navbar.tsx": {
-    "mtime": 1791714326.95718,
-    "ast_hash": "3c23805d24f4c0bc86acf898996b9723",
+    "mtime": 1791721210.8233106,
+    "ast_hash": "73db0495aa2568314425ad415a73098f",
     "semantic_hash": ""
   },
   "src/components/omni-search.tsx": {
@@ -1540,8 +1540,8 @@
     "semantic_hash": ""
   },
   "src/components/pwa-registrar.tsx": {
-    "mtime": 1791715032.529706,
-    "ast_hash": "b74d69e5bc520844c59a55db419a94c0",
+    "mtime": 1791721516.9689267,
+    "ast_hash": "d589267379623b7a82d4172768f26e8f",
     "semantic_hash": ""
   },
   "src/components/taxonomy-reassign-dialog.tsx": {
@@ -1645,8 +1645,28 @@
     "semantic_hash": ""
   },
   "src/app/sitemap.ts": {
-    "mtime": 1791719519.5545797,
-    "ast_hash": "e9ee0d15c9100a1d3fe7d55bc52af4a2",
+    "mtime": 1791721238.2931106,
+    "ast_hash": "b6b246eb8f041310ed6aaf889f5328dd",
+    "semantic_hash": ""
+  },
+  "src/app/guide/page.tsx": {
+    "mtime": 1791721293.1954827,
+    "ast_hash": "575ed13f36971a437e881b71a68bd6d6",
+    "semantic_hash": ""
+  },
+  "src/components/guide/guide-view.tsx": {
+    "mtime": 1791721285.4084988,
+    "ast_hash": "3121be05b806371d97e2c76479c866e8",
+    "semantic_hash": ""
+  },
+  "src/components/onboarding/onboarding-context.tsx": {
+    "mtime": 1791721355.6158752,
+    "ast_hash": "b767111c2baa3d9e68453bc601a9eea5",
+    "semantic_hash": ""
+  },
+  "src/components/onboarding/spotlight-tour.tsx": {
+    "mtime": 1791721570.7990892,
+    "ast_hash": "79dd0dce049e5dd20e607e65e071d60d",
     "semantic_hash": ""
   }
 }
