@@ -29,9 +29,38 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "سامانه فرآیندنما | راهنمای تعاملی و بصری فرایندهای سازمانی",
+  metadataBase: new URL('https://farayandnama.ir'),
+  title: {
+    default: "سامانه فرآیندنما | راهنمای تعاملی و بصری فرایندهای سازمانی",
+    template: "%s | فرآیندنما",
+  },
   description: "جستجو، مشاهده فلوچارت زنده و اجرای گام‌به‌گام فرایندهای سازمانی و اداری با راهنمای جامع خطایابی و ابزارهای کمکی",
   manifest: "/manifest.webmanifest",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "fa_IR",
+    url: "https://farayandnama.ir",
+    siteName: "سامانه فرآیندنما",
+    title: "سامانه فرآیندنما | راهنمای تعاملی و بصری فرایندهای سازمانی",
+    description: "جستجو، مشاهده فلوچارت زنده و اجرای گام‌به‌گام فرایندهای سازمانی و اداری با راهنمای جامع خطایابی و ابزارهای کمکی",
+    images: [
+      {
+        url: "/icons/icon-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "لوگوی سامانه فرآیندنما",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "سامانه فرآیندنما | راهنمای تعاملی و بصری فرایندهای سازمانی",
+    description: "جستجو، مشاهده فلوچارت زنده و اجرای گام‌به‌گام فرایندهای سازمانی و اداری با راهنمای جامع خطایابی",
+    images: ["/icons/icon-512x512.png"],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

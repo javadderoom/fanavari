@@ -1,5 +1,5 @@
-// PWA Service Worker for Fanavari (فرآیندنما)
-const CACHE_NAME = 'fanavari-cache-v1';
+// PWA Service Worker for Farayandnama (فرآیندنما)
+const CACHE_NAME = 'farayandnama-cache-v1';
 const STATIC_ASSETS = [
   '/',
   '/manifest.webmanifest',

@@ -2,6 +2,8 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: '/',
+    scope: '/',
     name: 'سامانه فرآیندنما | راهنمای تعاملی و بصری فرایندهای سازمانی',
     short_name: 'فرآیندنما',
     description: 'جستجو، مشاهده فلوچارت زنده و اجرای گام‌به‌گام فرایندهای سازمانی و اداری با راهنمای جامع خطایابی',

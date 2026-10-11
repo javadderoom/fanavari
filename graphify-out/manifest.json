@@ -345,8 +345,8 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1791397472.4988089,
-    "ast_hash": "a07f79356df0639491512f3c0905264d",
+    "mtime": 1791719569.817876,
+    "ast_hash": "b2b2f5ea2d5aecc22f0e356dd6a5b784",
     "semantic_hash": ""
   },
   "postcss.config.mjs": {
@@ -445,8 +445,8 @@
     "semantic_hash": ""
   },
   "src/app/layout.tsx": {
-    "mtime": 1791715085.8136194,
-    "ast_hash": "a4af2ce55ccd93e79dfa883711a75b48",
+    "mtime": 1791719535.7600799,
+    "ast_hash": "06c58606ab7baba70cb3812e5af00735",
     "semantic_hash": ""
   },
   "src/app/organizations/page.tsx": {
@@ -1340,8 +1340,8 @@
     "semantic_hash": ""
   },
   "public/sw.js": {
-    "mtime": 1791715011.9713645,
-    "ast_hash": "c4c3f2b7ffe3c4f94810acd3aae3b991",
+    "mtime": 1791719559.2757766,
+    "ast_hash": "263f1a42259b28e524356b7f81a9f74d",
     "semantic_hash": ""
   },
   "scripts/create-admin.ts": {
@@ -1515,8 +1515,8 @@
     "semantic_hash": ""
   },
   "src/app/manifest.ts": {
-    "mtime": 1791714965.4370277,
-    "ast_hash": "516f0163c34033f162d9b4046f6d8da1",
+    "mtime": 1791719554.0092275,
+    "ast_hash": "d5cb4b075c2d507ce998e4d011656d11",
     "semantic_hash": ""
   },
   "src/app/profile/page.tsx": {
@@ -1637,6 +1637,16 @@
   "public/icons/icon.svg": {
     "mtime": 1791714938.6345773,
     "ast_hash": "65d511d5b366a78dbdf478b97b83d72b",
+    "semantic_hash": ""
+  },
+  "src/app/robots.ts": {
+    "mtime": 1791719506.6100147,
+    "ast_hash": "43e55d72d11f470bf3d954447e3c24bb",
+    "semantic_hash": ""
+  },
+  "src/app/sitemap.ts": {
+    "mtime": 1791719519.5545797,
+    "ast_hash": "e9ee0d15c9100a1d3fe7d55bc52af4a2",
     "semantic_hash": ""
   }
 }
