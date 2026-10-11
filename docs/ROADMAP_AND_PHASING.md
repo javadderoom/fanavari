@@ -159,3 +159,14 @@ flowchart TD
 | **25** | Authoring Chrome extension M1 (recorder + token auth) | Phase 7 | P1 | High | ✅ Complete |
 | **26** | Extension M2 (screenshot attach) | Phase 7 | P2 | Medium | Pending |
 | **27** | Dashboard process-table pagination | Maintenance | P3 | Low | ✅ Complete |
+| **28** | Production domain migration (`farayandnama.ir`) & PWA registration | Platform / Mobile | P1 | Low | ✅ Complete |
+| **29** | Persistent 5-slot mobile bottom navigation with quick catalog access | Mobile UX | P1 | Low | ✅ Complete |
+| **30** | Interactive Spotlight Onboarding Tour & Help Center (`/guide`) | User Onboarding | P1 | Medium | ✅ Complete |
+| **31** | Database-backed process view tracking & dynamic "پرمراجعه" badge system | Analytics / Core | P1 | Medium | ✅ Complete |
+| **32** | Search relevance weighting boost for popular processes | Search Engine | P2 | Low | ✅ Complete |
+
+---
+
+## 4. Next-Gen Enhancements & System Opportunities
+For detailed technical architectures and user experience proposals regarding upcoming enhancements (including **User Bookmarks & Favorites**, **Dedicated Social Share Sheet**, **API Rate Limiting**, **Database Edge Caching**, and **Interactive Branching Flowcharts**), please refer to:
+👉 [Comprehensive System Review & Improvement Roadmap](SYSTEM_REVIEW_AND_OPPORTUNITIES.md)

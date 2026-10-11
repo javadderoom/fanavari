@@ -380,8 +380,8 @@
     "semantic_hash": ""
   },
   "prisma/seed.ts": {
-    "mtime": 1791483841.612492,
-    "ast_hash": "62a121194bf6494d69d3ac2e108928fd",
+    "mtime": 1791728240.141489,
+    "ast_hash": "75d79e4ceb9dd5d21f0f659758cf58c7",
     "semantic_hash": ""
   },
   "scripts/migrate-deploy.js": {
@@ -405,13 +405,13 @@
     "semantic_hash": ""
   },
   "src/app/api/processes/[id]/route.ts": {
-    "mtime": 1791485548.1975691,
-    "ast_hash": "76ebb26e12dae6b27ad0f7eb47c85aef",
+    "mtime": 1791727968.7508843,
+    "ast_hash": "365d16671e7513970865a53a2e1449cc",
     "semantic_hash": ""
   },
   "src/app/api/processes/route.ts": {
-    "mtime": 1791485548.2372124,
-    "ast_hash": "62f70492d2f02f626cba0e8cf1fb7caa",
+    "mtime": 1791727519.7748258,
+    "ast_hash": "ceb3be2096bc06503d78ed75673653ec",
     "semantic_hash": ""
   },
   "src/app/api/systems/route.ts": {
@@ -525,8 +525,8 @@
     "semantic_hash": ""
   },
   "src/components/process-card.tsx": {
-    "mtime": 1791451751.8055115,
-    "ast_hash": "fc25673b0fcd63750b034925c9defea8",
+    "mtime": 1791727764.763729,
+    "ast_hash": "19d9763b7374b7e857115001283ad3e2",
     "semantic_hash": ""
   },
   "src/components/process-detail-modal.tsx": {
@@ -535,13 +535,13 @@
     "semantic_hash": ""
   },
   "src/components/process-detail-view.tsx": {
-    "mtime": 1791714584.5002346,
-    "ast_hash": "f25f70f2a0c2aa341dc245bfc9753306",
+    "mtime": 1791727657.3998983,
+    "ast_hash": "8b910289be89219f1af40c32778ee495",
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
-    "mtime": 1791451833.2107375,
-    "ast_hash": "b377990edc04aba41da07df9a737d139",
+    "mtime": 1791728116.6882596,
+    "ast_hash": "c7591d7ee42f621af35619dadb55b36c",
     "semantic_hash": ""
   },
   "src/components/rich-text-editor.tsx": {
@@ -580,8 +580,8 @@
     "semantic_hash": ""
   },
   "src/lib/db-service.ts": {
-    "mtime": 1791485605.2897632,
-    "ast_hash": "a004581ff3fb0320b68df29500050b9f",
+    "mtime": 1791727406.1077998,
+    "ast_hash": "ab4b5c536c1c0c0b613915c5449ad34d",
     "semantic_hash": ""
   },
   "src/lib/notify.tsx": {
@@ -600,8 +600,8 @@
     "semantic_hash": ""
   },
   "src/lib/search-engine.ts": {
-    "mtime": 1791397472.5805116,
-    "ast_hash": "971670f9f7a19469a95e1168e54de7bd",
+    "mtime": 1791728163.557135,
+    "ast_hash": "efadbcd1e895e35c011f75759d9dfaec",
     "semantic_hash": ""
   },
   "src/lib/slug-utils.ts": {
@@ -610,8 +610,8 @@
     "semantic_hash": ""
   },
   "src/types/process.ts": {
-    "mtime": 1791474554.9269574,
-    "ast_hash": "c9da57080d9b40c0c0313e94fbf7b037",
+    "mtime": 1791727238.9833207,
+    "ast_hash": "ab3b28596a6041daeaf7669aa4b6d562",
     "semantic_hash": ""
   },
   "tsconfig.json": {
@@ -1015,8 +1015,8 @@
     "semantic_hash": ""
   },
   "src/components/editor/advanced-settings-section.tsx": {
-    "mtime": 1791451789.1443968,
-    "ast_hash": "4464552a205ef5615dd0b6df76fbc2c1",
+    "mtime": 1791728032.5668068,
+    "ast_hash": "25d3b006ebdaf8bebbfb60a166a9be51",
     "semantic_hash": ""
   },
   "src/components/editor/process-metadata-fields.tsx": {
@@ -1075,8 +1075,8 @@
     "semantic_hash": ""
   },
   "src/components/process-detail/process-header-banner.tsx": {
-    "mtime": 1791714556.7292423,
-    "ast_hash": "9b6d031466721b9ae25cef34b3df9d8b",
+    "mtime": 1791727696.3675919,
+    "ast_hash": "0a05beff045fdf3a90f0dbcb30311829",
     "semantic_hash": ""
   },
   "src/components/process-detail/process-scratchpad-tab.tsx": {
@@ -1195,8 +1195,8 @@
     "semantic_hash": ""
   },
   "tests/search-engine.test.ts": {
-    "mtime": 1791397472.5819247,
-    "ast_hash": "ce9ad591d088a87c363d05bf6b4d58e1",
+    "mtime": 1791728192.0603366,
+    "ast_hash": "0d51210ec8d10812d683698b6d49b38b",
     "semantic_hash": ""
   },
   "tests/slug-utils.test.ts": {
@@ -1667,6 +1667,16 @@
   "src/components/onboarding/spotlight-tour.tsx": {
     "mtime": 1791721570.7990892,
     "ast_hash": "79dd0dce049e5dd20e607e65e071d60d",
+    "semantic_hash": ""
+  },
+  "prisma/migrations/20261011140006_add_process_view_count_and_is_popular/migration.sql": {
+    "mtime": 1791727206.4725077,
+    "ast_hash": "ff5cce0a2ae5a66048715c1e6af58130",
+    "semantic_hash": ""
+  },
+  "src/app/api/processes/[id]/view/route.ts": {
+    "mtime": 1791728523.4619377,
+    "ast_hash": "d2ec1b863b3fb6eb352ec1f1b0a1838d",
     "semantic_hash": ""
   }
 }
