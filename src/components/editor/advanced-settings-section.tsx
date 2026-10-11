@@ -7,7 +7,8 @@ import {
   Globe, 
   Lock, 
   CalendarClock, 
-  Calendar 
+  Calendar,
+  Flame
 } from 'lucide-react';
 import { PersianMonth, PersianSeason, ProcessVisibility } from '@/types/process';
 import { PERSIAN_MONTHS, getSeasonForMonth } from './types';
@@ -17,6 +18,8 @@ interface AdvancedSettingsSectionProps {
   setShowAdvanced: (val: boolean) => void;
   visibility: ProcessVisibility;
   setVisibility: (val: ProcessVisibility) => void;
+  isPopular?: boolean;
+  setIsPopular?: (val: boolean) => void;
   hasSchedule: boolean;
   setHasSchedule: (val: boolean) => void;
   scheduleMonth: PersianMonth;
@@ -44,6 +47,8 @@ export function AdvancedSettingsSection({
   setShowAdvanced,
   visibility,
   setVisibility,
+  isPopular,
+  setIsPopular,
   hasSchedule,
   setHasSchedule,
   scheduleMonth,
@@ -79,21 +84,26 @@ export function AdvancedSettingsSection({
         className="w-full p-3.5 flex items-center justify-between text-xs font-bold cursor-pointer hover:bg-slate-500/5 transition-colors select-none"
         style={{ color: 'var(--text-primary)' }}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Settings2 className="w-4 h-4 text-slate-500" />
           <span>تنظیمات تکمیلی، زمان‌بندی و گاه‌شمار سالانه (اختیاری)</span>
-          {hasSchedule && (
+          {isPopular && (
             <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+              پرمراجعه
+            </span>
+          )}
+          {hasSchedule && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
               دارای زمان‌بندی ({scheduleMonth})
             </span>
           )}
           {tagsInput.trim() && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20">
               تگ‌ها
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1.5 text-slate-400 text-[11px]">
+        <div className="flex items-center gap-1.5 text-slate-400 text-[11px] shrink-0">
           <span>{showAdvanced ? 'بستن' : 'نمایش'}</span>
           <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showAdvanced ? 'rotate-180' : ''}`} />
         </div>
@@ -139,6 +149,38 @@ export function AdvancedSettingsSection({
                 </div>
               </button>
             </div>
+          </div>
+
+          {/* Popular / Featured Setting */}
+          <div 
+            className="p-3.5 rounded-xl border flex items-center justify-between gap-4" 
+            style={{ 
+              background: isPopular ? 'rgba(245, 158, 11, 0.05)' : 'var(--bg-surface)', 
+              borderColor: isPopular ? 'rgba(245, 158, 11, 0.3)' : 'var(--border-subtle)' 
+            }}
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Flame className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                  علامت‌گذاری به عنوان پرمراجعه (Featured / Popular)
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">
+                  نمایش نشان اختصاصی «پرمراجعه» در کاتالوگ و افزایش رتبه جستجو (فرایندهای با ۱۰+ بازدید نیز خودکار نشان می‌گیرند)
+                </div>
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+              <input
+                type="checkbox"
+                checked={Boolean(isPopular)}
+                onChange={(e) => setIsPopular?.(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+            </label>
           </div>
 
           {/* Administrative Timeline Section */}

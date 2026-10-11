@@ -74,6 +74,8 @@ model Process {
   scope            String               @default("organization") // organization | software | portal
   category         String
   visibility       String               @default("public") // "public" | "restricted"
+  isPopular        Boolean              @default(false)
+  viewCount        Int                  @default(0)
   departmentId     String?
   department       Department?          @relation(fields: [departmentId], references: [id])
   systemToolId     String?
@@ -92,6 +94,9 @@ model Process {
   accessGrants     ProcessAccessGrant[]
   workflowRuns     WorkflowRun[]
   parentSteps      Step[]               @relation("StepSubProcess")
+
+  @@index([viewCount])
+  @@index([isPopular])
 }
 
 model ProcessAccessGrant {

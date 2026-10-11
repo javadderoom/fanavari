@@ -237,6 +237,28 @@ describe('Search Engine Core', () => {
         assert.ok((results[i]?.score ?? 0) >= (results[i + 1]?.score ?? 0));
       }
     });
+
+    it('should grant a score boost (+20) for popular processes', () => {
+      const p1: Process = {
+        ...mockProcesses[0],
+        id: 'p1',
+        title: 'سامانه احراز هویت',
+        isPopular: false,
+        tags: [],
+        steps: [],
+      };
+      const p2: Process = {
+        ...mockProcesses[0],
+        id: 'p2',
+        title: 'سامانه احراز هویت',
+        isPopular: true,
+        tags: [],
+        steps: [],
+      };
+      const results = searchProcesses([p1, p2], 'احراز هویت');
+      assert.equal(results[0]?.process?.id, 'p2');
+      assert.equal(results[0]?.score, (results[1]?.score ?? 0) + 20);
+    });
   });
 
   describe('searchAnnouncements and searchOmni', () => {

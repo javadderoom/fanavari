@@ -121,6 +121,8 @@ async function main() {
         estimatedMinutes: 15,
         targetSystem: 'سامانه آموزش و ضمن خدمت فرهنگیان (LTMS)',
         targetUrl: 'https://ltms.medu.ir',
+        isPopular: true,
+        viewCount: 42,
         authorId: superAdmin.id,
         departmentId: meduDept.id,
         systemToolId: ltmsTool.id,
@@ -203,6 +205,14 @@ async function main() {
           ]
         }
       }
+    });
+  } else {
+    await prisma.process.update({
+      where: { id: existingProcess.id },
+      data: {
+        isPopular: true,
+        viewCount: existingProcess.viewCount > 0 ? existingProcess.viewCount : 42,
+      },
     });
   }
 

@@ -130,6 +130,7 @@ export async function POST(req: NextRequest) {
       steps,
       schedule,
       isPublished,
+      isPopular,
     } = body;
 
     if (!title || !title.trim()) {
@@ -241,6 +242,7 @@ export async function POST(req: NextRequest) {
             estimatedMinutes: Number(estimatedMinutes) || existingProcess.estimatedMinutes,
             schedule: schedule !== undefined ? schedule : existingProcess.schedule,
             ...(isPublished !== undefined ? { isPublished: Boolean(isPublished) } : {}),
+            ...(isPopular !== undefined ? { isPopular: Boolean(isPopular) } : {}),
             steps: {
               create: sanitizedSteps,
             },
@@ -290,6 +292,7 @@ export async function POST(req: NextRequest) {
         estimatedMinutes: Number(estimatedMinutes) || 10,
         schedule: schedule || null,
         ...(isPublished !== undefined ? { isPublished: Boolean(isPublished) } : {}),
+        ...(isPopular !== undefined ? { isPopular: Boolean(isPopular) } : {}),
         steps: {
           create: sanitizedSteps,
         },

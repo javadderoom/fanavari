@@ -193,6 +193,7 @@ export interface Process {
   targetSystemSlug: string;
   targetUrl?: string;
   isPopular?: boolean;
+  viewCount?: number;
   totalSteps: number;
   tags: string[];
   schedule?: ProcessSchedule;

@@ -57,6 +57,7 @@ export function ProcessEditorModal({
   const [scope, setScope] = useState<string>('organization');
   const [category, setCategory] = useState<string>('hr');
   const [visibility, setVisibility] = useState<ProcessVisibility>('public');
+  const [isPopular, setIsPopular] = useState(false);
   const [departmentName, setDepartmentName] = useState('وزارت آموزش و پرورش');
   const [targetSystem, setTargetSystem] = useState('');
   const [targetUrl, setTargetUrl] = useState('');
@@ -120,6 +121,7 @@ export function ProcessEditorModal({
       setScope(processToEdit.scope || 'organization');
       setCategory(processToEdit.category);
       setVisibility(processToEdit.visibility || 'public');
+      setIsPopular(Boolean(processToEdit.isPopular));
       setDepartmentName(processToEdit.departmentName);
       setTargetSystem(processToEdit.targetSystem);
       setTargetUrl(processToEdit.targetUrl || '');
@@ -145,6 +147,7 @@ export function ProcessEditorModal({
       }
       setIsEditingSlug(false);
       setShowAdvanced(Boolean(
+        processToEdit.isPopular ||
         processToEdit.visibility === 'restricted' ||
         processToEdit.schedule || 
         (processToEdit.tags && processToEdit.tags.length > 0) || 
@@ -172,6 +175,8 @@ export function ProcessEditorModal({
       setDescription('');
       setScope('organization');
       setCategory('hr');
+      setVisibility('public');
+      setIsPopular(false);
       setDepartmentName('مدیریت منابع انسانی');
       setTargetSystem('سامانه جامع اداری');
       setTargetUrl('');
@@ -302,6 +307,8 @@ export function ProcessEditorModal({
       scope,
       category,
       visibility,
+      isPopular,
+      viewCount: processToEdit?.viewCount ?? 0,
       authorId: processToEdit?.authorId || currentUser.id,
       accessGrants: processToEdit?.accessGrants || [],
       departmentName: departmentName.trim() || 'مدیریت سازمانی',
@@ -464,6 +471,8 @@ export function ProcessEditorModal({
               setShowAdvanced={setShowAdvanced}
               visibility={visibility}
               setVisibility={setVisibility}
+              isPopular={isPopular}
+              setIsPopular={setIsPopular}
               hasSchedule={hasSchedule}
               setHasSchedule={setHasSchedule}
               scheduleMonth={scheduleMonth}

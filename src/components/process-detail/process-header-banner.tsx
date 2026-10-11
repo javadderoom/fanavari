@@ -14,7 +14,9 @@ import {
   ExternalLink,
   Columns2,
   Play,
-  ShieldCheck
+  ShieldCheck,
+  Sparkles,
+  Eye
 } from 'lucide-react';
 import { WorkflowRun } from '@/types/process';
 
@@ -112,6 +114,23 @@ export function ProcessHeaderBanner({
             >
               سامانه: {process.targetSystem}
             </span>
+
+            {currentProcess.isPopular && (
+              <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-xl font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>پرمراجعه</span>
+              </span>
+            )}
+
+            {typeof currentProcess.viewCount === 'number' && currentProcess.viewCount > 0 && (
+              <span
+                className="inline-flex items-center gap-1 text-[11px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-xl font-medium"
+                style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-glass)', color: 'var(--text-muted)' }}
+              >
+                <Eye className="w-3.5 h-3.5 text-slate-400" />
+                <span>{currentProcess.viewCount.toLocaleString('fa-IR')} بازدید</span>
+              </span>
+            )}
           </div>
 
           <h1 className="text-xl sm:text-3xl lg:text-4xl font-black leading-snug sm:leading-tight" style={{ color: 'var(--text-primary)' }}>

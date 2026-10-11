@@ -100,7 +100,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const { title, description, scope, category, visibility, targetSystem, targetUrl, estimatedMinutes, schedule, isPublished } = body;
+    const { title, description, scope, category, visibility, targetSystem, targetUrl, estimatedMinutes, schedule, isPublished, isPopular } = body;
 
     const updated = await prisma.process.update({
       where: { id },
@@ -111,6 +111,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
         category,
         ...(visibility ? { visibility } : {}),
         ...(isPublished !== undefined ? { isPublished: Boolean(isPublished) } : {}),
+        ...(isPopular !== undefined ? { isPopular: Boolean(isPopular) } : {}),
         targetSystem,
         targetUrl,
         estimatedMinutes: Number(estimatedMinutes) || 10,

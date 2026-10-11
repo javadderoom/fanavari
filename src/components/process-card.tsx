@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Process } from '@/types/process';
-import { Layers, ShieldAlert, ArrowLeft, ExternalLink, Sparkles, Laptop, Building2, Globe } from 'lucide-react';
+import { Layers, ShieldAlert, ArrowLeft, ExternalLink, Sparkles, Laptop, Building2, Globe, Eye } from 'lucide-react';
 
 interface ProcessCardProps {
   process: Process;
@@ -109,6 +109,16 @@ export function ProcessCard({ process, onSelect }: ProcessCardProps) {
             >
               <ShieldAlert className="w-3 h-3" />
               {errorCount} خطا
+            </span>
+          )}
+
+          {typeof process.viewCount === 'number' && process.viewCount > 0 && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold"
+              style={{ background: 'var(--bg-input)', color: 'var(--text-muted)' }}
+              title="تعداد دفعات مشاهده"
+            >
+              <Eye className="w-3 h-3 text-slate-400" />
+              <span>{process.viewCount.toLocaleString('fa-IR')}</span>
             </span>
           )}
         </div>

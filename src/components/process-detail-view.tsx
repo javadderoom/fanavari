@@ -83,6 +83,27 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
     });
   };
 
+  // Track page view and synchronize popularity
+  useEffect(() => {
+    if (!process?.id) return;
+    const sessionKey = `farayandnama-viewed-${process.id}`;
+    if (typeof window !== 'undefined' && !sessionStorage.getItem(sessionKey)) {
+      sessionStorage.setItem(sessionKey, 'true');
+      fetch(`/api/processes/${process.id}/view`, { method: 'POST' })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && typeof data.viewCount === 'number') {
+            setCurrentProcess((prev) => ({
+              ...prev,
+              viewCount: data.viewCount,
+              isPopular: data.isPopular,
+            }));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [process.id]);
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem('fanavari-sidecar-open');

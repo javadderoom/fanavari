@@ -75,8 +75,8 @@ export function mapPrismaProcess(p: any, opts?: { redactGrants?: boolean }): Pro
     estimatedMinutes: p.estimatedMinutes || 10,
     targetSystem: p.systemTool?.name || p.targetSystem || 'سامانه سازمانی',
     targetSystemSlug: p.systemTool?.slug || 'portal',
-    targetUrl: p.systemTool?.websiteUrl || p.targetUrl || undefined,
-    isPopular: true,
+    isPopular: p.isPopular === true || (typeof p.viewCount === 'number' && p.viewCount >= 10),
+    viewCount: typeof p.viewCount === 'number' ? p.viewCount : 0,
     totalSteps: p.steps?.length || 0,
     tags: [p.department?.name, p.department?.slug, p.systemTool?.name, 'ضمن خدمت'].filter(Boolean) as string[],
     schedule: p.schedule ? (typeof p.schedule === 'string' ? JSON.parse(p.schedule) : p.schedule) : undefined,
@@ -674,6 +674,42 @@ export async function getDbCategories(scopeKeyOrId?: string): Promise<ProcessCat
   } catch (error) {
     console.error('Error in getDbCategories:', error);
     return [];
+  }
+}
+
+/**
+ * Records a page view / execution access for a process, atomically incrementing viewCount.
+ * Returns updated viewCount and whether the process is deemed popular.
+ */
+export async function recordProcessView(
+  idOrSlug: string
+): Promise<{ viewCount: number; isPopular: boolean } | null> {
+  try {
+    const process = await prisma.process.findFirst({
+      where: {
+        OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+      },
+      select: { id: true, isPopular: true, viewCount: true },
+    });
+
+    if (!process) return null;
+
+    const updated = await prisma.process.update({
+      where: { id: process.id },
+      data: {
+        viewCount: { increment: 1 },
+      },
+      select: { viewCount: true, isPopular: true },
+    });
+
+    const isPopular = updated.isPopular || updated.viewCount >= 10;
+    return {
+      viewCount: updated.viewCount,
+      isPopular,
+    };
+  } catch (error) {
+    console.error('Failed to record process view:', error);
+    return null;
   }
 }
 

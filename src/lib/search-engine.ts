@@ -352,6 +352,9 @@ export function searchProcesses(processes: Process[], rawQuery: string): SearchR
 
     // If matches were found, sort candidate matches to pick the absolute best one
     if (score > 0 && matchCandidates.length > 0) {
+      if (process.isPopular) {
+        score += 20;
+      }
       matchCandidates.sort((a, b) => b.score - a.score);
       results.push({
         itemType: 'process',
