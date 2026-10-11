@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 512px;
+    height: 512px;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+</style>
+</head>
+<body>
+  <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#2563eb" />
+        <stop offset="50%" stop-color="#3b82f6" />
+        <stop offset="100%" stop-color="#7c3aed" />
+      </linearGradient>
+      <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#60a5fa" />
+        <stop offset="100%" stop-color="#a78bfa" />
+      </linearGradient>
+      <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#1e1b4b" flood-opacity="0.35"/>
+      </filter>
+    </defs>
+
+    <rect x="32" y="32" width="448" height="448" rx="112" fill="url(#bg)" filter="url(#shadow)"/>
+
+    <!-- Git Branch / Process Diagram Motif -->
+    <!-- Main spine line -->
+    <path d="M192 144 V368" stroke="white" stroke-width="32" stroke-linecap="round"/>
+    
+    <!-- Branching curve -->
+    <path d="M192 270 C192 210, 320 230, 320 180" stroke="white" stroke-width="32" stroke-linecap="round"/>
+    
+    <!-- Lower branch -->
+    <path d="M192 310 C192 350, 320 330, 320 350" stroke="white" stroke-width="28" stroke-linecap="round" stroke-dasharray="2 2" opacity="0.8"/>
+
+    <!-- Nodes -->
+    <!-- Top left node (start) -->
+    <circle cx="192" cy="144" r="38" fill="white" filter="url(#shadow)"/>
+    <circle cx="192" cy="144" r="20" fill="#2563eb"/>
+
+    <!-- Bottom left node (end) -->
+    <circle cx="192" cy="368" r="38" fill="white" filter="url(#shadow)"/>
+    <circle cx="192" cy="368" r="20" fill="#7c3aed"/>
+
+    <!-- Branch node top right -->
+    <circle cx="320" cy="180" r="34" fill="white" filter="url(#shadow)"/>
+    <circle cx="320" cy="180" r="18" fill="#38bdf8"/>
+
+    <!-- Branch node bottom right -->
+    <circle cx="320" cy="350" r="28" fill="white" opacity="0.95"/>
+    <circle cx="320" cy="350" r="14" fill="#a855f7"/>
+
+    <!-- Small decorative sparkle node -->
+    <circle cx="370" cy="256" r="10" fill="#fde047"/>
+  </svg>
+</body>
+</html>

@@ -426,13 +426,13 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
 
 
       {/* Main Tab Controller */}
-      <div className="flex items-center gap-3 border-b pb-4 text-sm font-bold overflow-x-auto"
+      <div className="flex items-center gap-2 sm:gap-3 border-b pb-3 text-xs sm:text-sm font-bold overflow-x-auto no-scrollbar scroll-smooth"
         style={{ borderColor: 'var(--border-subtle)' }}
       >
         <button
           type="button"
           onClick={() => setActiveTab('flow')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'flow' ? 'shadow-md scale-105' : 'opacity-70 hover:opacity-100'
           }`}
           style={{
@@ -441,15 +441,14 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
             border: '1px solid var(--border-glass)'
           }}
         >
-          <Workflow className="w-4 h-4" />
+          <Workflow className="w-4 h-4 shrink-0" />
           <span>نقشه فلوچارت ({process.totalSteps})</span>
         </button>
-
 
         <button
           type="button"
           onClick={() => setActiveTab('errors')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'errors' ? 'shadow-md scale-105' : 'opacity-70 hover:opacity-100'
           }`}
           style={{
@@ -458,14 +457,15 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
             border: '1px solid var(--border-glass)'
           }}
         >
-          <ShieldAlert className="w-4 h-4" />
-          <span>ماتریس رفع خطا ({allErrors.length} راهنما)</span>
+          <ShieldAlert className="w-4 h-4 shrink-0" />
+          <span className="hidden sm:inline">ماتریس رفع خطا ({allErrors.length} راهنما)</span>
+          <span className="sm:hidden">رفع خطا ({allErrors.length})</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('scratchpad')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'scratchpad' ? 'shadow-md scale-105' : 'opacity-70 hover:opacity-100'
           }`}
           style={{
@@ -474,14 +474,15 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
             border: '1px solid var(--border-glass)'
           }}
         >
-          <StickyNote className="w-4 h-4" />
-          <span>جعبه‌ابزار و یادداشت موقت</span>
+          <StickyNote className="w-4 h-4 shrink-0" />
+          <span className="hidden sm:inline">جعبه‌ابزار و یادداشت موقت</span>
+          <span className="sm:hidden">یادداشت موقت</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('runs')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'runs' ? 'shadow-md scale-105' : 'opacity-70 hover:opacity-100'
           }`}
           style={{
@@ -490,10 +491,11 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
             border: '1px solid var(--border-glass)'
           }}
         >
-          <Award className="w-4 h-4" />
-          <span>سوابق اجرا و ممیزی ISO</span>
+          <Award className="w-4 h-4 shrink-0" />
+          <span className="hidden sm:inline">سوابق اجرا و ممیزی ISO</span>
+          <span className="sm:hidden">سوابق ممیزی</span>
           {activeRun && (
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
           )}
         </button>
       </div>

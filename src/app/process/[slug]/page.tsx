@@ -63,9 +63,9 @@ export default async function ProcessPage({ params }: Props) {
     >
       <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 pb-24 lg:pb-12">
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-2 text-xs font-semibold mb-6 flex-wrap" style={{ color: 'var(--text-muted)' }}>
+        <nav className="flex items-center gap-1.5 sm:gap-2 text-xs font-semibold mb-4 sm:mb-6 overflow-x-auto no-scrollbar whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
           <Link href="/" className="hover:text-blue-600 flex items-center gap-1">
             <Home className="w-3.5 h-3.5" />
             <span>خانه</span>

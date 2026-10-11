@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Vazirmatn } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { UserSessionProvider } from "@/components/user-session-provider";
 import { Toaster } from "@/lib/notify";
 import { getUserBySessionToken, SESSION_COOKIE } from "@/lib/session";
+import { PwaRegistrar } from "@/components/pwa-registrar";
 import { Agentation } from "agentation";
 import "./globals.css";
 
@@ -15,9 +16,36 @@ const vazirmatn = Vazirmatn({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#080d1a" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   title: "سامانه فرآیندنما | راهنمای تعاملی و بصری فرایندهای سازمانی",
   description: "جستجو، مشاهده فلوچارت زنده و اجرای گام‌به‌گام فرایندهای سازمانی و اداری با راهنمای جامع خطایابی و ابزارهای کمکی",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "فرآیندنما",
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export default async function RootLayout({
@@ -44,6 +72,7 @@ export default async function RootLayout({
           <UserSessionProvider initialUser={initialUser}>
             {children}
             <Toaster />
+            <PwaRegistrar />
             {process.env.NODE_ENV === "development" && <Agentation />}
           </UserSessionProvider>
         </ThemeProvider>

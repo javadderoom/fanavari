@@ -38,7 +38,7 @@ export function UserSwitcher({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer hover:scale-105 min-w-0 max-w-full"
+        className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer hover:scale-105 min-w-0 max-w-full"
         style={{
           background: 'var(--bg-glass-card)',
           borderColor: isSuperAdmin ? 'rgba(239, 68, 68, 0.4)' : 'var(--border-glass)',
@@ -59,7 +59,7 @@ export function UserSwitcher({
         </span>
 
         {!compact && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded-md font-mono whitespace-nowrap shrink-0"
+          <span className="hidden sm:inline-flex text-[10px] px-1.5 py-0.5 rounded-md font-mono whitespace-nowrap shrink-0"
             style={{
               background: isSuperAdmin ? 'var(--badge-rose-bg)' : 'var(--accent-soft)',
               color: isSuperAdmin ? 'var(--badge-rose-text)' : 'var(--accent-primary)',

@@ -137,26 +137,26 @@ function HomePageContent() {
         onSearchClick={handleFocusSearch} 
       />
 
-      <main className="flex-1">
+      <main className="flex-1 pb-24 lg:pb-12">
         {/* Hero Section */}
-        <section className="relative pt-12 pb-16 sm:pt-20 sm:pb-24 overflow-hidden">
+        <section className="relative pt-10 pb-14 sm:pt-20 sm:pb-24 overflow-hidden w-full">
           {/* Subtle Ambient Background Glows */}
-          <div className="absolute top-1/4 right-1/2 translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute top-1/3 left-1/4 w-[350px] h-[250px] bg-indigo-500/10 dark:bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-1/4 right-1/2 translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[500px] h-[250px] sm:h-[350px] bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-1/3 left-1/4 w-[280px] sm:w-[350px] h-[200px] sm:h-[250px] bg-indigo-500/10 dark:bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             {/* Hero Top Pill */}
             <div className="flex justify-center mb-6">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-xs transition-transform hover:scale-105"
+              <div className="inline-flex items-center text-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold shadow-xs transition-transform hover:scale-105"
                 style={{
                   background: 'var(--bg-glass-strong)',
                   border: '1px solid var(--border-glass)',
                   color: 'var(--text-secondary)'
                 }}
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                <Workflow className="w-3.5 h-3.5 text-blue-600" />
-                <span>سامانه راهنمای تعاملی و بصری فرایندهای سازمانی و نرم‌افزاری</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                <Workflow className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <span>سامانه راهنمای تعاملی و بصری فرایندهای سازمانی</span>
               </div>
             </div>
 
@@ -297,9 +297,9 @@ function HomePageContent() {
               </h2>
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="w-full md:w-auto overflow-x-auto pb-1 no-scrollbar">
               {/* Category Filter Pills */}
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex items-center gap-1.5 flex-nowrap md:flex-wrap">
                 {CATEGORIES.map((cat) => {
                   const isSelected = selectedCategory === cat.key;
                   return (

@@ -150,14 +150,58 @@ export function StepRunnerView({
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-            مسیر دیاگرام و چک‌لیست مراحل فرایند:
+            مسیر و چک‌لیست مراحل فرایند:
           </h3>
-          <span className="text-[11px] font-bold text-slate-400">
-            جهت پرش به هر مرحله، روی کارت آن کلیک کنید
+          <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400">
+            {completedStepKeys.length} از {steps.length} مرحله انجام شده
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Mobile Compact Horizontal Stepper Track (< sm) */}
+        <div className="sm:hidden mb-4">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 scroll-smooth">
+            {steps.map((step, idx) => {
+              const isSelected = idx === activeStepIndex;
+              const isStepCompleted = completedStepKeys.includes(step.stepKey);
+
+              return (
+                <button
+                  key={step.id}
+                  type="button"
+                  onClick={() => onSelectStep(idx)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-2xl border text-right transition-all shrink-0 cursor-pointer ${
+                    isSelected
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-500/30 font-black'
+                      : isStepCompleted
+                      ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/40'
+                      : 'border-[var(--border-glass)] opacity-85 hover:opacity-100'
+                  }`}
+                  style={{
+                    background: !isSelected && !isStepCompleted ? 'var(--bg-surface)' : undefined,
+                    color: !isSelected && !isStepCompleted ? 'var(--text-primary)' : undefined,
+                  }}
+                >
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
+                    isSelected
+                      ? 'bg-white text-blue-600'
+                      : isStepCompleted
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                  }`}>
+                    {isStepCompleted ? <Check className="w-3 h-3 stroke-[3]" /> : step.orderIndex}
+                  </span>
+
+                  <span className="text-xs truncate max-w-[130px]">
+                    {step.title}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Desktop Multi-column Card Grid (>= sm) */}
+        <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-3">
           {steps.map((step, idx) => {
             const isSelected = idx === activeStepIndex;
             const isStepCompleted = completedStepKeys.includes(step.stepKey);
@@ -274,7 +318,7 @@ export function StepRunnerView({
 
       {/* Active Step Dedicated Card */}
       {currentStep && (
-        <div className={`glass-card rounded-3xl p-6 sm:p-8 border shadow-lg transition-all ${
+        <div className={`glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-8 border shadow-lg transition-all ${
           currentStep.stepType === 'decision'
             ? 'border-amber-500/30'
             : currentStep.stepType === 'warning'
@@ -556,36 +600,39 @@ export function StepRunnerView({
           )}
 
           {/* Step Navigation & Completion Runner Controls */}
-          <div className="flex items-center justify-between pt-6 border-t flex-wrap gap-3" style={{ borderColor: 'var(--border-subtle)' }}>
-            <button
-              type="button"
-              disabled={activeStepIndex === 0}
-              onClick={() => onSelectStep(Math.max(0, activeStepIndex - 1))}
-              className="px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all disabled:opacity-30 cursor-pointer"
-              style={{ background: 'var(--bg-input)', color: 'var(--text-secondary)' }}
-            >
-              <ArrowRight className="w-4 h-4" />
-              <span>گام قبلی</span>
-            </button>
+          <div className="pt-6 border-t space-y-3" style={{ borderColor: 'var(--border-subtle)' }}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  disabled={activeStepIndex === 0}
+                  onClick={() => onSelectStep(Math.max(0, activeStepIndex - 1))}
+                  className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-30 cursor-pointer"
+                  style={{ background: 'var(--bg-input)', color: 'var(--text-secondary)' }}
+                >
+                  <ArrowRight className="w-4 h-4 shrink-0" />
+                  <span>گام قبلی</span>
+                </button>
 
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
-                type="button"
-                disabled={activeStepIndex === steps.length - 1}
-                onClick={() => onSelectStep(Math.min(steps.length - 1, activeStepIndex + 1))}
-                className="px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all disabled:opacity-30 cursor-pointer text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
-              >
-                <span>رد کردن و گام بعد</span>
-                <ArrowLeft className="w-3.5 h-3.5" />
-              </button>
+                <button
+                  type="button"
+                  disabled={activeStepIndex === steps.length - 1}
+                  onClick={() => onSelectStep(Math.min(steps.length - 1, activeStepIndex + 1))}
+                  className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all disabled:opacity-30 cursor-pointer text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
+                  style={{ background: 'var(--bg-input)' }}
+                >
+                  <span>رد کردن</span>
+                  <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
+                </button>
+              </div>
 
               <button
                 type="button"
                 onClick={() => onCompleteAndNext(currentStep.stepKey, stepNotes[currentStep.stepKey])}
-                className="px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-md text-white bg-blue-600 hover:bg-blue-700 hover:scale-105"
+                className="w-full sm:w-auto px-6 py-3 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md text-white bg-blue-600 hover:bg-blue-700 active:scale-95"
               >
                 <span>{activeStepIndex === steps.length - 1 ? 'تکمیل و پایان فرایند' : 'تکمیل این گام و رفتن به بعد'}</span>
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-4 h-4 shrink-0" />
               </button>
             </div>
           </div>

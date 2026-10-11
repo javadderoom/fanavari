@@ -101,22 +101,23 @@ export function ScratchpadDrawer({
 
   return (
     <>
-      {/* Floating Launcher Button (Always visible on bottom-left) */}
-      <div className="fixed bottom-6 left-6 z-40">
+      {/* Floating Launcher Button (Positioned above bottom nav on mobile) */}
+      <div className="fixed bottom-20 lg:bottom-6 left-4 lg:left-6 z-40">
         <button
           type="button"
           onClick={onToggle}
-          className={`flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl transition-all cursor-pointer font-bold text-xs ${
+          className={`flex items-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-2xl shadow-xl transition-all cursor-pointer font-bold text-xs ${
             isOpen
               ? 'bg-amber-500 text-slate-950 ring-4 ring-amber-400/30 scale-105'
               : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-105'
           }`}
           title="جعبه‌ابزار داده‌های موقت و یادداشت در حین انجام فرایند"
         >
-          <StickyNote className="w-4 h-4 text-amber-500" />
-          <span>جعبه‌ابزار موقت (Scratchpad)</span>
+          <StickyNote className="w-4 h-4 text-amber-500 shrink-0" />
+          <span className="hidden sm:inline">جعبه‌ابزار موقت (Scratchpad)</span>
+          <span className="sm:hidden text-[11px]">یادداشت</span>
           {fields.some((f) => f.value.trim().length > 0) && (
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
           )}
         </button>
       </div>
@@ -124,7 +125,7 @@ export function ScratchpadDrawer({
       {/* Slide-out / Floating Panel */}
       {isOpen && (
         <div 
-          className="fixed bottom-20 left-6 z-50 w-96 max-w-[calc(100vw-3rem)] rounded-3xl border shadow-2xl backdrop-blur-2xl overflow-hidden animate-in zoom-in-95"
+          className="fixed bottom-32 lg:bottom-20 left-3 right-3 sm:right-auto sm:left-6 z-50 sm:w-96 max-w-full rounded-3xl border shadow-2xl backdrop-blur-2xl overflow-hidden animate-in zoom-in-95"
           style={{
             background: 'var(--bg-glass-strong)',
             borderColor: 'var(--border-glass)',

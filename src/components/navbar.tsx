@@ -87,9 +87,9 @@ export function Navbar({ onSearchClick }: NavbarProps) {
           backgroundColor: 'var(--bg-glass-strong)',
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-3">
           {/* Brand / Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             <div 
               className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md transition-transform hover:scale-105"
               style={{
@@ -315,7 +315,7 @@ export function Navbar({ onSearchClick }: NavbarProps) {
           </nav>
 
           {/* Action Controls */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {/* Quick Search Trigger */}
             {onSearchClick && (
               <button
