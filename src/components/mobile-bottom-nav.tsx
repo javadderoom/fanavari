@@ -6,10 +6,9 @@ import { usePathname } from 'next/navigation';
 import { useUserSession } from './user-session-provider';
 import { canAccessDashboard } from '@/lib/permissions';
 import { 
-  Home, 
+  Workflow, 
   Megaphone, 
   Laptop, 
-  Building2, 
   CalendarClock,
   LayoutDashboard 
 } from 'lucide-react';
@@ -23,10 +22,10 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/', label: 'خانه', icon: Home, exact: true },
+  { href: '/', label: 'فرایندها', icon: Workflow, matchPrefix: '/process' },
+  { href: '/systems', label: 'سامانه‌ها', icon: Laptop, matchPrefix: '/system' },
   { href: '/timeline', label: 'گاه‌شمار', icon: CalendarClock, matchPrefix: '/timeline' },
   { href: '/information', label: 'اعلامیه‌ها', icon: Megaphone, matchPrefix: '/information' },
-  { href: '/systems', label: 'سامانه‌ها', icon: Laptop, matchPrefix: '/system' },
   { href: '/dashboard', label: 'داشبورد', icon: LayoutDashboard, matchPrefix: '/dashboard' },
 ];
 
