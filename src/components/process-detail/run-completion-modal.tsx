@@ -12,7 +12,9 @@ import {
   X, 
   ShieldCheck, 
   Sparkles,
-  RotateCcw
+  RotateCcw,
+  Workflow,
+  ArrowLeft
 } from 'lucide-react';
 
 interface RunCompletionModalProps {
@@ -22,6 +24,14 @@ interface RunCompletionModalProps {
   processSlug: string;
   onViewAuditDetails: (run: WorkflowRun) => void;
   onRestartNewRun: () => void;
+  nextProcess?: {
+    id: string;
+    title: string;
+    slug: string;
+    departmentName?: string;
+    targetSystem?: string;
+  } | null;
+  nextProcessNote?: string | null;
 }
 
 function formatDuration(seconds?: number | null): string {
@@ -40,6 +50,8 @@ export function RunCompletionModal({
   processSlug,
   onViewAuditDetails,
   onRestartNewRun,
+  nextProcess,
+  nextProcessNote,
 }: RunCompletionModalProps) {
   if (!isOpen) return null;
 
@@ -116,6 +128,55 @@ export function RunCompletionModal({
             </span>
           </div>
         </div>
+
+        {/* Sibling / Next Process Recommendation Card */}
+        {nextProcess && (
+          <div 
+            className="p-4 rounded-2xl border text-right space-y-2.5 bg-gradient-to-l from-teal-500/10 via-emerald-500/5 to-transparent border-teal-500/30"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-teal-700 dark:text-teal-300 flex items-center gap-1.5">
+                <Workflow className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                <span>فرایند مکمل و گام بعدی در زنجیره:</span>
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30">
+                پیشنهاد سیستم
+              </span>
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-slate-800 dark:text-slate-100">
+                {nextProcess.title}
+              </h4>
+              <div className="flex items-center gap-2 mt-1">
+                {nextProcess.targetSystem && (
+                  <span className="text-[10px] text-slate-500">
+                    سامانه: {nextProcess.targetSystem}
+                  </span>
+                )}
+                {nextProcess.departmentName && (
+                  <span className="text-[10px] text-slate-500">
+                    • {nextProcess.departmentName}
+                  </span>
+                )}
+              </div>
+            </div>
+            {nextProcessNote && (
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-white/60 dark:bg-slate-900/60 p-2.5 rounded-xl border border-teal-500/20">
+                {nextProcessNote}
+              </p>
+            )}
+            <div className="pt-1 flex justify-end">
+              <Link
+                href={`/process/${nextProcess.slug}`}
+                onClick={onClose}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-500/20 transition-all hover:scale-102"
+              >
+                <span>شروع فرایند مکمل</span>
+                <ArrowLeft className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">

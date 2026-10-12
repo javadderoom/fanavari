@@ -200,6 +200,19 @@ export interface Process {
   steps: ProcessStep[];
   updatedAt: string;
   workflowRuns?: WorkflowRun[];
+  // Chained / Sibling Process
+  nextProcessId?: string | null;
+  nextProcessNote?: string | null;
+  nextProcessSlug?: string | null;
+  nextProcessTitle?: string | null;
+  nextProcess?: {
+    id: string;
+    slug: string;
+    title: string;
+    departmentName?: string;
+    targetSystem?: string;
+    totalSteps?: number;
+  } | null;
 }
 
 export type MatchLocationType = 

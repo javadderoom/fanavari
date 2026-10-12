@@ -16,7 +16,9 @@ import {
   Play,
   ShieldCheck,
   Sparkles,
-  Eye
+  Eye,
+  ArrowRight,
+  Workflow
 } from 'lucide-react';
 import { WorkflowRun } from '@/types/process';
 
@@ -52,6 +54,28 @@ export function ProcessHeaderBanner({
       className="glass-panel-strong rounded-2xl sm:rounded-3xl p-4 sm:p-8 border shadow-xl relative overflow-hidden"
       style={{ borderColor: 'var(--border-glass)' }}
     >
+      {/* In-App Back Navigation Button */}
+      <div className="mb-4">
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              if (window.history.length > 1) {
+                window.history.back();
+              } else {
+                window.location.href = '/';
+              }
+            }
+          }}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer hover:bg-slate-500/10 active:scale-95 shrink-0"
+          style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}
+          title="بازگشت به فهرست یا صفحه قبلی"
+        >
+          <ArrowRight className="w-3.5 h-3.5 rtl:rotate-0" />
+          <span>بازگشت</span>
+        </button>
+      </div>
+
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 sm:gap-6">
         <div className="space-y-2.5 sm:space-y-3 max-w-3xl">
           <div className="flex items-center flex-wrap gap-1.5 sm:gap-2">
@@ -130,6 +154,17 @@ export function ProcessHeaderBanner({
                 <Eye className="w-3.5 h-3.5 text-slate-400" />
                 <span>{currentProcess.viewCount.toLocaleString('fa-IR')} بازدید</span>
               </span>
+            )}
+
+            {currentProcess.nextProcess && (
+              <Link
+                href={`/process/${currentProcess.nextProcess.slug}`}
+                className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-xl font-bold bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/30 hover:bg-teal-500/20 transition-colors"
+                title={`گام بعدی در زنجیره: ${currentProcess.nextProcess.title}`}
+              >
+                <Workflow className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                <span>گام بعدی: {currentProcess.nextProcess.title}</span>
+              </Link>
             )}
           </div>
 

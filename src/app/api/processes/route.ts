@@ -80,6 +80,17 @@ export async function GET(req: NextRequest) {
         },
         department: true,
         systemTool: true,
+        nextProcess: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            targetSystem: true,
+            department: { select: { name: true } },
+            systemTool: { select: { name: true } },
+            steps: { select: { id: true } },
+          },
+        },
         accessGrants: {
           include: {
             user: true,
@@ -131,6 +142,8 @@ export async function POST(req: NextRequest) {
       schedule,
       isPublished,
       isPopular,
+      nextProcessId,
+      nextProcessNote,
     } = body;
 
     if (!title || !title.trim()) {
@@ -243,6 +256,8 @@ export async function POST(req: NextRequest) {
             schedule: schedule !== undefined ? schedule : existingProcess.schedule,
             ...(isPublished !== undefined ? { isPublished: Boolean(isPublished) } : {}),
             ...(isPopular !== undefined ? { isPopular: Boolean(isPopular) } : {}),
+            ...(nextProcessId !== undefined ? { nextProcessId: nextProcessId || null } : {}),
+            ...(nextProcessNote !== undefined ? { nextProcessNote: nextProcessNote || null } : {}),
             steps: {
               create: sanitizedSteps,
             },
@@ -259,6 +274,17 @@ export async function POST(req: NextRequest) {
             },
             department: true,
             systemTool: true,
+            nextProcess: {
+              select: {
+                id: true,
+                slug: true,
+                title: true,
+                targetSystem: true,
+                department: { select: { name: true } },
+                systemTool: { select: { name: true } },
+                steps: { select: { id: true } },
+              },
+            },
             accessGrants: {
               include: { user: true, department: true },
             },
@@ -293,6 +319,8 @@ export async function POST(req: NextRequest) {
         schedule: schedule || null,
         ...(isPublished !== undefined ? { isPublished: Boolean(isPublished) } : {}),
         ...(isPopular !== undefined ? { isPopular: Boolean(isPopular) } : {}),
+        nextProcessId: nextProcessId || null,
+        nextProcessNote: nextProcessNote || null,
         steps: {
           create: sanitizedSteps,
         },
@@ -309,6 +337,17 @@ export async function POST(req: NextRequest) {
         },
         department: true,
         systemTool: true,
+        nextProcess: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            targetSystem: true,
+            department: { select: { name: true } },
+            systemTool: { select: { name: true } },
+            steps: { select: { id: true } },
+          },
+        },
         accessGrants: {
           include: { user: true, department: true },
         },

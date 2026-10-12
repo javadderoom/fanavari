@@ -95,8 +95,15 @@ model Process {
   workflowRuns     WorkflowRun[]
   parentSteps      Step[]               @relation("StepSubProcess")
 
+  // Chained / Sibling process
+  nextProcessId    String?
+  nextProcessNote  String?
+  nextProcess      Process?             @relation("ProcessChain", fields: [nextProcessId], references: [id], onDelete: SetNull)
+  previousProcesses Process[]          @relation("ProcessChain")
+
   @@index([viewCount])
   @@index([isPopular])
+  @@index([nextProcessId])
 }
 
 model ProcessAccessGrant {

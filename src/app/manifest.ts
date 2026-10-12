@@ -4,12 +4,15 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     id: '/',
     scope: '/',
-    name: 'سامانه فرآیندنما | راهنمای تعاملی و بصری فرایندهای سازمانی',
-    short_name: 'فرآیندنما',
-    description: 'جستجو، مشاهده فلوچارت زنده و اجرای گام‌به‌گام فرایندهای سازمانی و اداری با راهنمای جامع خطایابی',
+    name: 'فرایند یار',
+    short_name: 'فرایند یار',
+    description: 'راهنمای هوشمند، تعاملی و گام‌به‌گام فرایندهای اداری و سازمانی',
     start_url: '/',
     display: 'standalone',
     orientation: 'portrait-primary',
+    launch_handler: {
+      client_mode: 'navigate-existing',
+    },
     background_color: '#f8fafc',
     theme_color: '#2563eb',
     dir: 'rtl',

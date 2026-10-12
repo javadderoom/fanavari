@@ -27,7 +27,8 @@ import {
   LogOut,
   Clock,
   FileText,
-  MousePointerClick
+  MousePointerClick,
+  Workflow
 } from 'lucide-react';
 
 interface StepRunnerViewProps {
@@ -43,6 +44,14 @@ interface StepRunnerViewProps {
   onDisconnectRun?: () => void;
   onFinishActiveRun?: () => void;
   onDrillDownSubProcess?: (subProcessSlug: string, stepTitle: string) => void;
+  nextProcess?: {
+    id: string;
+    title: string;
+    slug: string;
+    departmentName?: string;
+    targetSystem?: string;
+  } | null;
+  nextProcessNote?: string | null;
 }
 
 export function StepRunnerView({
@@ -58,6 +67,8 @@ export function StepRunnerView({
   onDisconnectRun,
   onFinishActiveRun,
   onDrillDownSubProcess,
+  nextProcess,
+  nextProcessNote,
 }: StepRunnerViewProps) {
   const currentStep = steps[activeStepIndex];
   const isCurrentStepCompleted = currentStep ? completedStepKeys.includes(currentStep.stepKey) : false;
@@ -432,9 +443,8 @@ export function StepRunnerView({
                   {(currentStep.subProcessSlug || currentStep.subProcess?.slug) && (
                     <Link
                       href={`/process/${currentStep.subProcess?.slug || currentStep.subProcessSlug}`}
-                      target="_blank"
                       className="p-2 rounded-xl text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/20 transition-all"
-                      title="مشاهده مستقل در تب جدید"
+                      title="مشاهده مستقیم فرایند"
                     >
                       <ExternalLink className="w-4 h-4" />
                     </Link>
@@ -596,6 +606,55 @@ export function StepRunnerView({
                   ⚠️ این مرحله به عنوان ایست بازرسی در شناسنامه ثبت شده است. یادداشت‌ها و زمان تکمیل به صورت سیستمی در برگه ممیزی ISO ضبط خواهد شد.
                 </p>
               )}
+            </div>
+          )}
+
+          {/* Sibling / Next Process Recommendation Card on Final Step */}
+          {activeStepIndex === steps.length - 1 && nextProcess && (
+            <div className="mb-6 p-4 sm:p-5 rounded-2xl border bg-gradient-to-l from-teal-500/10 via-emerald-500/5 to-transparent border-teal-500/30 space-y-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
+                    <Workflow className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold text-teal-700 dark:text-teal-300 block">
+                      فرایند مکمل و گام بعدی در زنجیره
+                    </span>
+                    <h4 className="text-sm font-black text-slate-900 dark:text-white">
+                      {nextProcess.title}
+                    </h4>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {nextProcess.targetSystem && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                      سامانه: {nextProcess.targetSystem}
+                    </span>
+                  )}
+                  {nextProcess.departmentName && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                      {nextProcess.departmentName}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {nextProcessNote && (
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-white/60 dark:bg-slate-900/60 p-3 rounded-xl border border-teal-500/15">
+                  {nextProcessNote}
+                </p>
+              )}
+
+              <div className="pt-1 flex items-center justify-end">
+                <Link
+                  href={`/process/${nextProcess.slug}`}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-500/20 transition-all hover:scale-102"
+                >
+                  <span>شروع فرایند مکمل: {nextProcess.title}</span>
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                </Link>
+              </div>
             </div>
           )}
 

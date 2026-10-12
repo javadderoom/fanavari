@@ -540,6 +540,8 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
             }}
             onFinishActiveRun={handleFinishActiveRun}
             onDrillDownSubProcess={handleDrillDownSubProcess}
+            nextProcess={process.nextProcess}
+            nextProcessNote={process.nextProcessNote}
           />
         </div>
       )}
@@ -648,6 +650,8 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
             handleResetProgress();
             setIsQuickStartModalOpen(true);
           }}
+          nextProcess={process.nextProcess}
+          nextProcessNote={process.nextProcessNote}
         />
       )}
 

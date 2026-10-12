@@ -81,6 +81,20 @@ export function mapPrismaProcess(p: any, opts?: { redactGrants?: boolean }): Pro
     tags: [p.department?.name, p.department?.slug, p.systemTool?.name, 'ضمن خدمت'].filter(Boolean) as string[],
     schedule: p.schedule ? (typeof p.schedule === 'string' ? JSON.parse(p.schedule) : p.schedule) : undefined,
     updatedAt: new Date(p.updatedAt).toLocaleDateString('fa-IR'),
+    nextProcessId: p.nextProcessId || null,
+    nextProcessNote: p.nextProcessNote || null,
+    nextProcessSlug: p.nextProcess?.slug || null,
+    nextProcessTitle: p.nextProcess?.title || null,
+    nextProcess: p.nextProcess
+      ? {
+          id: p.nextProcess.id,
+          slug: p.nextProcess.slug,
+          title: p.nextProcess.title,
+          departmentName: p.nextProcess.department?.name,
+          targetSystem: p.nextProcess.systemTool?.name || p.nextProcess.targetSystem,
+          totalSteps: p.nextProcess.steps?.length ?? 0,
+        }
+      : null,
     steps: (p.steps || []).map((step: any): ProcessStep => {
       // An archived (isPublished=false) linked sub-process must not surface in
       // the parent at all — suppress every reference to it. When the relation
@@ -173,6 +187,17 @@ export async function getDbProcesses(opts?: { redactGrants?: boolean }): Promise
         },
         department: true,
         systemTool: true,
+        nextProcess: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            targetSystem: true,
+            department: { select: { name: true } },
+            systemTool: { select: { name: true } },
+            steps: { select: { id: true } },
+          },
+        },
         accessGrants: {
           include: {
             user: true,
@@ -232,6 +257,17 @@ export async function getDbProcessBySlug(slug: string, opts?: { redactGrants?: b
         },
         department: true,
         systemTool: true,
+        nextProcess: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            targetSystem: true,
+            department: { select: { name: true } },
+            systemTool: { select: { name: true } },
+            steps: { select: { id: true } },
+          },
+        },
         accessGrants: {
           include: {
             user: true,

@@ -8,7 +8,8 @@ import {
   Lock, 
   CalendarClock, 
   Calendar,
-  Flame
+  Flame,
+  Workflow
 } from 'lucide-react';
 import { PersianMonth, PersianSeason, ProcessVisibility } from '@/types/process';
 import { PERSIAN_MONTHS, getSeasonForMonth } from './types';
@@ -40,6 +41,11 @@ interface AdvancedSettingsSectionProps {
   setTargetUrl: (val: string) => void;
   tagsInput: string;
   setTagsInput: (val: string) => void;
+  nextProcessId?: string;
+  setNextProcessId?: (val: string) => void;
+  nextProcessNote?: string;
+  setNextProcessNote?: (val: string) => void;
+  availableProcesses?: { id: string; title: string; slug: string }[];
 }
 
 export function AdvancedSettingsSection({
@@ -69,6 +75,11 @@ export function AdvancedSettingsSection({
   setTargetUrl,
   tagsInput,
   setTagsInput,
+  nextProcessId,
+  setNextProcessId,
+  nextProcessNote,
+  setNextProcessNote,
+  availableProcesses = [],
 }: AdvancedSettingsSectionProps) {
   return (
     <div 
@@ -100,6 +111,11 @@ export function AdvancedSettingsSection({
           {tagsInput.trim() && (
             <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-500/10 text-purple-600 border border-purple-500/20">
               تگ‌ها
+            </span>
+          )}
+          {nextProcessId && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-teal-500/10 text-teal-600 border border-teal-500/20">
+              دارای فرایند مکمل
             </span>
           )}
         </div>
@@ -362,6 +378,55 @@ export function AdvancedSettingsSection({
               className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none"
               style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
             />
+          </div>
+
+          {/* Next / Sibling Process Chain (زنجیره فرایندی و فرایند مکمل) */}
+          <div className="p-3.5 rounded-xl border space-y-3" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}>
+            <div className="flex items-center gap-2">
+              <Workflow className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+              <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                فرایند مکمل و گام بعدی (زنجیره فرایندی)
+              </label>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              اگر این فرایند پیش‌نیاز یا گام اول از یک زنجیره دو یا چند مرحله‌ای است، می‌توانید فرایند بعدی را متصل کنید تا در گام نهایی و هنگام ثبت پایان فرایند، کاربر مستقیماً به آن هدایت شود.
+            </p>
+            <div className="space-y-2.5">
+              <div>
+                <label className="block text-[11px] font-bold mb-1 text-slate-600 dark:text-slate-400">
+                  انتخاب فرایند مکمل / بعدی:
+                </label>
+                <select
+                  value={nextProcessId || ''}
+                  onChange={(e) => setNextProcessId?.(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none"
+                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                >
+                  <option value="">بدون فرایند مکمل (پایان مسیر فرایند)</option>
+                  {availableProcesses.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {nextProcessId && (
+                <div>
+                  <label className="block text-[11px] font-bold mb-1 text-slate-600 dark:text-slate-400">
+                    توضیح یا راهنمای انتقال به فرایند بعدی (اختیاری):
+                  </label>
+                  <input
+                    type="text"
+                    value={nextProcessNote || ''}
+                    onChange={(e) => setNextProcessNote?.(e.target.value)}
+                    placeholder="مثال: پس از دریافت تاییدیه نهایی، برای صدور حکم به فرایند زیر مراجعه کنید..."
+                    className="w-full p-2.5 rounded-xl border text-xs font-medium outline-none"
+                    style={{ background: 'var(--bg-input)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

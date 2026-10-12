@@ -66,7 +66,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "فرآیندنما",
+    title: "فرایند یار",
   },
   icons: {
     icon: [

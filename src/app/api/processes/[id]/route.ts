@@ -34,6 +34,17 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
         },
         department: true,
         systemTool: true,
+        nextProcess: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            targetSystem: true,
+            department: { select: { name: true } },
+            systemTool: { select: { name: true } },
+            steps: { select: { id: true } },
+          },
+        },
         accessGrants: {
           include: {
             user: true,
@@ -100,7 +111,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const { title, description, scope, category, visibility, targetSystem, targetUrl, estimatedMinutes, schedule, isPublished, isPopular } = body;
+    const { title, description, scope, category, visibility, targetSystem, targetUrl, estimatedMinutes, schedule, isPublished, isPopular, nextProcessId, nextProcessNote } = body;
 
     const updated = await prisma.process.update({
       where: { id },
@@ -112,6 +123,8 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
         ...(visibility ? { visibility } : {}),
         ...(isPublished !== undefined ? { isPublished: Boolean(isPublished) } : {}),
         ...(isPopular !== undefined ? { isPopular: Boolean(isPopular) } : {}),
+        ...(nextProcessId !== undefined ? { nextProcessId: nextProcessId || null } : {}),
+        ...(nextProcessNote !== undefined ? { nextProcessNote: nextProcessNote || null } : {}),
         targetSystem,
         targetUrl,
         estimatedMinutes: Number(estimatedMinutes) || 10,
@@ -129,6 +142,17 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
         },
         department: true,
         systemTool: true,
+        nextProcess: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            targetSystem: true,
+            department: { select: { name: true } },
+            systemTool: { select: { name: true } },
+            steps: { select: { id: true } },
+          },
+        },
         accessGrants: {
           include: { user: true, department: true },
         },

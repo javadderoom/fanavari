@@ -85,17 +85,24 @@ export function ProcessEditorModal({
   // Steps state
   const [steps, setSteps] = useState<ProcessStep[]>([]);
 
+  // Next / Sibling Process Chain
+  const [nextProcessId, setNextProcessId] = useState('');
+  const [nextProcessNote, setNextProcessNote] = useState('');
+  const [availableProcesses, setAvailableProcesses] = useState<{ id: string; title: string; slug: string }[]>([]);
+
   useEffect(() => {
     if (isOpen) {
       Promise.all([
         fetch('/api/departments').then((r) => r.json()).catch(() => []),
         fetch('/api/systems').then((r) => r.json()).catch(() => []),
         fetch('/api/scopes').then((r) => r.json()).catch(() => []),
+        fetch('/api/processes').then((r) => r.json()).catch(() => []),
       ])
-        .then(([depts, syss, scopes]) => {
+        .then(([depts, syss, scopes, procs]) => {
           if (Array.isArray(depts)) setDepartmentsList(depts);
           if (Array.isArray(syss)) setSystemsList(syss);
           if (Array.isArray(scopes)) setScopesList(scopes);
+          if (Array.isArray(procs)) setAvailableProcesses(procs.map((p: any) => ({ id: p.id, title: p.title, slug: p.slug })));
         })
         .catch((err) => console.error('Error fetching initial modal data:', err));
     }
@@ -126,6 +133,8 @@ export function ProcessEditorModal({
       setTargetSystem(processToEdit.targetSystem);
       setTargetUrl(processToEdit.targetUrl || '');
       setTagsInput(processToEdit.tags.join('، '));
+      setNextProcessId(processToEdit.nextProcessId || '');
+      setNextProcessNote(processToEdit.nextProcessNote || '');
       if (processToEdit.schedule) {
         setHasSchedule(true);
         setScheduleMonth(processToEdit.schedule.month || 'تیر');
@@ -151,7 +160,8 @@ export function ProcessEditorModal({
         processToEdit.visibility === 'restricted' ||
         processToEdit.schedule || 
         (processToEdit.tags && processToEdit.tags.length > 0) || 
-        processToEdit.targetUrl
+        processToEdit.targetUrl ||
+        processToEdit.nextProcessId
       ));
       setSteps(
         (processToEdit.steps || []).map((s) => ({
@@ -181,6 +191,8 @@ export function ProcessEditorModal({
       setTargetSystem('سامانه جامع اداری');
       setTargetUrl('');
       setTagsInput('فرایند جدید، استاندارد سازمانی');
+      setNextProcessId('');
+      setNextProcessNote('');
       setHasSchedule(false);
       setScheduleMonth('تیر');
       setScheduleSeason('تابستان');
@@ -316,6 +328,8 @@ export function ProcessEditorModal({
       targetSystem: targetSystem.trim() || 'سامانه سازمانی',
       targetSystemSlug: matchedSys ? matchedSys.slug : targetSystem.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       targetUrl: targetUrl.trim() || undefined,
+      nextProcessId: nextProcessId.trim() || undefined,
+      nextProcessNote: nextProcessNote.trim() || undefined,
       estimatedMinutes: processToEdit?.estimatedMinutes || 10,
       totalSteps: steps.length,
       tags: tagsArray,
@@ -493,6 +507,11 @@ export function ProcessEditorModal({
               setTargetUrl={setTargetUrl}
               tagsInput={tagsInput}
               setTagsInput={setTagsInput}
+              nextProcessId={nextProcessId}
+              setNextProcessId={setNextProcessId}
+              nextProcessNote={nextProcessNote}
+              setNextProcessNote={setNextProcessNote}
+              availableProcesses={availableProcesses.filter((p) => !processToEdit || p.id !== processToEdit.id)}
             />
           </div>
 

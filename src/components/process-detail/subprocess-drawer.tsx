@@ -132,7 +132,7 @@ export function SubProcessDrawer({
             {subProcess && (
               <Link
                 href={`/process/${subProcess.slug}`}
-                target="_blank"
+                onClick={onClose}
                 className="p-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-500/10 transition-all"
                 title="مشاهده در صفحه تمام‌صفحه مستقل"
               >
