@@ -356,3 +356,18 @@ export interface WorkflowRun {
   stepLogs?: WorkflowStepLog[];
 }
 
+export interface ActiveWorkflowSession {
+  processId: string;
+  processSlug: string;
+  processTitle: string;
+  targetSystem?: string;
+  departmentName?: string;
+  totalSteps: number;
+  completedStepKeys: string[];
+  completedCount: number;
+  lastStepIndex: number;
+  lastStepTitle?: string;
+  updatedAt: number;
+  officialRunNumber?: number;
+}
+

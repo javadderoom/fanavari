@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Process, WorkflowRun } from '@/types/process';
+import { Process, WorkflowRun, ActiveWorkflowSession } from '@/types/process';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ScratchpadDrawer } from './scratchpad-drawer';
@@ -190,9 +190,17 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
     redeemClaim();
   }, [searchParams, process.id, currentUser.id, currentUser.permissions]);
 
-  // Restore session from localStorage on mount
+  // Restore session from localStorage & URL on mount
   useEffect(() => {
     try {
+      const stepParam = searchParams.get('step');
+      if (stepParam) {
+        const parsed = parseInt(stepParam, 10);
+        if (!isNaN(parsed) && parsed >= 0 && parsed < (process.steps?.length || 1)) {
+          setActiveStepIndex(parsed);
+        }
+      }
+
       const savedNote = localStorage.getItem(`fanavari-scratchpad-${process.id}`);
       if (savedNote) setScratchpadNote(savedNote);
 
@@ -206,7 +214,49 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
     } catch (e) {
       console.error('Error loading process session:', e);
     }
-  }, [process.id, process.steps.length]);
+  }, [searchParams, process.id, process.steps?.length]);
+
+  // Synchronize active unfinished workflow session for homepage resumption
+  useEffect(() => {
+    if (!process?.id || !process.steps || process.steps.length === 0) return;
+
+    try {
+      const isAllDone = completedStepKeys.length >= process.steps.length;
+      if (isAllDone) {
+        // Workflow is fully finished — clear resumption banner
+        const raw = localStorage.getItem('farayandnama_active_session');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.processId === process.id) {
+            localStorage.removeItem('farayandnama_active_session');
+          }
+        }
+        return;
+      }
+
+      // Record active incomplete session if at least 1 step completed or activeStepIndex > 0
+      if (completedStepKeys.length > 0 || activeStepIndex > 0) {
+        const currentStep = process.steps[activeStepIndex];
+        const sessionPayload: ActiveWorkflowSession = {
+          processId: process.id,
+          processSlug: process.slug,
+          processTitle: process.title,
+          targetSystem: process.targetSystem || undefined,
+          departmentName: process.departmentName || undefined,
+          totalSteps: process.steps.length,
+          completedStepKeys,
+          completedCount: completedStepKeys.length,
+          lastStepIndex: activeStepIndex,
+          lastStepTitle: currentStep?.title || undefined,
+          updatedAt: Date.now(),
+          officialRunNumber: activeRun?.runNumber || undefined,
+        };
+        localStorage.setItem('farayandnama_active_session', JSON.stringify(sessionPayload));
+      }
+    } catch {
+      // ignore
+    }
+  }, [process, activeStepIndex, completedStepKeys, activeRun]);
 
   const logStepToActiveRun = async (stepKey: string, isCompleted: boolean, operatorNotes?: string) => {
     if (!activeRun) return;
@@ -348,6 +398,13 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
       setCompletedStepKeys([]);
       try {
         localStorage.removeItem(`fanavari-completed-${process.id}`);
+        const currentActive = localStorage.getItem('farayandnama_active_session');
+        if (currentActive) {
+          const parsed = JSON.parse(currentActive);
+          if (parsed.processId === process.id) {
+            localStorage.removeItem('farayandnama_active_session');
+          }
+        }
       } catch (e) {}
       setActiveStepIndex(0);
       notify.success('پیشرفت فرایند با موفقیت بازنشانی شد.');

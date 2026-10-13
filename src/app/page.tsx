@@ -7,6 +7,7 @@ import { Navbar } from '@/components/navbar';
 import { OmniSearch } from '@/components/omni-search';
 import { ProcessCard } from '@/components/process-card';
 import { ProcessDetailModal } from '@/components/process-detail-modal';
+import { ActiveWorkflowBanner } from '@/components/active-workflow-banner';
 import { InteractiveFlowSimulator } from '@/components/interactive-flow-simulator';
 import { FeaturesSection } from '@/components/features-section';
 import { Footer } from '@/components/footer';
@@ -294,6 +295,9 @@ function HomePageContent() {
 
         {/* Process Catalog Showcase Section */}
         <section id="processes-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Active Incomplete Workflow Resumption Banner */}
+          <ActiveWorkflowBanner />
+
           {/* Section Header & Category Filters */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
             <div>
