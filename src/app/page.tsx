@@ -31,11 +31,14 @@ import {
   Building2,
   X,
   Megaphone,
-  ArrowLeft
+  ArrowLeft,
+  Bookmark
 } from 'lucide-react';
+import { useBookmarks } from '@/hooks/use-bookmarks';
 
 function HomePageContent() {
   const { currentUser } = useUserSession();
+  const { bookmarkedIds, bookmarkedCount } = useBookmarks();
   const searchParams = useSearchParams();
   const deptParam = searchParams.get('dept');
 
@@ -94,10 +97,13 @@ function HomePageContent() {
           p.departmentName?.toLowerCase().includes(deptParam.toLowerCase())
       );
     }
+    if (selectedCategory === 'bookmarks') {
+      return list.filter((p) => bookmarkedIds.includes(p.id));
+    }
     if (selectedCategory === 'all') return list;
     if (selectedCategory === 'software') return list.filter((p) => p.scope === 'software');
     return list.filter((p) => p.category === selectedCategory);
-  }, [processes, selectedCategory, deptParam]);
+  }, [processes, selectedCategory, deptParam, bookmarkedIds]);
 
   const totalSteps = useMemo(() => {
     return processes.reduce((acc, p) => acc + (p.steps?.length || p.totalSteps || 0), 0);
@@ -302,25 +308,63 @@ function HomePageContent() {
             <div className="w-full md:w-auto overflow-x-auto pb-1 no-scrollbar" data-tour="scope-filter">
               {/* Category Filter Pills */}
               <div className="flex items-center gap-1.5 flex-nowrap md:flex-wrap">
-                {CATEGORIES.map((cat) => {
+                {CATEGORIES.map((cat, idx) => {
                   const isSelected = selectedCategory === cat.key;
                   return (
-                    <button
-                      key={cat.key}
-                      type="button"
-                      onClick={() => setSelectedCategory(cat.key)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        isSelected ? 'shadow-sm scale-105' : 'opacity-70 hover:opacity-100'
-                      }`}
-                      style={{
-                        background: isSelected ? 'var(--accent-primary)' : 'var(--bg-surface)',
-                        color: isSelected ? '#ffffff' : 'var(--text-secondary)',
-                        border: '1px solid var(--border-glass)'
-                      }}
-                    >
-                      {getCategoryIcon(cat.icon)}
-                      <span className="whitespace-nowrap">{cat.label}</span>
-                    </button>
+                    <React.Fragment key={cat.key}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCategory(cat.key)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          isSelected ? 'shadow-sm scale-105' : 'opacity-70 hover:opacity-100'
+                        }`}
+                        style={{
+                          background: isSelected ? 'var(--accent-primary)' : 'var(--bg-surface)',
+                          color: isSelected ? '#ffffff' : 'var(--text-secondary)',
+                          border: '1px solid var(--border-glass)'
+                        }}
+                      >
+                        {getCategoryIcon(cat.icon)}
+                        <span className="whitespace-nowrap">{cat.label}</span>
+                      </button>
+
+                      {/* Insert Bookmarks pill right after "All processes" (idx === 0) */}
+                      {idx === 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCategory('bookmarks')}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            selectedCategory === 'bookmarks'
+                              ? 'shadow-sm scale-105 bg-amber-500 text-white border-amber-500'
+                              : 'opacity-70 hover:opacity-100'
+                          }`}
+                          style={
+                            selectedCategory === 'bookmarks'
+                              ? undefined
+                              : {
+                                  background: 'var(--bg-surface)',
+                                  color: 'var(--text-secondary)',
+                                  border: '1px solid var(--border-glass)',
+                                }
+                          }
+                          title="فرایندهای نشان‌شده توسط شما"
+                        >
+                          <Bookmark className={`w-4 h-4 ${selectedCategory === 'bookmarks' ? 'fill-white text-white' : 'text-amber-500'}`} />
+                          <span className="whitespace-nowrap">نشان‌شده‌ها</span>
+                          {bookmarkedCount > 0 && (
+                            <span
+                              className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                                selectedCategory === 'bookmarks'
+                                  ? 'bg-white/25 text-white'
+                                  : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                              }`}
+                            >
+                              {bookmarkedCount.toLocaleString('fa-IR')}
+                            </span>
+                          )}
+                        </button>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </div>
@@ -368,11 +412,33 @@ function HomePageContent() {
               ))}
             </div>
           ) : filteredProcesses.length === 0 ? (
-            <div className="text-center py-16 glass-card rounded-3xl">
-              <Layers className="w-12 h-12 mx-auto mb-3 opacity-40 text-blue-500" />
-              <h3 className="text-lg font-bold">هیچ فرایندی در این دسته‌بندی یافت نشد</h3>
-              <p className="text-sm text-gray-500 mt-1">فرایندها مستقیماً از پایگاه داده بازیابی می‌شوند.</p>
-            </div>
+            selectedCategory === 'bookmarks' ? (
+              <div className="text-center py-16 px-4 glass-card rounded-3xl max-w-xl mx-auto my-4 border" style={{ borderColor: 'var(--border-glass)' }}>
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4 text-amber-500">
+                  <Bookmark className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-black mb-2" style={{ color: 'var(--text-primary)' }}>
+                  هنوز فرایندی را نشان نکرده‌اید
+                </h3>
+                <p className="text-xs sm:text-sm leading-relaxed mb-6" style={{ color: 'var(--text-secondary)' }}>
+                  با کلیک روی آیکون نشان در گوشه کارت‌ها یا دکمه نشان کردن در بالای صفحه فرایند، می‌توانید دستورالعمل‌های پرکاربرد خود را اینجا ذخیره و سریع‌تر پیدا کنید.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory('all')}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm cursor-pointer hover:scale-105 active:scale-95"
+                >
+                  <span>مشاهده همه فرایندها</span>
+                  <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-0" />
+                </button>
+              </div>
+            ) : (
+              <div className="text-center py-16 glass-card rounded-3xl">
+                <Layers className="w-12 h-12 mx-auto mb-3 opacity-40 text-blue-500" />
+                <h3 className="text-lg font-bold">هیچ فرایندی در این دسته‌بندی یافت نشد</h3>
+                <p className="text-sm text-gray-500 mt-1">فرایندها مستقیماً از پایگاه داده بازیابی می‌شوند.</p>
+              </div>
+            )
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-tour="process-card">
               {filteredProcesses.map((process) => (

@@ -9,6 +9,7 @@ import { PwaRegistrar } from "@/components/pwa-registrar";
 import { OnboardingProvider } from "@/components/onboarding/onboarding-context";
 import { SpotlightTour } from "@/components/onboarding/spotlight-tour";
 import { Agentation } from "agentation";
+import { BookmarksProvider } from "@/components/bookmarks-provider";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -101,13 +102,15 @@ export default async function RootLayout({
       <body className="font-sans antialiased min-h-screen">
         <ThemeProvider>
           <UserSessionProvider initialUser={initialUser}>
-            <OnboardingProvider>
-              {children}
-              <SpotlightTour />
-              <PwaRegistrar />
-            </OnboardingProvider>
-            <Toaster />
-            {process.env.NODE_ENV === "development" && <Agentation />}
+            <BookmarksProvider>
+              <OnboardingProvider>
+                {children}
+                <SpotlightTour />
+                <PwaRegistrar />
+              </OnboardingProvider>
+              <Toaster />
+              {process.env.NODE_ENV === "development" && <Agentation />}
+            </BookmarksProvider>
           </UserSessionProvider>
         </ThemeProvider>
       </body>

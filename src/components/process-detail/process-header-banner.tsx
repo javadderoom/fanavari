@@ -18,9 +18,11 @@ import {
   Sparkles,
   Eye,
   ArrowRight,
-  Workflow
+  Workflow,
+  Bookmark
 } from 'lucide-react';
 import { WorkflowRun } from '@/types/process';
+import { useBookmarks } from '@/hooks/use-bookmarks';
 
 interface ProcessHeaderBannerProps {
   process: Process;
@@ -53,6 +55,9 @@ export function ProcessHeaderBanner({
   onStartOfficialRun,
   activeRun,
 }: ProcessHeaderBannerProps) {
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const bookmarked = isBookmarked(process.id);
+
   return (
     <div
       className="glass-panel-strong rounded-2xl sm:rounded-3xl p-4 sm:p-8 border shadow-xl relative overflow-hidden"
@@ -220,6 +225,21 @@ export function ProcessHeaderBanner({
               <span>{isSidecarOpen ? 'بستن سایدکار' : 'سایدکار همراه'}</span>
             </button>
           )}
+
+          <button
+            onClick={() => toggleBookmark(process.id, process.title)}
+            type="button"
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer hover:scale-105 active:scale-95 ${
+              bookmarked
+                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40 shadow-xs'
+                : 'border-[var(--border-glass)] text-[var(--text-secondary)] hover:bg-slate-500/10'
+            }`}
+            style={!bookmarked ? { background: 'var(--bg-surface)' } : undefined}
+            title={bookmarked ? 'حذف این فرایند از نشان‌شده‌ها' : 'افزودن این فرایند به نشان‌شده‌ها'}
+          >
+            <Bookmark className={`w-4 h-4 shrink-0 transition-transform ${bookmarked ? 'fill-amber-500 text-amber-500 scale-110' : 'text-slate-400'}`} />
+            <span className="whitespace-nowrap">{bookmarked ? 'نشان‌شده' : 'نشان کردن'}</span>
+          </button>
 
           <button
             onClick={onOpenShareModal || onOpenAccessModal}

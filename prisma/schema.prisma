@@ -38,6 +38,7 @@ model User {
   verificationCodes      VerificationCode[]
   authSessions           UserSession[]
   authAuditLogs          AuthAuditLog[]
+  bookmarks              UserBookmark[]
 }
 
 model Department {
@@ -94,6 +95,7 @@ model Process {
   accessGrants     ProcessAccessGrant[]
   workflowRuns     WorkflowRun[]
   parentSteps      Step[]               @relation("StepSubProcess")
+  bookmarkedBy     UserBookmark[]
 
   // Chained / Sibling process
   nextProcessId    String?
@@ -344,5 +346,18 @@ model UserSession {
   createdAt        DateTime  @default(now())
 
   @@index([userId])
+}
+
+model UserBookmark {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  processId String
+  process   Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, processId])
+  @@index([userId])
+  @@index([processId])
 }
 

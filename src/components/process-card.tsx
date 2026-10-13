@@ -3,7 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { Process } from '@/types/process';
-import { Layers, ShieldAlert, ArrowLeft, ExternalLink, Sparkles, Laptop, Building2, Globe, Eye } from 'lucide-react';
+import { Layers, ShieldAlert, ArrowLeft, ExternalLink, Sparkles, Laptop, Building2, Globe, Eye, Bookmark } from 'lucide-react';
+import { useBookmarks } from '@/hooks/use-bookmarks';
 
 interface ProcessCardProps {
   process: Process;
@@ -11,6 +12,8 @@ interface ProcessCardProps {
 }
 
 export function ProcessCard({ process, onSelect }: ProcessCardProps) {
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const bookmarked = isBookmarked(process.id);
   const errorCount = process.steps.reduce((acc, step) => acc + (step.errorGuides?.length || 0), 0);
 
   const handleClick = (e: React.MouseEvent) => {
@@ -66,6 +69,24 @@ export function ProcessCard({ process, onSelect }: ProcessCardProps) {
               {process.departmentName}
             </span>
           </div>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleBookmark(process.id, process.title);
+            }}
+            aria-label={bookmarked ? 'حذف از نشان‌شده‌ها' : 'افزودن به نشان‌شده‌ها'}
+            title={bookmarked ? 'حذف از نشان‌شده‌ها' : 'نشان کردن این فرایند'}
+            className={`p-1.5 rounded-xl border transition-all duration-200 cursor-pointer shrink-0 active:scale-90 ${
+              bookmarked
+                ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 dark:text-amber-400'
+                : 'border-transparent text-slate-400 hover:text-amber-500 hover:bg-amber-500/10 hover:border-amber-500/20'
+            }`}
+          >
+            <Bookmark className={`w-4 h-4 transition-transform duration-200 ${bookmarked ? 'fill-current scale-110' : ''}`} />
+          </button>
         </div>
 
         {/* Process Title */}
