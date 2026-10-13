@@ -7,6 +7,7 @@ import { InformationPost, ProcessVisibility } from '@/types/process';
 import { useUserSession } from '@/components/user-session-provider';
 import { Permissions, hasPermission } from '@/lib/permissions';
 import { InformationAccessModal } from './information-access-modal';
+import { SocialShareModal } from './social-share-modal';
 import { notify } from '@/lib/notify';
 import {
   Home,
@@ -43,6 +44,7 @@ export function InformationDetailView({ post }: InformationDetailViewProps) {
 
   const [currentPost, setCurrentPost] = useState<InformationPost>(post);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Auto-claim invite token if present in URL
@@ -319,11 +321,11 @@ export function InformationDetailView({ post }: InformationDetailViewProps) {
 
             <button
               type="button"
-              onClick={handleShare}
-              title="اشتراک‌گذاری"
+              onClick={() => setIsShareModalOpen(true)}
+              title="اشتراک‌گذاری بخشنامه"
               className="p-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] hover:bg-[var(--bg-surface)] text-[var(--text-primary)] transition-colors cursor-pointer"
             >
-              {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Share2 className="w-3.5 h-3.5" />}
+              <Share2 className="w-3.5 h-3.5 text-blue-500" />
             </button>
 
             <button
@@ -462,6 +464,17 @@ export function InformationDetailView({ post }: InformationDetailViewProps) {
           onUpdate={(updated) => setCurrentPost(updated)}
         />
       )}
+
+      {/* Dedicated Social Share Sheet Modal */}
+      <SocialShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={currentPost.title}
+        url={`/information/${currentPost.slug}`}
+        departmentName={currentPost.departmentName}
+        targetSystem={currentPost.systemToolName}
+        description={currentPost.summary}
+      />
     </article>
   );
 }

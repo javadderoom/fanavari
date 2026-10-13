@@ -30,6 +30,8 @@ interface ProcessHeaderBannerProps {
   matchingDeptGrant?: any;
   matchingUserGrant?: any;
   onOpenAccessModal: () => void;
+  onOpenShareModal?: () => void;
+  canManageAccess?: boolean;
   onToggleSidecar?: () => void;
   isSidecarOpen?: boolean;
   onStartOfficialRun?: () => void;
@@ -44,6 +46,8 @@ export function ProcessHeaderBanner({
   matchingDeptGrant,
   matchingUserGrant,
   onOpenAccessModal,
+  onOpenShareModal,
+  canManageAccess = false,
   onToggleSidecar,
   isSidecarOpen = false,
   onStartOfficialRun,
@@ -218,15 +222,27 @@ export function ProcessHeaderBanner({
           )}
 
           <button
-            onClick={onOpenAccessModal}
+            onClick={onOpenShareModal || onOpenAccessModal}
             type="button"
             className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer hover:scale-105"
             style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-secondary)' }}
-            title="مدیریت دسترسی‌ها و اشتراک‌گذاری"
+            title="اشتراک‌گذاری این فرایند با همکاران و پیام‌رسان‌ها"
           >
             <Share2 className="w-4 h-4 text-blue-500 shrink-0" />
             <span className="whitespace-nowrap">اشتراک‌گذاری</span>
           </button>
+
+          {canManageAccess && (
+            <button
+              onClick={onOpenAccessModal}
+              type="button"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer hover:scale-105 bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20"
+              title="مدیریت دسترسی‌ها و محرمانگی این فرایند"
+            >
+              <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span className="whitespace-nowrap">دسترسی‌ها</span>
+            </button>
+          )}
 
           <Link
             href={`/process/${process.slug}/print`}

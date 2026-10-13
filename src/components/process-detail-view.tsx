@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ScratchpadDrawer } from './scratchpad-drawer';
 import { ProcessAccessModal } from './process-access-modal';
+import { SocialShareModal } from './social-share-modal';
 import { ProcessHeaderBanner } from './process-detail/process-header-banner';
 import { ProcessErrorMatrixTab } from './process-detail/process-error-matrix-tab';
 import { ProcessScratchpadTab } from './process-detail/process-scratchpad-tab';
@@ -54,6 +55,7 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
   const searchParams = useSearchParams();
   const [currentProcess, setCurrentProcess] = useState<Process>(process);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<'flow' | 'errors' | 'scratchpad' | 'runs'>('flow');
   const [activeRun, setActiveRun] = useState<WorkflowRun | null>(null);
@@ -439,6 +441,8 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
         matchingDeptGrant={matchingDeptGrant}
         matchingUserGrant={matchingUserGrant}
         onOpenAccessModal={() => setIsAccessModalOpen(true)}
+        onOpenShareModal={() => setIsShareModalOpen(true)}
+        canManageAccess={isSuperAdmin || isAuthor || hasPermission(currentUser.permissions, Permissions.EDIT_PROCESSES)}
         onToggleSidecar={handleToggleSidecar}
         isSidecarOpen={isSidecarOpen}
         onStartOfficialRun={() => setIsQuickStartModalOpen(true)}
@@ -586,12 +590,23 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
         onToggle={() => setIsScratchpadDrawerOpen((prev) => !prev)}
       />
 
-      {/* Process Granular Access & Sharing Modal */}
+      {/* Process Granular Access & ACL Modal */}
       <ProcessAccessModal
         process={currentProcess}
         isOpen={isAccessModalOpen}
         onClose={() => setIsAccessModalOpen(false)}
         onUpdate={(updated) => setCurrentProcess(updated)}
+      />
+
+      {/* Dedicated Social Share Sheet Modal */}
+      <SocialShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={currentProcess.title}
+        slug={currentProcess.slug}
+        departmentName={currentProcess.departmentName}
+        targetSystem={currentProcess.targetSystem}
+        description={currentProcess.description}
       />
 
       {/* Dockable Sidecar Companion Runner */}
