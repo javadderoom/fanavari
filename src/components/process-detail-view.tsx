@@ -17,6 +17,7 @@ import { ProcessRunAuditModal } from './process-detail/process-run-audit-modal';
 import { SidecarRunner } from './process-detail/sidecar-runner';
 import { ProcessRunsTab } from './process-detail/process-runs-tab';
 import { SubProcessDrawer } from './process-detail/subprocess-drawer';
+import { ProcessFeedbackWidget } from './process-feedback-widget';
 import { useUserSession } from '@/components/user-session-provider';
 import { Permissions, hasPermission } from '@/lib/permissions';
 import { notify } from '@/lib/notify';
@@ -603,6 +604,12 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
             onDrillDownSubProcess={handleDrillDownSubProcess}
             nextProcess={process.nextProcess}
             nextProcessNote={process.nextProcessNote}
+          />
+
+          <ProcessFeedbackWidget
+            processId={process.id}
+            processTitle={process.title}
+            currentStepKey={process.steps[activeStepIndex]?.stepKey}
           />
         </div>
       )}

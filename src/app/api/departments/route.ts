@@ -23,7 +23,9 @@ export async function GET() {
       createdAt: d.createdAt,
     }));
 
-    return NextResponse.json(mapped);
+    const response = NextResponse.json(mapped);
+    response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600');
+    return response;
   } catch (error) {
     console.error('Error fetching departments:', error);
     return NextResponse.json({ error: 'Failed to fetch departments' }, { status: 500 });

@@ -101,7 +101,13 @@ export async function GET(req: NextRequest) {
       orderBy: { updatedAt: 'desc' },
     });
 
-    return NextResponse.json(processes.map((p) => mapPrismaProcess(p, { redactGrants: !isSuperAdmin })));
+    const response = NextResponse.json(processes.map((p) => mapPrismaProcess(p, { redactGrants: !isSuperAdmin })));
+    if (!userId && !query) {
+      response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    } else {
+      response.headers.set('Cache-Control', 'private, no-cache');
+    }
+    return response;
   } catch (error) {
     console.error('Error fetching processes:', error);
     return NextResponse.json({ error: 'Failed to fetch processes' }, { status: 500 });

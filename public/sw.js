@@ -1,5 +1,5 @@
 // PWA Service Worker for Farayandnama (فرآیندنما)
-const CACHE_NAME = 'farayandnama-cache-v2';
+const CACHE_NAME = 'farayandnama-cache-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.webmanifest',
@@ -46,6 +46,9 @@ self.addEventListener('fetch', (event) => {
           networkResponse.status === 200 &&
           (url.pathname.startsWith('/icons/') ||
            url.pathname.startsWith('/_next/static/') ||
+           url.pathname.startsWith('/process/') ||
+           url.pathname.startsWith('/guide') ||
+           url.pathname.startsWith('/api/processes') ||
            url.pathname === '/manifest.webmanifest')
         ) {
           const clone = networkResponse.clone();

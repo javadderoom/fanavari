@@ -39,6 +39,7 @@ model User {
   authSessions           UserSession[]
   authAuditLogs          AuthAuditLog[]
   bookmarks              UserBookmark[]
+  feedbacks              ProcessFeedback[]
 }
 
 model Department {
@@ -96,6 +97,7 @@ model Process {
   workflowRuns     WorkflowRun[]
   parentSteps      Step[]               @relation("StepSubProcess")
   bookmarkedBy     UserBookmark[]
+  feedbacks        ProcessFeedback[]
 
   // Chained / Sibling process
   nextProcessId    String?
@@ -359,5 +361,21 @@ model UserBookmark {
   @@unique([userId, processId])
   @@index([userId])
   @@index([processId])
+}
+
+model ProcessFeedback {
+  id        String   @id @default(uuid())
+  processId String
+  process   Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  isHelpful Boolean
+  reason    String?
+  comment   String?
+  stepKey   String?
+  createdAt DateTime @default(now())
+
+  @@index([processId])
+  @@index([createdAt])
 }
 

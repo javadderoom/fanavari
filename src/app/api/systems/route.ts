@@ -24,7 +24,9 @@ export async function GET() {
       createdAt: t.createdAt,
     }));
 
-    return NextResponse.json(mapped);
+    const response = NextResponse.json(mapped);
+    response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600');
+    return response;
   } catch (error) {
     console.error('Error fetching systems:', error);
     return NextResponse.json({ error: 'Failed to fetch systems' }, { status: 500 });
