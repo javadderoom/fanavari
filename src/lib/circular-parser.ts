@@ -28,6 +28,7 @@ export interface ParsedProcessDraft {
   steps: ParsedStepDraft[];
   nextProcessDraftIndex?: number;
   nextProcessNote?: string;
+  isPublished?: boolean;
 }
 
 export interface ParsedCircularResult {
@@ -224,6 +225,7 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
         category: 'education',
         scope: 'portal',
         departmentName: 'وزارت آموزش و پرورش',
+        isPublished: false,
         steps,
       };
 
@@ -270,6 +272,7 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
     category: 'education',
     scope: 'portal',
     departmentName: 'وزارت آموزش و پرورش',
+    isPublished: false,
     steps,
   };
 

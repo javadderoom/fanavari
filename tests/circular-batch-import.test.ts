@@ -46,6 +46,9 @@ describe('Circular Process Batch Ingestion & Database Integrity', () => {
     const parsed = parseCircularToProcesses(SAMPLE_MULTI);
     assert.equal(parsed.processes.length, 2);
 
+    assert.equal(parsed.processes[0].isPublished, false);
+    assert.equal(parsed.processes[1].isPublished, false);
+
     const testSlug1 = `test-batch-origin-${Date.now()}`;
     const testSlug2 = `test-batch-dest-${Date.now()}`;
 
@@ -55,7 +58,7 @@ describe('Circular Process Batch Ingestion & Database Integrity', () => {
     });
 
     try {
-      // Create destination process first
+      // Create destination process first as unpublished draft
       const p2 = await prisma.process.create({
         data: {
           title: parsed.processes[1].title,
@@ -64,6 +67,7 @@ describe('Circular Process Batch Ingestion & Database Integrity', () => {
           targetSystem: parsed.processes[1].targetSystem,
           targetUrl: parsed.processes[1].targetUrl,
           audience: parsed.processes[1].audience,
+          isPublished: parsed.processes[1].isPublished ?? false,
           sourceChannel: parsed.processes[1].sourceChannel,
           circularDate: parsed.processes[1].circularDate,
           category: 'education',
@@ -89,6 +93,7 @@ describe('Circular Process Batch Ingestion & Database Integrity', () => {
           targetSystem: parsed.processes[0].targetSystem,
           targetUrl: parsed.processes[0].targetUrl,
           audience: parsed.processes[0].audience,
+          isPublished: parsed.processes[0].isPublished ?? false,
           sourceChannel: parsed.processes[0].sourceChannel,
           circularDate: parsed.processes[0].circularDate,
           category: 'education',
@@ -111,6 +116,8 @@ describe('Circular Process Batch Ingestion & Database Integrity', () => {
         },
       });
 
+      assert.equal(p1.isPublished, false);
+      assert.equal(p2.isPublished, false);
       assert.equal(p1.nextProcessId, p2.id);
       assert.ok(p1.nextProcessNote?.includes('معاون آموزش متوسطه'));
       assert.equal(p1.audience, parsed.processes[0].audience);

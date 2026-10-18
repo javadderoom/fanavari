@@ -409,7 +409,7 @@ export default function DashboardProcessesPage() {
               }`}
             >
               <Archive className="w-3.5 h-3.5" />
-              <span>بایگانی ({processes.filter((p) => p.isPublished === false).length})</span>
+              <span>پیش‌نویس و بایگانی ({processes.filter((p) => p.isPublished === false).length})</span>
             </button>
           </div>
         </div>

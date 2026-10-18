@@ -97,6 +97,7 @@ export function CircularImportModal({ isOpen, onClose, onSuccess }: CircularImpo
   const [rawText, setRawText] = useState('');
   const [parsedResult, setParsedResult] = useState<ParsedCircularResult | null>(null);
   const [draftProcesses, setDraftProcesses] = useState<ParsedProcessDraft[]>([]);
+  const [saveAsDraft, setSaveAsDraft] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
 
@@ -134,10 +135,15 @@ export function CircularImportModal({ isOpen, onClose, onSuccess }: CircularImpo
 
     setIsSubmitting(true);
     try {
+      const payloads = draftProcesses.map((d) => ({
+        ...d,
+        isPublished: !saveAsDraft,
+      }));
+
       const res = await fetch('/api/processes/batch-import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ processes: draftProcesses }),
+        body: JSON.stringify({ processes: payloads, isPublished: !saveAsDraft }),
       });
 
       const data = await res.json();
@@ -145,7 +151,12 @@ export function CircularImportModal({ isOpen, onClose, onSuccess }: CircularImpo
         throw new Error(data.error || 'خطا در ثبت فرایندها در پایگاه داده');
       }
 
-      notify.success(`${data.count} فرایند با موفقیت در پایگاه داده ذخیره و به یکدیگر متصل شدند.`);
+      if (saveAsDraft) {
+        notify.success(`${data.count} فرایند به عنوان پیش‌نویس ذخیره شدند. می‌توانید از تب «بایگانی / پیش‌نویس» آن‌ها را بازبینی و سپس منتشر فرمایید.`);
+      } else {
+        notify.success(`${data.count} فرایند با موفقیت در پایگاه داده ذخیره و منتشر شدند.`);
+      }
+
       onSuccess(data.processes);
       onClose();
     } catch (err: any) {
@@ -405,36 +416,63 @@ export function CircularImportModal({ isOpen, onClose, onSuccess }: CircularImpo
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 sm:p-5 border-t flex items-center justify-between gap-3" style={{ borderColor: 'var(--border-subtle)' }}>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-bold border transition-colors cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
-            style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}
-          >
-            انصراف
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSaveToDatabase}
-            disabled={isSubmitting || draftProcesses.length === 0}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>در حال ثبت در پایگاه داده...</span>
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className="w-4 h-4" />
-                <span>
-                  تایید و ثبت {draftProcesses.length > 0 ? `${draftProcesses.length} فرایند` : ''} در پایگاه داده
+        <div className="p-4 sm:p-5 border-t flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2.5 cursor-pointer select-none text-xs">
+              <input
+                type="checkbox"
+                checked={saveAsDraft}
+                onChange={(e) => setSaveAsDraft(e.target.checked)}
+                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
+              />
+              <div className="flex flex-col text-right">
+                <span className="font-bold" style={{ color: 'var(--text-primary)' }}>
+                  ذخیره به عنوان پیش‌نویس (عدم انتشار مستقیم)
                 </span>
-              </>
-            )}
-          </button>
+                <span className="text-[10px] text-slate-500">
+                  فرایندها در تب «بایگانی / پیش‌نویس» قرار می‌گیرند تا ابتدا آن‌ها را بازبینی و سپس منتشر فرمایید.
+                </span>
+              </div>
+            </label>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
+              style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}
+            >
+              انصراف
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSaveToDatabase}
+              disabled={isSubmitting || draftProcesses.length === 0}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black text-white shadow-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 ${
+                saveAsDraft
+                  ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20'
+                  : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>در حال ذخیره...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>
+                    {saveAsDraft
+                      ? `ثبت پیش‌نویس (${draftProcesses.length} فرایند جهت بازبینی)`
+                      : `ثبت و انتشار مستقیم (${draftProcesses.length} فرایند)`}
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

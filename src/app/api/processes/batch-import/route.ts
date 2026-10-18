@@ -87,7 +87,11 @@ export async function POST(req: NextRequest) {
             targetSystem: draft.targetSystem?.trim() || 'سیدا',
             targetUrl: draft.targetUrl?.trim() || 'https://my.medu.ir',
             estimatedMinutes: 10,
-            isPublished: true,
+            isPublished: typeof draft.isPublished === 'boolean' 
+              ? draft.isPublished 
+              : typeof body.isPublished === 'boolean' 
+              ? body.isPublished 
+              : false,
             audience: draft.audience?.trim() || null,
             sourceChannel: draft.sourceChannel?.trim() || null,
             circularDate: draft.circularDate?.trim() || null,
