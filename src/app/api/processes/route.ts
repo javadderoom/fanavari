@@ -63,6 +63,7 @@ export async function GET(req: NextRequest) {
                   { title: { contains: query, mode: 'insensitive' } },
                   { description: { contains: query, mode: 'insensitive' } },
                   { targetSystem: { contains: query, mode: 'insensitive' } },
+                  { audience: { contains: query, mode: 'insensitive' } },
                 ],
               }
             : {},
@@ -150,6 +151,9 @@ export async function POST(req: NextRequest) {
       isPopular,
       nextProcessId,
       nextProcessNote,
+      audience,
+      sourceChannel,
+      circularDate,
     } = body;
 
     if (!title || !title.trim()) {
@@ -264,6 +268,9 @@ export async function POST(req: NextRequest) {
             ...(isPopular !== undefined ? { isPopular: Boolean(isPopular) } : {}),
             ...(nextProcessId !== undefined ? { nextProcessId: nextProcessId || null } : {}),
             ...(nextProcessNote !== undefined ? { nextProcessNote: nextProcessNote || null } : {}),
+            ...(audience !== undefined ? { audience: audience ? String(audience).trim() : null } : {}),
+            ...(sourceChannel !== undefined ? { sourceChannel: sourceChannel ? String(sourceChannel).trim() : null } : {}),
+            ...(circularDate !== undefined ? { circularDate: circularDate ? String(circularDate).trim() : null } : {}),
             steps: {
               create: sanitizedSteps,
             },
@@ -327,6 +334,9 @@ export async function POST(req: NextRequest) {
         ...(isPopular !== undefined ? { isPopular: Boolean(isPopular) } : {}),
         nextProcessId: nextProcessId || null,
         nextProcessNote: nextProcessNote || null,
+        audience: audience ? String(audience).trim() : null,
+        sourceChannel: sourceChannel ? String(sourceChannel).trim() : null,
+        circularDate: circularDate ? String(circularDate).trim() : null,
         steps: {
           create: sanitizedSteps,
         },

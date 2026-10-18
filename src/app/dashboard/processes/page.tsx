@@ -7,6 +7,7 @@ import { Permissions } from '@/lib/permissions';
 import { ProcessEditorModal } from '@/components/process-editor-modal';
 import { ProcessAccessModal } from '@/components/process-access-modal';
 import { DeleteImpactDialog } from '@/components/delete-impact-dialog';
+import { CircularImportModal } from '@/components/dashboard/circular-import-modal';
 import { Process } from '@/types/process';
 import { notify } from '@/lib/notify';
 import { 
@@ -28,7 +29,8 @@ import {
   Lock,
   Globe,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Sparkles
 } from 'lucide-react';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
@@ -46,6 +48,7 @@ export default function DashboardProcessesPage() {
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCircularModalOpen, setIsCircularModalOpen] = useState(false);
   const [processToEdit, setProcessToEdit] = useState<Process | null>(null);
   const [accessModalProcess, setAccessModalProcess] = useState<Process | null>(null);
 
@@ -327,14 +330,25 @@ export default function DashboardProcessesPage() {
         </div>
 
         {canCreate && (
-          <button
-            type="button"
-            onClick={handleOpenCreate}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all cursor-pointer hover:scale-105 self-start sm:self-center"
-          >
-            <Plus className="w-4 h-4" />
-            <span>ثبت فرایند جدید</span>
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-center">
+            <button
+              type="button"
+              onClick={() => setIsCircularModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 shadow-xs transition-all cursor-pointer hover:scale-105"
+              title="تجزیه و تبدیل خودکار متن پیام‌های بخشنامه و اداری به فرایند"
+            >
+              <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span>تبدیل بخشنامه به فرایند</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleOpenCreate}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all cursor-pointer hover:scale-105"
+            >
+              <Plus className="w-4 h-4" />
+              <span>ثبت فرایند جدید</span>
+            </button>
+          </div>
         )}
       </div>
 
@@ -776,6 +790,15 @@ export default function DashboardProcessesPage() {
           onConfirm={handleConfirmDelete}
         />
       )}
+
+      {/* Circular / Announcement to Process Import Modal */}
+      <CircularImportModal
+        isOpen={isCircularModalOpen}
+        onClose={() => setIsCircularModalOpen(false)}
+        onSuccess={(_created) => {
+          fetchProcesses();
+        }}
+      />
     </div>
   );
 }

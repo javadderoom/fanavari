@@ -95,6 +95,10 @@ export function mapPrismaProcess(p: any, opts?: { redactGrants?: boolean }): Pro
           totalSteps: p.nextProcess.steps?.length ?? 0,
         }
       : null,
+    audience: p.audience || null,
+    sourceChannel: p.sourceChannel || null,
+    circularDate: p.circularDate || null,
+
     steps: (p.steps || []).map((step: any): ProcessStep => {
       // An archived (isPublished=false) linked sub-process must not surface in
       // the parent at all — suppress every reference to it. When the relation

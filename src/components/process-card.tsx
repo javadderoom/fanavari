@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Process } from '@/types/process';
-import { Layers, ShieldAlert, ArrowLeft, ExternalLink, Sparkles, Laptop, Building2, Globe, Eye, Bookmark } from 'lucide-react';
+import { Layers, ShieldAlert, ArrowLeft, ExternalLink, Sparkles, Laptop, Building2, Globe, Eye, Bookmark, Users, Workflow } from 'lucide-react';
 import { useBookmarks } from '@/hooks/use-bookmarks';
 
 interface ProcessCardProps {
@@ -116,6 +116,24 @@ export function ProcessCard({ process, onSelect }: ProcessCardProps) {
           >
             {process.targetSystem}
           </span>
+
+          {process.audience && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold truncate max-w-[180px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+              title={`مخاطب: ${process.audience}`}
+            >
+              <Users className="w-3 h-3 shrink-0" />
+              <span className="truncate">{process.audience}</span>
+            </span>
+          )}
+
+          {process.nextProcessId && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+              title="این فرایند به صورت زنجیره‌ای به مرحله بعدی متصل است"
+            >
+              <Workflow className="w-3 h-3 shrink-0" />
+              <span>زنجیره‌ای</span>
+            </span>
+          )}
 
           <span className="flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold"
             style={{ background: 'var(--badge-emerald-bg)', color: 'var(--badge-emerald-text)' }}

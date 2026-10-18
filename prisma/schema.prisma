@@ -105,6 +105,12 @@ model Process {
   nextProcess      Process?             @relation("ProcessChain", fields: [nextProcessId], references: [id], onDelete: SetNull)
   previousProcesses Process[]          @relation("ProcessChain")
 
+  // Circular & Announcement Metadata
+  audience         String?              // e.g. "مدیران محترم مدارس نمونه دولتی مقطع متوسطه دوم"
+  sourceChannel    String?              // e.g. "@Fanavari_Setad"
+  circularDate     String?              // e.g. "۱۴۰۵/۰۷/۲۵"
+
+
   @@index([viewCount])
   @@index([isPopular])
   @@index([nextProcessId])

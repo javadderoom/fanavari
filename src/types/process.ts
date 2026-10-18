@@ -213,6 +213,10 @@ export interface Process {
     targetSystem?: string;
     totalSteps?: number;
   } | null;
+  // Circular & Announcement Metadata
+  audience?: string | null;
+  sourceChannel?: string | null;
+  circularDate?: string | null;
 }
 
 export type MatchLocationType = 

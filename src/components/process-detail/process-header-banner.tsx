@@ -19,7 +19,10 @@ import {
   Eye,
   ArrowRight,
   Workflow,
-  Bookmark
+  Bookmark,
+  Users,
+  Calendar,
+  Send
 } from 'lucide-react';
 import { WorkflowRun } from '@/types/process';
 import { useBookmarks } from '@/hooks/use-bookmarks';
@@ -147,6 +150,25 @@ export function ProcessHeaderBanner({
             >
               سامانه: {process.targetSystem}
             </span>
+
+            {currentProcess.audience && (
+              <span
+                className="text-[11px] sm:text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl font-bold flex items-center gap-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                title={`مخاطبان: ${currentProcess.audience}`}
+              >
+                <Users className="w-3 h-3" />
+                <span>مخاطب: {currentProcess.audience}</span>
+              </span>
+            )}
+
+            {currentProcess.circularDate && (
+              <span
+                className="text-[11px] sm:text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl font-medium flex items-center gap-1 bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20"
+              >
+                <Calendar className="w-3 h-3" />
+                <span>بخشنامه: {currentProcess.circularDate}</span>
+              </span>
+            )}
 
             {currentProcess.isPopular && (
               <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-xl font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 shadow-2xs">
