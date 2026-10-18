@@ -915,8 +915,8 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/processes/page.tsx": {
-    "mtime": 1792339442.9379117,
-    "ast_hash": "6044f6a814e98ecb450991a52b6ffe0c",
+    "mtime": 1792341274.2510133,
+    "ast_hash": "f444691131783daf93d00b79865d5303",
     "semantic_hash": ""
   },
   "src/app/dashboard/scopes-categories/page.tsx": {
@@ -1720,8 +1720,8 @@
     "semantic_hash": ""
   },
   "src/app/api/processes/batch-import/route.ts": {
-    "mtime": 1792339554.719069,
-    "ast_hash": "b9990e1c2220565e85b9a043a6ac537d",
+    "mtime": 1792341168.9619398,
+    "ast_hash": "be4cc698f7d7ac3f5c2a050d73aeda66",
     "semantic_hash": ""
   },
   "src/components/active-workflow-banner.tsx": {
@@ -1735,8 +1735,8 @@
     "semantic_hash": ""
   },
   "src/components/dashboard/circular-import-modal.tsx": {
-    "mtime": 1792340820.1142533,
-    "ast_hash": "5258310fbceb9228fade8ef9e73edce2",
+    "mtime": 1792341236.11109,
+    "ast_hash": "d3efa90008f799cedafe2c91335f35e4",
     "semantic_hash": ""
   },
   "src/components/process-feedback-widget.tsx": {
@@ -1750,8 +1750,8 @@
     "semantic_hash": ""
   },
   "src/lib/circular-parser.ts": {
-    "mtime": 1792340776.7587924,
-    "ast_hash": "a92a0e8dae210e8c4467f55dd9e50fd8",
+    "mtime": 1792341147.0251822,
+    "ast_hash": "6736be03d5a0062be0a1bf26b90a49b9",
     "semantic_hash": ""
   },
   "tests/bookmarks.test.ts": {
@@ -1760,8 +1760,8 @@
     "semantic_hash": ""
   },
   "tests/circular-batch-import.test.ts": {
-    "mtime": 1792340896.0110185,
-    "ast_hash": "3cc8a1664543b4a57c5d0cda51d76095",
+    "mtime": 1792341320.5165129,
+    "ast_hash": "2449a928e924ca36b204a993dd0bbb08",
     "semantic_hash": ""
   },
   "tests/circular-parser.test.ts": {
