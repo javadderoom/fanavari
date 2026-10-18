@@ -213,8 +213,6 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
       const descParts = [
         rawSubject,
         rawAudience ? `مخاطب: ${rawAudience} ${roleLabel}` : '',
-        circularDate ? `تاریخ صدور: ${circularDate}` : '',
-        sourceChannel ? `منبع اطلاعیه: ${sourceChannel}` : '',
       ].filter(Boolean);
 
       const draft: ParsedProcessDraft = {
@@ -222,8 +220,6 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
         targetSystem: targetSystemClean,
         targetUrl,
         audience: rawAudience ? `${rawAudience} ${roleLabel}` : current.label,
-        sourceChannel: sourceChannel || undefined,
-        circularDate: circularDate || undefined,
         description: descParts.join('\n'),
         category: 'education',
         scope: 'portal',
@@ -263,8 +259,6 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
   const descParts = [
     rawSubject,
     rawAudience ? `مخاطب: ${rawAudience}` : '',
-    circularDate ? `تاریخ صدور: ${circularDate}` : '',
-    sourceChannel ? `منبع اطلاعیه: ${sourceChannel}` : '',
   ].filter(Boolean);
 
   const singleDraft: ParsedProcessDraft = {
@@ -272,8 +266,6 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
     targetSystem: targetSystemClean,
     targetUrl,
     audience: rawAudience || undefined,
-    sourceChannel: sourceChannel || undefined,
-    circularDate: circularDate || undefined,
     description: descParts.join('\n'),
     category: 'education',
     scope: 'portal',

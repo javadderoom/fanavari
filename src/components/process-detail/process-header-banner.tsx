@@ -161,15 +161,6 @@ export function ProcessHeaderBanner({
               </span>
             )}
 
-            {currentProcess.circularDate && (
-              <span
-                className="text-[11px] sm:text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl font-medium flex items-center gap-1 bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20"
-              >
-                <Calendar className="w-3 h-3" />
-                <span>بخشنامه: {currentProcess.circularDate}</span>
-              </span>
-            )}
-
             {currentProcess.isPopular && (
               <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-xl font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 shadow-2xs">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />

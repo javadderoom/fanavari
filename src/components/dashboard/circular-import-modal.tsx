@@ -238,16 +238,9 @@ export function CircularImportModal({ isOpen, onClose, onSuccess }: CircularImpo
                   <span className="px-2.5 py-1 rounded-xl font-bold bg-blue-500/15 text-blue-600 border border-blue-500/20">
                     سامانه: {parsedResult.metadata.targetSystem}
                   </span>
-                  {parsedResult.metadata.circularDate && (
-                    <span className="px-2.5 py-1 rounded-xl font-bold bg-amber-500/15 text-amber-600 border border-amber-500/20 flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>{parsedResult.metadata.circularDate}</span>
-                    </span>
-                  )}
-                  {parsedResult.metadata.sourceChannel && (
-                    <span className="px-2.5 py-1 rounded-xl font-bold bg-cyan-500/15 text-cyan-600 border border-cyan-500/20 flex items-center gap-1">
-                      <Send className="w-3.5 h-3.5" />
-                      <span>{parsedResult.metadata.sourceChannel}</span>
+                  {parsedResult.metadata.audience && (
+                    <span className="px-2.5 py-1 rounded-xl font-bold bg-indigo-500/15 text-indigo-600 border border-indigo-500/20">
+                      مخاطب: {parsedResult.metadata.audience}
                     </span>
                   )}
                   {parsedResult.metadata.targetUrl && (

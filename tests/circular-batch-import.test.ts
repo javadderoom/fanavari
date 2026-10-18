@@ -114,8 +114,6 @@ describe('Circular Process Batch Ingestion & Database Integrity', () => {
       assert.equal(p1.nextProcessId, p2.id);
       assert.ok(p1.nextProcessNote?.includes('معاون آموزش متوسطه'));
       assert.equal(p1.audience, parsed.processes[0].audience);
-      assert.equal(p1.circularDate, '۱۴۰۵/۰۷/۲۵');
-      assert.equal(p1.sourceChannel, '@Fanavari_Setad');
       assert.equal(p1.steps.length, 7);
       assert.equal(p1.steps[6].title, '+ ایجاد');
       assert.ok(p1.steps[6].targetMenuPath?.includes('+ ایجاد'));
