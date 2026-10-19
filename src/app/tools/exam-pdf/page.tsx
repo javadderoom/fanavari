@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/theme-toggle';
 import {
   FileSpreadsheet,
   Upload,
@@ -225,7 +226,7 @@ export default function ExamPdfToolPage() {
   return (
     <div className="min-h-screen pb-16 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors">
       {/* Top Banner / Actions Bar (Hidden on print) */}
-      <div className="no-print border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-16 z-30 transition-colors border-slate-200 dark:border-slate-800 shadow-xs">
+      <div className="no-print border-b bg-white/95 dark:bg-slate-900/95 backdrop-blur-md sticky top-0 z-40 transition-colors border-slate-200 dark:border-slate-800 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link
@@ -294,6 +295,9 @@ export default function ExamPdfToolPage() {
               <KeyRound className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">کلید پاسخ‌ها</span>
             </button>
+
+            {/* Theme Switcher Toggle */}
+            <ThemeToggle />
 
             {/* Print / Export PDF Primary Button */}
             <button
