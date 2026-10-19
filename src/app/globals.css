@@ -355,7 +355,7 @@ mark.search-highlight {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 15mm 12mm 15mm 12mm;
+    margin: 12mm 10mm 12mm 10mm;
   }
   
   html, body {
@@ -363,14 +363,41 @@ mark.search-highlight {
     color: #000000 !important;
     font-size: 11pt;
     line-height: 1.5;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  /* Avoid page breaks inside cards and steps */
-  section,
-  article,
+  .no-print,
+  header,
+  nav,
+  footer,
+  aside,
+  .fixed-nav {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-page-break-before {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
   .print-avoid-break {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
+  }
+
+  .print-exam-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   /* Force background colors and borders to print properly */
