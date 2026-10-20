@@ -19,7 +19,8 @@ import {
   Save, 
   Layers, 
   Sparkles, 
-  Edit3
+  Edit3,
+  RotateCcw
 } from 'lucide-react';
 import { notify } from '@/lib/notify';
 import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
@@ -27,6 +28,12 @@ import { getSeasonForMonth } from './editor/types';
 import { AdvancedSettingsSection } from './editor/advanced-settings-section';
 import { StepEditorCard } from './editor/step-editor-card';
 import { ProcessMetadataFields } from './editor/process-metadata-fields';
+import { 
+  getLastProcessChoices, 
+  saveLastProcessChoices, 
+  clearLastProcessChoices, 
+  DEFAULT_PROCESS_CHOICES 
+} from '@/lib/process-memory';
 
 export { PERSIAN_MONTHS, getSeasonForMonth } from './editor/types';
 
@@ -62,6 +69,7 @@ export function ProcessEditorModal({
   const [targetSystem, setTargetSystem] = useState('');
   const [targetUrl, setTargetUrl] = useState('');
   const [tagsInput, setTagsInput] = useState('');
+  const [hasRestoredMemory, setHasRestoredMemory] = useState(false);
 
   // Dynamic Scopes and Categories from database
   const [scopesList, setScopesList] = useState<ProcessScopeEntity[]>([]);
@@ -155,6 +163,7 @@ export function ProcessEditorModal({
         setScheduleIsMandatory(true);
       }
       setIsEditingSlug(false);
+      setHasRestoredMemory(false);
       setShowAdvanced(Boolean(
         processToEdit.isPopular ||
         processToEdit.visibility === 'restricted' ||
@@ -179,23 +188,16 @@ export function ProcessEditorModal({
         }))
       );
     } else {
-      // Defaults for brand new process
+      // Check for remembered choices from previous submissions
+      const lastChoices = getLastProcessChoices();
+
       setTitle('');
       setSlug('');
       setDescription('');
-      setScope('organization');
-      setCategory('hr');
-      setVisibility('public');
       setIsPopular(false);
-      setDepartmentName('مدیریت منابع انسانی');
-      setTargetSystem('سامانه جامع اداری');
-      setTargetUrl('');
-      setTagsInput('فرایند جدید، استاندارد سازمانی');
       setNextProcessId('');
       setNextProcessNote('');
       setHasSchedule(false);
-      setScheduleMonth('تیر');
-      setScheduleSeason('تابستان');
       setScheduleStartDay(1);
       setScheduleEndDay(20);
       setScheduleDeadlineDays(20);
@@ -203,6 +205,32 @@ export function ProcessEditorModal({
       setScheduleIsMandatory(true);
       setIsEditingSlug(false);
       setShowAdvanced(false);
+
+      if (lastChoices) {
+        setDepartmentName(lastChoices.departmentName);
+        setTargetSystem(lastChoices.targetSystem);
+        setTargetUrl(lastChoices.targetUrl || '');
+        setScope(lastChoices.scope);
+        setCategory(lastChoices.category);
+        setVisibility(lastChoices.visibility);
+        setTagsInput(lastChoices.tagsInput || DEFAULT_PROCESS_CHOICES.tagsInput || '');
+        setScheduleMonth(lastChoices.scheduleMonth || DEFAULT_PROCESS_CHOICES.scheduleMonth || 'تیر');
+        setScheduleSeason(lastChoices.scheduleSeason || DEFAULT_PROCESS_CHOICES.scheduleSeason || 'تابستان');
+        setHasRestoredMemory(true);
+      } else {
+        setDepartmentName(DEFAULT_PROCESS_CHOICES.departmentName);
+        setTargetSystem(DEFAULT_PROCESS_CHOICES.targetSystem);
+        setTargetUrl(DEFAULT_PROCESS_CHOICES.targetUrl || '');
+        setScope(DEFAULT_PROCESS_CHOICES.scope);
+        setCategory(DEFAULT_PROCESS_CHOICES.category);
+        setVisibility(DEFAULT_PROCESS_CHOICES.visibility);
+        setTagsInput(DEFAULT_PROCESS_CHOICES.tagsInput || '');
+        setScheduleMonth(DEFAULT_PROCESS_CHOICES.scheduleMonth || 'تیر');
+        setScheduleSeason(DEFAULT_PROCESS_CHOICES.scheduleSeason || 'تابستان');
+        setHasRestoredMemory(false);
+      }
+
+      // Steps are always clean / fresh, never remembered (per explicit user requirement: "not steps")
       setSteps([
         {
           id: `step-${Date.now()}-1`,
@@ -284,6 +312,21 @@ export function ProcessEditorModal({
     setSlug(formatToSlug(title));
   };
 
+  const handleResetToDefaults = () => {
+    setDepartmentName(DEFAULT_PROCESS_CHOICES.departmentName);
+    setTargetSystem(DEFAULT_PROCESS_CHOICES.targetSystem);
+    setTargetUrl(DEFAULT_PROCESS_CHOICES.targetUrl || '');
+    setScope(DEFAULT_PROCESS_CHOICES.scope);
+    setCategory(DEFAULT_PROCESS_CHOICES.category);
+    setVisibility(DEFAULT_PROCESS_CHOICES.visibility);
+    setTagsInput(DEFAULT_PROCESS_CHOICES.tagsInput || '');
+    setScheduleMonth(DEFAULT_PROCESS_CHOICES.scheduleMonth || 'تیر');
+    setScheduleSeason(DEFAULT_PROCESS_CHOICES.scheduleSeason || 'تابستان');
+    setHasRestoredMemory(false);
+    clearLastProcessChoices();
+    notify.info('فیلدهای مشخصات به مقادیر پیش‌فرض سیستم بازنشانی شدند.');
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return notify.error('لطفاً عنوان فرایند را وارد کنید');
@@ -338,6 +381,19 @@ export function ProcessEditorModal({
       updatedAt: 'همین الان',
     };
 
+    // Remember metadata choices for faster creation of subsequent processes
+    saveLastProcessChoices({
+      departmentName: departmentName.trim(),
+      targetSystem: targetSystem.trim(),
+      targetUrl: targetUrl.trim(),
+      scope,
+      category,
+      visibility,
+      tagsInput: tagsInput.trim(),
+      scheduleMonth,
+      scheduleSeason,
+    });
+
     onSave(savedProcess);
     onClose();
   };
@@ -362,12 +418,33 @@ export function ProcessEditorModal({
               <Layers className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>
-                {isEditing ? 'ویرایش فرایند سازمانی' : 'ثبت فرایند و دستورالعمل جدید'}
-              </h2>
-              <span className="text-xs text-slate-500">
-                مشخصات عمومی، دسته‌بندی و مراحل اجرایی فلوچارت را تکمیل نمایید.
-              </span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>
+                  {isEditing ? 'ویرایش فرایند سازمانی' : 'ثبت فرایند و دستورالعمل جدید'}
+                </h2>
+                {!isEditing && hasRestoredMemory && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 animate-in fade-in">
+                    <Sparkles className="w-3 h-3 text-emerald-500 shrink-0" />
+                    <span>یادآوری از آخرین ثبت: {departmentName} • {targetSystem}</span>
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <span className="text-xs text-slate-500">
+                  مشخصات عمومی، دسته‌بندی و مراحل اجرایی فلوچارت را تکمیل نمایید.
+                </span>
+                {!isEditing && hasRestoredMemory && (
+                  <button
+                    type="button"
+                    onClick={handleResetToDefaults}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 hover:text-rose-500 transition-colors cursor-pointer"
+                    title="پاک کردن حافظه فرم و بازنشانی فیلدها به پیش‌فرض"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                    <span>(بازنشانی پیش‌فرض)</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 

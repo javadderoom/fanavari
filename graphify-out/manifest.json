@@ -540,8 +540,8 @@
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
-    "mtime": 1791804192.5758603,
-    "ast_hash": "946e510a1eb48d18f0d3f3a34375ac0c",
+    "mtime": 1792514304.2659657,
+    "ast_hash": "7b02f2e5d9a5c41ad273aea8a6433f88",
     "semantic_hash": ""
   },
   "src/components/rich-text-editor.tsx": {
@@ -1792,6 +1792,16 @@
   "tests/exam-parser.test.ts": {
     "mtime": 1792408872.9994612,
     "ast_hash": "875a25eab0f80fc941a92a003692dcaf",
+    "semantic_hash": ""
+  },
+  "src/lib/process-memory.ts": {
+    "mtime": 1792513926.8773112,
+    "ast_hash": "c01d63100e7799f6e19f0819895fca0c",
+    "semantic_hash": ""
+  },
+  "tests/process-memory.test.ts": {
+    "mtime": 1792513939.5302646,
+    "ast_hash": "b274ffac1b235753a6aff9def9d2d837",
     "semantic_hash": ""
   }
 }
