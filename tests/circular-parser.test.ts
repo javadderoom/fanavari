@@ -94,17 +94,28 @@ describe('Circular Announcement Parser Engine', () => {
       assert.equal(result.processes.length, 2);
     });
 
-    it('should configure Process 1 (Origin School) with steps and chaining', () => {
+    it('should configure Process 1 (Origin School) with 1 step containing all 7 clicks in menu path', () => {
       const result = parseCircularToProcesses(SAMPLE_MULTI_PROCESS);
       const proc1 = result.processes[0];
 
       assert.ok(proc1.title.includes('مدرسه مبدأ'));
       assert.equal(proc1.targetSystem, 'سیدا');
       assert.ok(proc1.audience?.includes('مدرسه مبدأ'));
-      assert.equal(proc1.steps.length, 7);
-      assert.equal(proc1.steps[0].title, 'ورود به پنجره واحد خدمات الکترونیک وزارت آموزش و پرورش به آدرس my.medu.ir');
-      assert.equal(proc1.steps[6].title, '+ ایجاد');
-      assert.ok(proc1.steps[6].targetMenuPath.includes('مجوزهای ثبت‌نام > + ایجاد'));
+      
+      // Each step in the text must parse into 1 click in our process (single unified action step)
+      assert.equal(proc1.steps.length, 1);
+      const step = proc1.steps[0];
+      assert.equal(step.title, 'مراحل اقدام در مدرسه مبدأ');
+      
+      const clicks = step.targetMenuPath.split(' > ');
+      assert.equal(clicks.length, 7);
+      assert.equal(clicks[0], 'ورود به پنجره واحد خدمات الکترونیک وزارت آموزش و پرورش به آدرس my.medu.ir');
+      assert.equal(clicks[1], 'ورود به سُها (سکوی هوشمند سازمانی)');
+      assert.equal(clicks[2], 'ورود به سامانه سیدا');
+      assert.equal(clicks[3], 'عملیات اولیه');
+      assert.equal(clicks[4], 'عملیات پیش ثبت‌نام');
+      assert.equal(clicks[5], 'مجوزهای ثبت‌نام');
+      assert.equal(clicks[6], '+ ایجاد');
 
       // Chaining configuration
       assert.equal(proc1.nextProcessDraftIndex, 1);
@@ -113,24 +124,30 @@ describe('Circular Announcement Parser Engine', () => {
       );
     });
 
-    it('should configure Process 2 (Destination School) with proper steps', () => {
+    it('should configure Process 2 (Destination School) with 1 step containing all 6 clicks in menu path', () => {
       const result = parseCircularToProcesses(SAMPLE_MULTI_PROCESS);
       const proc2 = result.processes[1];
 
       assert.ok(proc2.title.includes('مدرسه مقصد'));
       assert.equal(proc2.targetSystem, 'سیدا');
       assert.ok(proc2.audience?.includes('مدرسه مقصد'));
-      assert.equal(proc2.steps.length, 6);
-      assert.equal(proc2.steps[0].title, 'ورود به پنجره واحد خدمات الکترونیک وزارت آموزش و پرورش به آدرس my.medu.ir');
-      assert.equal(proc2.steps[3].title, 'عملیات ضمن سال');
-      assert.equal(proc2.steps[4].title, 'ثبت‌نام میان‌پایه');
-      assert.equal(proc2.steps[5].title, 'افزودن دانش‌آموزان خارج از مدرسه');
+      
+      assert.equal(proc2.steps.length, 1);
+      const step = proc2.steps[0];
+      assert.equal(step.title, 'مراحل اقدام در مدرسه مقصد');
+      
+      const clicks = step.targetMenuPath.split(' > ');
+      assert.equal(clicks.length, 6);
+      assert.equal(clicks[0], 'ورود به پنجره واحد خدمات الکترونیک وزارت آموزش و پرورش به آدرس my.medu.ir');
+      assert.equal(clicks[3], 'عملیات ضمن سال');
+      assert.equal(clicks[4], 'ثبت‌نام میان‌پایه');
+      assert.equal(clicks[5], 'افزودن دانش‌آموزان خارج از مدرسه');
       assert.equal(proc2.nextProcessDraftIndex, undefined);
     });
   });
 
   describe('parseCircularToProcesses - Single Stage Scenario', () => {
-    it('should parse a single process with correct metadata and steps', () => {
+    it('should parse a single process with correct metadata and 1 step containing all 6 clicks', () => {
       const result = parseCircularToProcesses(SAMPLE_SINGLE_PROCESS);
 
       assert.equal(result.isMultiStage, false);
@@ -144,10 +161,43 @@ describe('Circular Announcement Parser Engine', () => {
       assert.ok(proc.title.includes('کشوی مجوزهای ثبت نام'));
       assert.equal(proc.targetSystem, 'سیدا');
       assert.equal(proc.audience, 'مدیران محترم مدارس با ماهیت حفظ قرآن کریم');
-      assert.equal(proc.steps.length, 6);
-      assert.equal(proc.steps[5].title, '+ جدید');
-      assert.ok(proc.steps[5].targetMenuPath.includes('مجوزهای ثبت‌نام > + جدید'));
+      
+      assert.equal(proc.steps.length, 1);
+      const step = proc.steps[0];
+      assert.equal(step.title, 'مراحل اقدام در سامانه');
+      
+      const clicks = step.targetMenuPath.split(' > ');
+      assert.equal(clicks.length, 6);
+      assert.equal(clicks[0], 'ورود به پنجره واحد خدمات الکترونیک وزارت آموزش و پرورش به آدرس my.medu.ir');
+      assert.equal(clicks[4], 'مجوزهای ثبت‌نام');
+      assert.equal(clicks[5], '+ جدید');
       assert.equal(proc.nextProcessDraftIndex, undefined);
+    });
+
+    it('should parse explicit sub-step headings into distinct steps without repeating clicks', () => {
+      const multiStepText = `#سامانه: سیدا
+#موضوع: ثبت نام چندمرحله‌ای
+گام ۱: ورود به درگاه
+⬅️ ورود به پنجره واحد
+⬅️ ورود به سُها
+
+گام ۲: صدور مجوز
+◀️ عملیات پیش ثبت‌نام
+◀️ مجوزهای ثبت‌نام
+◀️ + جدید`;
+
+      const result = parseCircularToProcesses(multiStepText);
+      assert.equal(result.processes.length, 1);
+      const proc = result.processes[0];
+      assert.equal(proc.steps.length, 2);
+
+      // Step 1 only has its 2 clicks
+      assert.equal(proc.steps[0].title, 'گام ۱: ورود به درگاه');
+      assert.equal(proc.steps[0].targetMenuPath, 'ورود به پنجره واحد > ورود به سُها');
+
+      // Step 2 only has its 3 clicks (does NOT repeat Step 1 clicks!)
+      assert.equal(proc.steps[1].title, 'گام ۲: صدور مجوز');
+      assert.equal(proc.steps[1].targetMenuPath, 'عملیات پیش ثبت‌نام > مجوزهای ثبت‌نام > + جدید');
     });
   });
 });

@@ -120,11 +120,29 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
   }
 
   // Helper: Parse steps and intermediate transition notes
-  const parseActionSteps = (contentBlock: string): { steps: ParsedStepDraft[]; transitionNote?: string } => {
+  // Each line with a directional arrow/bullet in the text parses into ONE CLICK in targetMenuPath.
+  // Distinct step headings (e.g. گام ۱:, مرحله ۲:) create separate steps if present;
+  // otherwise all clicks in the action section are unified into a single clean step.
+  const parseActionSteps = (
+    contentBlock: string,
+    defaultStepTitle: string = 'مراحل اقدام در سامانه'
+  ): { steps: ParsedStepDraft[]; transitionNote?: string } => {
     const lines = contentBlock.split('\n');
     const steps: ParsedStepDraft[] = [];
-    const breadcrumbList: string[] = [];
     let transitionNote: string | undefined = undefined;
+
+    interface ClickGroup {
+      title: string;
+      clicks: string[];
+    }
+
+    const groups: ClickGroup[] = [];
+    let currentGroup: ClickGroup = {
+      title: defaultStepTitle,
+      clicks: [],
+    };
+
+    const stepHeadingRegex = /^(?:\*|⭕️|📌)*\s*(?:گام|مرحله)\s*(?:[۰-۹\d]+|اول|دوم|سوم|چهارم|پنجم|ششم)\s*[:؛-]?\s*(.*)/;
 
     for (const rawLine of lines) {
       const line = rawLine.trim();
@@ -144,23 +162,52 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
         break;
       }
 
-      // Check if line indicates a workflow action step
+      // Check for explicit sub-step headings (e.g. "گام ۱: ورود به سامانه")
+      const headingMatch = line.match(stepHeadingRegex);
+      if (headingMatch) {
+        // If current group already has clicks, flush it
+        if (currentGroup.clicks.length > 0) {
+          groups.push(currentGroup);
+        }
+        const headingTitle = line.replace(/[*_]/g, '').replace(/^[⭕️📌\s]+/, '').trim();
+        currentGroup = {
+          title: headingTitle || defaultStepTitle,
+          clicks: [],
+        };
+        continue;
+      }
+
+      // Check if line indicates a workflow action click
       const hasStepIndicator = /^(?:[\u2B05\u25C0\u27A1\u25B6\uD83D\uDD39\uD83D\uDD38\u25AA\u25AB\uFE0F\uFE0E⬅️◀️➡️▶️🔹🔸▪️▫️]|\d+[\.\-])+\s*/u.test(line);
       if (hasStepIndicator) {
         const cleanText = cleanStepLine(line);
-
         if (cleanText) {
-          breadcrumbList.push(cleanText);
-          steps.push({
-            orderIndex: steps.length + 1,
-            title: cleanText,
-            targetMenuPath: breadcrumbList.join(' > '),
-            contentMarkdown: `**اقدام در سامانه:**\n${cleanText}\n\nمسیر دسترسی منو:\n\`${breadcrumbList.join(' > ')}\``,
-            stepType: 'action',
-          });
+          currentGroup.clicks.push(cleanText);
         }
       }
     }
+
+    // Flush the final group
+    if (currentGroup.clicks.length > 0) {
+      groups.push(currentGroup);
+    }
+
+    // Convert each group of clicks into a single step
+    groups.forEach((group, idx) => {
+      const menuPath = group.clicks.join(' > ');
+      const instructions = [
+        '**مسیر کلیک‌های اجرایی در سامانه:**',
+        ...group.clicks.map((click, cIdx) => `${cIdx + 1}. ${click}`),
+      ].join('\n');
+
+      steps.push({
+        orderIndex: idx + 1,
+        title: group.title,
+        targetMenuPath: menuPath,
+        contentMarkdown: instructions,
+        stepType: 'action',
+      });
+    });
 
     return { steps, transitionNote };
   };
@@ -206,7 +253,8 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
       const nextStart = i + 1 < foundSections.length ? foundSections[i + 1].startIndex : normalized.length;
       const sectionContent = normalized.slice(current.startIndex + current.headerLength, nextStart);
 
-      const { steps, transitionNote } = parseActionSteps(sectionContent);
+      const sectionStepTitle = current.label ? `مراحل اقدام در ${current.label}` : 'مراحل اقدام در سامانه';
+      const { steps, transitionNote } = parseActionSteps(sectionContent, sectionStepTitle);
 
       const roleLabel = current.label ? `(${current.label})` : `(بخش ${i + 1})`;
       const fullTitle = `${rawSubject} ${roleLabel}`.trim();
