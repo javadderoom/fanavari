@@ -38,6 +38,17 @@ export const metadata: Metadata = {
     template: "%s | فرآیندنما",
   },
   description: "جستجو، مشاهده فلوچارت زنده و اجرای گام‌به‌گام فرایندهای سازمانی و اداری با راهنمای جامع خطایابی و ابزارهای کمکی",
+  keywords: [
+    "فرآیندنما",
+    "فرایندنما",
+    "فرایند نما",
+    "farayandnama",
+    "farayandnama.ir",
+    "سامانه فرآیندنما",
+    "راهنمای فرایندهای اداری",
+    "راهنمای سامانه های آموزشی",
+    "فلوچارت فرایندها",
+  ],
   manifest: "/manifest.webmanifest",
   alternates: {
     canonical: "/",
@@ -67,7 +78,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "فرایند یار",
+    title: "فرآیندنما",
   },
   icons: {
     icon: [
@@ -97,8 +108,58 @@ export default async function RootLayout({
     initialUser = null;
   }
 
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://farayandnama.ir/#website",
+        "url": "https://farayandnama.ir",
+        "name": "فرآیندنما",
+        "alternateName": [
+          "فرایندنما",
+          "فرایند نما",
+          "سامانه فرآیندنما",
+          "Farayandnama",
+          "FarayandNama",
+          "farayandnama.ir",
+        ],
+        "description":
+          "جستجو، مشاهده فلوچارت زنده و اجرای گام‌به‌گام فرایندهای سازمانی و اداری با راهنمای جامع خطایابی",
+        "inLanguage": "fa-IR",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://farayandnama.ir/?q={search_term_string}",
+          },
+          "query-input": "required name=search_term_string",
+        },
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://farayandnama.ir/#organization",
+        "name": "فرآیندنما",
+        "alternateName": ["فرایندنما", "Farayandnama"],
+        "url": "https://farayandnama.ir",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://farayandnama.ir/icons/icon-512x512.png",
+          "width": 512,
+          "height": 512,
+        },
+      },
+    ],
+  };
+
   return (
     <html lang="fa" dir="rtl" className={vazirmatn.variable} data-theme="light">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
+      </head>
       <body className="font-sans antialiased min-h-screen">
         <ThemeProvider>
           <UserSessionProvider initialUser={initialUser}>
