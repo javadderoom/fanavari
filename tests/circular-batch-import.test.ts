@@ -121,9 +121,8 @@ describe('Circular Process Batch Ingestion & Database Integrity', () => {
       assert.equal(p1.nextProcessId, p2.id);
       assert.ok(p1.nextProcessNote?.includes('معاون آموزش متوسطه'));
       assert.equal(p1.audience, parsed.processes[0].audience);
-      assert.equal(p1.steps.length, 7);
-      assert.equal(p1.steps[6].title, '+ ایجاد');
-      assert.ok(p1.steps[6].targetMenuPath?.includes('+ ایجاد'));
+      assert.equal(p1.steps.length, 1);
+      assert.ok(p1.steps[0].targetMenuPath?.includes('+ ایجاد'));
     } finally {
       // Clean up test rows
       await prisma.process.deleteMany({

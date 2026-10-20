@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
 import { resolveApiUser } from '@/lib/api-auth';
 import { mapPrismaInformationPost, resolveDbUserId } from '@/lib/db-service';
+import { notifyGoogleIndexing } from '@/lib/google-indexing';
 
 export async function GET(req: NextRequest) {
   try {
@@ -199,6 +200,14 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Automated Google Indexing API notification
+    if (created.isPublished && created.visibility === 'public') {
+      notifyGoogleIndexing({
+        url: `/information/${encodeURIComponent(created.slug)}`,
+        type: 'URL_UPDATED',
+      }).catch((err) => console.warn('[Google Indexing] Post create notification error:', err));
+    }
+
     return NextResponse.json(mapPrismaInformationPost(created, { redactGrants: true }), { status: 201 });
   } catch (error: any) {
     console.error('Error creating information post:', error);
@@ -308,6 +317,19 @@ export async function PUT(req: NextRequest) {
       },
     });
 
+    // Automated Google Indexing API notification
+    if (updated.isPublished && updated.visibility === 'public') {
+      notifyGoogleIndexing({
+        url: `/information/${encodeURIComponent(updated.slug)}`,
+        type: 'URL_UPDATED',
+      }).catch((err) => console.warn('[Google Indexing] Post update notification error:', err));
+    } else {
+      notifyGoogleIndexing({
+        url: `/information/${encodeURIComponent(updated.slug)}`,
+        type: 'URL_DELETED',
+      }).catch((err) => console.warn('[Google Indexing] Post unpublish notification error:', err));
+    }
+
     return NextResponse.json(mapPrismaInformationPost(updated, { redactGrants: true }));
   } catch (error: any) {
     console.error('Error updating information post:', error);
@@ -359,6 +381,13 @@ export async function DELETE(req: NextRequest) {
     await prisma.informationPost.delete({
       where: { id: target.id },
     });
+
+    if (target.isPublished && target.visibility === 'public') {
+      notifyGoogleIndexing({
+        url: `/information/${encodeURIComponent(target.slug)}`,
+        type: 'URL_DELETED',
+      }).catch((err) => console.warn('[Google Indexing] Post delete notification error:', err));
+    }
 
     return NextResponse.json({ success: true, deletedSlug: target.slug, deletedId: target.id });
   } catch (error: any) {

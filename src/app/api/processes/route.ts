@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
 import { resolveApiUser } from '@/lib/api-auth';
 import { mapPrismaProcess, resolveDbUserId } from '@/lib/db-service';
+import { notifyGoogleIndexing } from '@/lib/google-indexing';
 
 export async function GET(req: NextRequest) {
   try {
@@ -305,6 +306,19 @@ export async function POST(req: NextRequest) {
         });
       });
 
+      // Automated Google Indexing API notification
+      if (updated.isPublished && updated.visibility === 'public') {
+        notifyGoogleIndexing({
+          url: `/process/${encodeURIComponent(updated.slug)}`,
+          type: 'URL_UPDATED',
+        }).catch((err) => console.warn('[Google Indexing] Update notification error:', err));
+      } else {
+        notifyGoogleIndexing({
+          url: `/process/${encodeURIComponent(updated.slug)}`,
+          type: 'URL_DELETED',
+        }).catch((err) => console.warn('[Google Indexing] Unpublish/delete notification error:', err));
+      }
+
       return NextResponse.json(mapPrismaProcess(updated, { redactGrants: !isSuperAdmin }), { status: 200 });
     }
 
@@ -369,6 +383,14 @@ export async function POST(req: NextRequest) {
         },
       },
     });
+
+    // Automated Google Indexing API notification for new public processes
+    if (created.isPublished && created.visibility === 'public') {
+      notifyGoogleIndexing({
+        url: `/process/${encodeURIComponent(created.slug)}`,
+        type: 'URL_UPDATED',
+      }).catch((err) => console.warn('[Google Indexing] Create notification error:', err));
+    }
 
     return NextResponse.json(mapPrismaProcess(created, { redactGrants: !isSuperAdmin }), { status: 201 });
   } catch (error: any) {

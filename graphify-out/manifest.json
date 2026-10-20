@@ -400,18 +400,18 @@
     "semantic_hash": ""
   },
   "src/app/api/information/route.ts": {
-    "mtime": 1791485555.9258313,
-    "ast_hash": "6c88625d97a850102675a6a2e43ac185",
+    "mtime": 1792517666.6653128,
+    "ast_hash": "88201da12fe12f5bed7dcfe4d16df768",
     "semantic_hash": ""
   },
   "src/app/api/processes/[id]/route.ts": {
-    "mtime": 1791803827.6659436,
-    "ast_hash": "1c056c3fcc3c135eb0a48b9ebc9a05fc",
+    "mtime": 1792517605.9618816,
+    "ast_hash": "ef480b75903a6581ea48a45c5fc3e703",
     "semantic_hash": ""
   },
   "src/app/api/processes/route.ts": {
-    "mtime": 1792339261.5086434,
-    "ast_hash": "b27f78fa89d3744425ba22917f519b82",
+    "mtime": 1792517581.2832959,
+    "ast_hash": "ef780beb4fe849a52ce398ab965869bc",
     "semantic_hash": ""
   },
   "src/app/api/systems/route.ts": {
@@ -935,8 +935,8 @@
     "semantic_hash": ""
   },
   "src/components/dashboard/admin-sidebar.tsx": {
-    "mtime": 1791493127.5481865,
-    "ast_hash": "dc26919c98135c6a382cab86050efb2f",
+    "mtime": 1792517754.9456158,
+    "ast_hash": "b67ac17e7b2df23a4a075f407a67724f",
     "semantic_hash": ""
   },
   "src/app/api/processes/[id]/session/route.ts": {
@@ -1645,8 +1645,8 @@
     "semantic_hash": ""
   },
   "src/app/sitemap.ts": {
-    "mtime": 1791721238.2931106,
-    "ast_hash": "b6b246eb8f041310ed6aaf889f5328dd",
+    "mtime": 1792517548.7588122,
+    "ast_hash": "948c2ecc928c6a46c2faf1c1f3b754b8",
     "semantic_hash": ""
   },
   "src/app/guide/page.tsx": {
@@ -1720,8 +1720,8 @@
     "semantic_hash": ""
   },
   "src/app/api/processes/batch-import/route.ts": {
-    "mtime": 1792341168.9619398,
-    "ast_hash": "be4cc698f7d7ac3f5c2a050d73aeda66",
+    "mtime": 1792517628.1791337,
+    "ast_hash": "213d2015db74225bc8847be00e939d22",
     "semantic_hash": ""
   },
   "src/components/active-workflow-banner.tsx": {
@@ -1760,8 +1760,8 @@
     "semantic_hash": ""
   },
   "tests/circular-batch-import.test.ts": {
-    "mtime": 1792341320.5165129,
-    "ast_hash": "2449a928e924ca36b204a993dd0bbb08",
+    "mtime": 1792517450.7335336,
+    "ast_hash": "d1e9c82b0e1413e7e1634c721b4f5fef",
     "semantic_hash": ""
   },
   "tests/circular-parser.test.ts": {
@@ -1802,6 +1802,26 @@
   "tests/process-memory.test.ts": {
     "mtime": 1792513939.5302646,
     "ast_hash": "b274ffac1b235753a6aff9def9d2d837",
+    "semantic_hash": ""
+  },
+  "src/app/api/admin/google-index/route.ts": {
+    "mtime": 1792517680.5573664,
+    "ast_hash": "249d8efd4b5551855d7180dd8a64a36c",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/indexing/page.tsx": {
+    "mtime": 1792517815.742792,
+    "ast_hash": "b619d945e1939004d951c4cec43aee8d",
+    "semantic_hash": ""
+  },
+  "src/lib/google-indexing.ts": {
+    "mtime": 1792517498.3891857,
+    "ast_hash": "6bf54bf1d67e3e6c81b83b36730509a0",
+    "semantic_hash": ""
+  },
+  "tests/google-indexing.test.ts": {
+    "mtime": 1792517513.8792531,
+    "ast_hash": "49cff84991931b7318f4e48a41452dc2",
     "semantic_hash": ""
   }
 }

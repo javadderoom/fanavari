@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { Permissions, hasPermission } from '@/lib/permissions';
 import { resolveApiUser } from '@/lib/api-auth';
 import { mapPrismaProcess } from '@/lib/db-service';
+import { notifyGoogleIndexing } from '@/lib/google-indexing';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -159,6 +160,19 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       },
     });
 
+    // Automated Google Indexing API notification
+    if (updated.isPublished && updated.visibility === 'public') {
+      notifyGoogleIndexing({
+        url: `/process/${encodeURIComponent(updated.slug)}`,
+        type: 'URL_UPDATED',
+      }).catch((err) => console.warn('[Google Indexing] Update notification error:', err));
+    } else {
+      notifyGoogleIndexing({
+        url: `/process/${encodeURIComponent(updated.slug)}`,
+        type: 'URL_DELETED',
+      }).catch((err) => console.warn('[Google Indexing] Unpublish/delete notification error:', err));
+    }
+
     return NextResponse.json(
       mapPrismaProcess(updated, {
         redactGrants: !hasPermission(userPermissions, Permissions.ADMINISTRATOR),
@@ -183,9 +197,21 @@ export async function DELETE(req: NextRequest, { params }: RouteContext) {
       );
     }
 
+    const existing = await prisma.process.findUnique({
+      where: { id },
+      select: { slug: true, isPublished: true, visibility: true },
+    });
+
     await prisma.process.delete({
       where: { id },
     });
+
+    if (existing && existing.isPublished && existing.visibility === 'public') {
+      notifyGoogleIndexing({
+        url: `/process/${encodeURIComponent(existing.slug)}`,
+        type: 'URL_DELETED',
+      }).catch((err) => console.warn('[Google Indexing] Delete notification error:', err));
+    }
 
     return NextResponse.json({ success: true, message: 'Process deleted successfully' });
   } catch (error: any) {

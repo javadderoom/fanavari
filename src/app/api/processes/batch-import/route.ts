@@ -5,6 +5,7 @@ import { resolveApiUser } from '@/lib/api-auth';
 import { mapPrismaProcess, resolveDbUserId } from '@/lib/db-service';
 import { cleanSlugForSubmit } from '@/lib/slug-utils';
 import { ParsedProcessDraft } from '@/lib/circular-parser';
+import { batchNotifyGoogleIndexing } from '@/lib/google-indexing';
 
 export async function POST(req: NextRequest) {
   try {
@@ -140,6 +141,16 @@ export async function POST(req: NextRequest) {
       },
       orderBy: { createdAt: 'asc' },
     });
+
+    // Automated Google Indexing for published public processes
+    const publicSlugs = createdProcesses
+      .filter((p) => p.isPublished && p.visibility === 'public')
+      .map((p) => `/process/${encodeURIComponent(p.slug)}`);
+    if (publicSlugs.length > 0) {
+      batchNotifyGoogleIndexing({ urls: publicSlugs, type: 'URL_UPDATED' }).catch((err) =>
+        console.warn('[Google Indexing] Batch import notification error:', err)
+      );
+    }
 
     return NextResponse.json({
       success: true,

@@ -19,7 +19,8 @@ import {
   ChevronLeft,
   X,
   Award,
-  Users
+  Users,
+  Globe
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -63,6 +64,13 @@ export function AdminSidebar({ isOpenMobile = false, onCloseMobile }: AdminSideb
           icon: Award,
           badge: 'ISO 9001',
           color: 'text-emerald-500',
+        },
+        {
+          href: '/dashboard/indexing',
+          label: 'نمایه‌سازی و سئو گوگل',
+          icon: Globe,
+          badge: 'SEO',
+          color: 'text-cyan-500',
         },
       ],
     },
