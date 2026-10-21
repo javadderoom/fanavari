@@ -86,13 +86,31 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
     });
   };
 
-  // Track page view and synchronize popularity
+  // Track human page view with bot filtering and engagement threshold
   useEffect(() => {
-    if (!process?.id) return;
+    if (!process?.id || typeof window === 'undefined') return;
+
     const sessionKey = `farayandnama-viewed-${process.id}`;
-    if (typeof window !== 'undefined' && !sessionStorage.getItem(sessionKey)) {
+    if (sessionStorage.getItem(sessionKey)) return;
+
+    const startTime = Date.now();
+    let hasSent = false;
+
+    const sendViewRecord = () => {
+      if (hasSent) return;
+      hasSent = true;
       sessionStorage.setItem(sessionKey, 'true');
-      fetch(`/api/processes/${process.id}/view`, { method: 'POST' })
+
+      const payload = {
+        isWebDriver: Boolean(navigator.webdriver),
+        dwellTimeMs: Date.now() - startTime,
+      };
+
+      fetch(`/api/processes/${process.id}/view`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
         .then((res) => res.json())
         .then((data) => {
           if (data && typeof data.viewCount === 'number') {
@@ -104,7 +122,42 @@ export function ProcessDetailView({ process }: ProcessDetailViewProps) {
           }
         })
         .catch(() => {});
+    };
+
+    // If tab is currently active, wait 1.5s of reading engagement before sending
+    // If user interacts earlier (scroll/touch), record after at least 1s
+    let timer: NodeJS.Timeout | null = null;
+    const scheduleSend = () => {
+      if (document.visibilityState === 'hidden') return;
+      timer = setTimeout(sendViewRecord, 1500);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && !hasSent) {
+        scheduleSend();
+      }
+    };
+
+    const handleUserInteraction = () => {
+      if (!hasSent && Date.now() - startTime >= 1000) {
+        sendViewRecord();
+      }
+    };
+
+    if (document.visibilityState === 'visible') {
+      scheduleSend();
     }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('scroll', handleUserInteraction, { passive: true, once: true });
+    window.addEventListener('touchstart', handleUserInteraction, { passive: true, once: true });
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('scroll', handleUserInteraction);
+      window.removeEventListener('touchstart', handleUserInteraction);
+    };
   }, [process.id]);
 
   useEffect(() => {

@@ -718,6 +718,32 @@ export async function getDbCategories(scopeKeyOrId?: string): Promise<ProcessCat
 }
 
 /**
+ * Retrieves the current viewCount and popularity status of a process without incrementing.
+ */
+export async function getProcessViewStats(
+  idOrSlug: string
+): Promise<{ viewCount: number; isPopular: boolean } | null> {
+  try {
+    const process = await prisma.process.findFirst({
+      where: {
+        OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+      },
+      select: { viewCount: true, isPopular: true },
+    });
+
+    if (!process) return null;
+
+    return {
+      viewCount: process.viewCount,
+      isPopular: process.isPopular || process.viewCount >= 10,
+    };
+  } catch (error) {
+    console.error('Failed to get process view stats:', error);
+    return null;
+  }
+}
+
+/**
  * Records a page view / execution access for a process, atomically incrementing viewCount.
  * Returns updated viewCount and whether the process is deemed popular.
  */
