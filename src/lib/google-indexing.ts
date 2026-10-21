@@ -197,16 +197,36 @@ export async function notifyGoogleIndexing({
       }),
     });
 
-    const responseBody = await response.json().catch(() => null);
+    const rawText = await response.text();
+    let responseBody: any = null;
+    try {
+      responseBody = JSON.parse(rawText);
+    } catch {
+      // Body is HTML or plain text
+    }
 
     if (!response.ok) {
+      let errorMessage = responseBody?.error?.message;
+      if (!errorMessage) {
+        if (rawText.includes('does not have permission to get URL /v3/urlNotifications')) {
+          errorMessage =
+            'Web Search Indexing API is not enabled in your Google Cloud Project. Please enable it in Google Cloud Console: https://console.cloud.google.com/apis/library/indexing.googleapis.com';
+        } else {
+          errorMessage = `HTTP ${response.status}: ${rawText.slice(0, 150) || response.statusText}`;
+        }
+      }
+
+      if (errorMessage.includes('Failed to verify the URL ownership') || errorMessage.includes('Permission denied')) {
+        errorMessage = `Ownership verification failed: Service Account "${config.clientEmail}" must be added as an Owner in Google Search Console for ${config.appUrl}.`;
+      }
+
       return {
         url: targetUrl,
         type,
         success: false,
         status: response.status,
-        error: responseBody?.error?.message || `HTTP ${response.status}`,
-        data: responseBody,
+        error: errorMessage,
+        data: responseBody || { raw: rawText.slice(0, 300) },
         timestamp,
       };
     }
@@ -306,12 +326,32 @@ export async function getGoogleIndexingMetadata(url: string): Promise<{
       },
     });
 
-    const data = await response.json().catch(() => null);
+    const rawText = await response.text();
+    let data: any = null;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      // Body is HTML or plain text
+    }
 
     if (!response.ok) {
+      let errorMessage = data?.error?.message;
+      if (!errorMessage) {
+        if (rawText.includes('does not have permission to get URL /v3/urlNotifications')) {
+          errorMessage =
+            'Web Search Indexing API is not enabled in your Google Cloud Project. Please enable it in Google Cloud Console: https://console.cloud.google.com/apis/library/indexing.googleapis.com';
+        } else {
+          errorMessage = `HTTP ${response.status}: ${rawText.slice(0, 150) || response.statusText}`;
+        }
+      }
+
+      if (errorMessage.includes('Failed to verify the URL ownership') || errorMessage.includes('Permission denied')) {
+        errorMessage = `Ownership verification failed: Service Account "${config.clientEmail}" must be added as an Owner in Google Search Console for ${config.appUrl}.`;
+      }
+
       return {
         success: false,
-        error: data?.error?.message || `HTTP ${response.status}`,
+        error: errorMessage,
       };
     }
 
