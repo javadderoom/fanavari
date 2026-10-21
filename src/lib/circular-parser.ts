@@ -45,6 +45,43 @@ export interface ParsedCircularResult {
 }
 
 /**
+ * Synthesizes clear operational instructions (دستورالعمل اجرایی و شرح تفصیلی گام)
+ * without redundantly repeating the menu clicks already captured in targetMenuPath.
+ */
+function buildStepContentMarkdown(clicks: string[], notes: string[]): string {
+  const parts: string[] = [];
+  const lastClick = clicks.length > 0 ? clicks[clicks.length - 1] : '';
+
+  // 1. Action guidance derived from the target destination / action click
+  if (/^(\+|\*?\+\*?|ایجاد|جدید|افزودن|ثبت)/.test(lastClick)) {
+    parts.push(`با مراجعه به مسیر منوی فوق در سامانه، گزینه **«${lastClick}»** را انتخاب نموده و فرم مربوطه را تکمیل و ثبت نمایید.`);
+  } else if (/تایید|تأیید|ارسال|اعتبارسنجی|مجوز/.test(lastClick)) {
+    parts.push(`از طریق مسیر منوی فوق وارد بخش مربوطه شده و اطلاعات را بررسی و اقدام لازم جهت **«${lastClick}»** را انجام دهید.`);
+  } else if (/گزارش|مشاهده|لیست|کارنامه|فهرست/.test(lastClick)) {
+    parts.push(`از طریق مسیر منوی فوق وارد بخش مربوطه شده و اطلاعات و گزارش‌های **«${lastClick}»** را بررسی نمایید.`);
+  } else if (lastClick) {
+    parts.push(`مطابق مسیر منوی مشخص‌شده در سامانه، وارد بخش **«${lastClick}»** شده و اقدام اجرایی لازم را ثبت و ذخیره نمایید.`);
+  } else {
+    parts.push('مطابق مسیر منوی مشخص‌شده، اقدام اجرایی لازم در سامانه را انجام دهید.');
+  }
+
+  // 2. Format actual circular notes, conditions, and prerequisites (if any)
+  const cleanNotes = Array.from(
+    new Set(
+      notes
+        .map((n) => n.replace(/^[📌🔻⚠️*#\s]+/, '').replace(/[*_]/g, '').trim())
+        .filter((n) => n.length > 0 && !n.startsWith('مراحل جهت') && !n.startsWith('مرکز توسعه'))
+    )
+  );
+
+  if (cleanNotes.length > 0) {
+    parts.push('> **نکات و راهنمای تکمیلی:**\n' + cleanNotes.map((n) => `> - ${n}`).join('\n'));
+  }
+
+  return parts.join('\n\n');
+}
+
+/**
  * Normalizes Persian and Arabic text strings, removing zero-width artifacts
  * while preserving valid ZWNJ (نیم‌فاصله) where needed.
  */
@@ -134,12 +171,14 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
     interface ClickGroup {
       title: string;
       clicks: string[];
+      notes: string[];
     }
 
     const groups: ClickGroup[] = [];
     let currentGroup: ClickGroup = {
       title: defaultStepTitle,
       clicks: [],
+      notes: [],
     };
 
     const stepHeadingRegex = /^(?:\*|⭕️|📌)*\s*(?:گام|مرحله)\s*(?:[۰-۹\d]+|اول|دوم|سوم|چهارم|پنجم|ششم)\s*[:؛-]?\s*(.*)/;
@@ -150,7 +189,9 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
 
       // Detect transition / administrative prerequisite notes
       if (/^[🔻]\s*(.+)$/.test(line) || /^پس از ثبت درخواست[،\s]/.test(line)) {
-        transitionNote = line.replace(/^[🔻*\s]+/, '').replace(/[*_]/g, '').trim();
+        const cleanNote = line.replace(/^[🔻*\s]+/, '').replace(/[*_]/g, '').trim();
+        transitionNote = cleanNote;
+        currentGroup.notes.push(cleanNote);
         continue;
       }
 
@@ -173,6 +214,7 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
         currentGroup = {
           title: headingTitle || defaultStepTitle,
           clicks: [],
+          notes: [],
         };
         continue;
       }
@@ -184,6 +226,21 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
         if (cleanText) {
           currentGroup.clicks.push(cleanText);
         }
+      } else {
+        // Collect instructional / contextual notes from the circular (ignore metadata headers)
+        const cleanNote = line.replace(/^[📌⚠️*#\s]+/, '').replace(/[*_]/g, '').trim();
+        if (
+          cleanNote &&
+          !line.startsWith('#') &&
+          !line.startsWith('*#') &&
+          !cleanNote.startsWith('سامانه:') &&
+          !cleanNote.startsWith('موضوع:') &&
+          !cleanNote.startsWith('مخاطب:') &&
+          !cleanNote.startsWith('مراحل جهت') &&
+          !cleanNote.startsWith('مرکز توسعه')
+        ) {
+          currentGroup.notes.push(cleanNote);
+        }
       }
     }
 
@@ -193,21 +250,20 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
     }
 
     // Convert each group of clicks into a single step
-    groups.forEach((group, idx) => {
-      const menuPath = group.clicks.join(' > ');
-      const instructions = [
-        '**مسیر کلیک‌های اجرایی در سامانه:**',
-        ...group.clicks.map((click, cIdx) => `${cIdx + 1}. ${click}`),
-      ].join('\n');
+    groups
+      .filter((group) => group.clicks.length > 0)
+      .forEach((group, idx) => {
+        const menuPath = group.clicks.join(' > ');
+        const instructions = buildStepContentMarkdown(group.clicks, group.notes);
 
-      steps.push({
-        orderIndex: idx + 1,
-        title: group.title,
-        targetMenuPath: menuPath,
-        contentMarkdown: instructions,
-        stepType: 'action',
+        steps.push({
+          orderIndex: idx + 1,
+          title: group.title,
+          targetMenuPath: menuPath,
+          contentMarkdown: instructions,
+          stepType: 'action',
+        });
       });
-    });
 
     return { steps, transitionNote };
   };
@@ -247,14 +303,16 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
   // CASE A: Multi-Stage Workflows (e.g. Origin School -> Destination School)
   if (foundSections.length > 1) {
     const drafts: ParsedProcessDraft[] = [];
+    const preSectionText = normalized.slice(0, foundSections[0].startIndex);
 
     for (let i = 0; i < foundSections.length; i++) {
       const current = foundSections[i];
       const nextStart = i + 1 < foundSections.length ? foundSections[i + 1].startIndex : normalized.length;
       const sectionContent = normalized.slice(current.startIndex + current.headerLength, nextStart);
+      const blockToParse = (i === 0 ? preSectionText + '\n' : '') + sectionContent;
 
       const sectionStepTitle = current.label ? `مراحل اقدام در ${current.label}` : 'مراحل اقدام در سامانه';
-      const { steps, transitionNote } = parseActionSteps(sectionContent, sectionStepTitle);
+      const { steps, transitionNote } = parseActionSteps(blockToParse, sectionStepTitle);
 
       const roleLabel = current.label ? `(${current.label})` : `(بخش ${i + 1})`;
       const fullTitle = `${rawSubject} ${roleLabel}`.trim();

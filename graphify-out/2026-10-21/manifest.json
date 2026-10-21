@@ -535,8 +535,8 @@
     "semantic_hash": ""
   },
   "src/components/process-detail-view.tsx": {
-    "mtime": 1791894798.3846593,
-    "ast_hash": "2d3da57468eba1f0ad3d286382eaf0ee",
+    "mtime": 1792593836.086345,
+    "ast_hash": "b6509c11926ff6f290b037074d00ad79",
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
@@ -580,8 +580,8 @@
     "semantic_hash": ""
   },
   "src/lib/db-service.ts": {
-    "mtime": 1792339218.4955823,
-    "ast_hash": "97e6ff5628dd0e9b642a74d05e04b058",
+    "mtime": 1792593794.8990169,
+    "ast_hash": "432bd874b42720edd472b6460a343121",
     "semantic_hash": ""
   },
   "src/lib/notify.tsx": {
@@ -1675,8 +1675,8 @@
     "semantic_hash": ""
   },
   "src/app/api/processes/[id]/view/route.ts": {
-    "mtime": 1791893524.229436,
-    "ast_hash": "14242059bfa163d7cd4ebf6824eafe8c",
+    "mtime": 1792593819.0394986,
+    "ast_hash": "a3d8c77623a60ded7e78cbf40d83f321",
     "semantic_hash": ""
   },
   "docs/SYSTEM_REVIEW_AND_OPPORTUNITIES.md": {
@@ -1815,13 +1815,28 @@
     "semantic_hash": ""
   },
   "src/lib/google-indexing.ts": {
-    "mtime": 1792517498.3891857,
-    "ast_hash": "6bf54bf1d67e3e6c81b83b36730509a0",
+    "mtime": 1792593436.8951669,
+    "ast_hash": "096869d05a86476ae2d043574f6ddde7",
     "semantic_hash": ""
   },
   "tests/google-indexing.test.ts": {
     "mtime": 1792517513.8792531,
     "ast_hash": "49cff84991931b7318f4e48a41452dc2",
+    "semantic_hash": ""
+  },
+  "src/lib/bot-detector.ts": {
+    "mtime": 1792593764.1696079,
+    "ast_hash": "f1c0635aeba10f3e62d190d8f9acac0f",
+    "semantic_hash": ""
+  },
+  "tests/bot-detector.test.ts": {
+    "mtime": 1792593777.7767334,
+    "ast_hash": "e361e1ca3623cf7c14c8e09f0a9b7735",
+    "semantic_hash": ""
+  },
+  "tests/process-view-bot.test.ts": {
+    "mtime": 1792593857.0005348,
+    "ast_hash": "4c0b5c63285c6a207b72434caaeb6889",
     "semantic_hash": ""
   }
 }

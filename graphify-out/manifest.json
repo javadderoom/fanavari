@@ -1750,8 +1750,8 @@
     "semantic_hash": ""
   },
   "src/lib/circular-parser.ts": {
-    "mtime": 1792515403.2473226,
-    "ast_hash": "6c9edfe5091bc801f539d1faf8fa6d03",
+    "mtime": 1792598173.9954062,
+    "ast_hash": "314fa4787ea906693c7829587801e4a2",
     "semantic_hash": ""
   },
   "tests/bookmarks.test.ts": {
@@ -1765,8 +1765,8 @@
     "semantic_hash": ""
   },
   "tests/circular-parser.test.ts": {
-    "mtime": 1792515440.4816177,
-    "ast_hash": "7b96c2d78624fc415dbe2a04cc524fdf",
+    "mtime": 1792598236.6340063,
+    "ast_hash": "8841f7f3cc29001dd9a9d3a282690e80",
     "semantic_hash": ""
   },
   "tests/feedback.test.ts": {

@@ -117,6 +117,12 @@ describe('Circular Announcement Parser Engine', () => {
       assert.equal(clicks[5], 'مجوزهای ثبت‌نام');
       assert.equal(clicks[6], '+ ایجاد');
 
+      // Content Markdown should NOT copy/duplicate the click path sequence
+      assert.ok(!step.contentMarkdown.includes('**مسیر کلیک‌های اجرایی در سامانه:**'));
+      assert.ok(!step.contentMarkdown.includes('1. ورود به پنجره واحد'));
+      assert.ok(step.contentMarkdown.includes('+ ایجاد'));
+      assert.ok(step.contentMarkdown.includes('نکات و راهنمای تکمیلی'));
+
       // Chaining configuration
       assert.equal(proc1.nextProcessDraftIndex, 1);
       assert.ok(
