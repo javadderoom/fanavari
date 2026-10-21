@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { ProxyAgent } from 'undici';
 
 export type IndexingNotificationType = 'URL_UPDATED' | 'URL_DELETED';
 
@@ -25,6 +26,38 @@ let cachedToken: {
   accessToken: string;
   expiresAt: number; // Unix timestamp in ms
 } | null = null;
+
+let cachedProxyAgent: any = null;
+
+/**
+ * Returns an HTTP proxy agent if configured or running in local dev.
+ * Bypasses network blocks/censorship when developing locally.
+ */
+export function getIndexingDispatcher(): any {
+  if (cachedProxyAgent !== null) {
+    return cachedProxyAgent === false ? undefined : cachedProxyAgent;
+  }
+
+  const proxyUrl =
+    process.env.GOOGLE_INDEXING_PROXY?.trim() ||
+    process.env.HTTPS_PROXY?.trim() ||
+    process.env.HTTP_PROXY?.trim() ||
+    process.env.https_proxy?.trim() ||
+    process.env.http_proxy?.trim() ||
+    (process.env.NODE_ENV !== 'production' ? 'http://127.0.0.1:10808' : undefined);
+
+  if (proxyUrl) {
+    try {
+      cachedProxyAgent = new ProxyAgent(proxyUrl);
+      return cachedProxyAgent;
+    } catch (err) {
+      console.warn('[Google Indexing] Could not initialize ProxyAgent:', err);
+    }
+  }
+
+  cachedProxyAgent = false;
+  return undefined;
+}
 
 /**
  * Returns configuration status of Google Indexing API credentials.
@@ -127,7 +160,8 @@ export async function getGoogleIndexingAccessToken(): Promise<string> {
   }
 
   const assertion = createGoogleSignedJwt(clientEmail, privateKey);
-  const response = await fetch('https://oauth2.googleapis.com/token', {
+  const dispatcher = getIndexingDispatcher();
+  const response = await (fetch as any)('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -136,6 +170,7 @@ export async function getGoogleIndexingAccessToken(): Promise<string> {
       grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
       assertion,
     }),
+    ...(dispatcher ? { dispatcher } : {}),
   });
 
   if (!response.ok) {
@@ -185,7 +220,8 @@ export async function notifyGoogleIndexing({
 
   try {
     const accessToken = await getGoogleIndexingAccessToken();
-    const response = await fetch('https://indexing.googleapis.com/v3/urlNotifications:publish', {
+    const dispatcher = getIndexingDispatcher();
+    const response = await (fetch as any)('https://indexing.googleapis.com/v3/urlNotifications:publish', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -195,6 +231,7 @@ export async function notifyGoogleIndexing({
         url: targetUrl,
         type,
       }),
+      ...(dispatcher ? { dispatcher } : {}),
     });
 
     const rawText = await response.text();
@@ -315,15 +352,17 @@ export async function getGoogleIndexingMetadata(url: string): Promise<{
 
   try {
     const accessToken = await getGoogleIndexingAccessToken();
+    const dispatcher = getIndexingDispatcher();
     const endpoint = `https://indexing.googleapis.com/v3/urlNotifications/metadata?url=${encodeURIComponent(
       targetUrl
     )}`;
 
-    const response = await fetch(endpoint, {
+    const response = await (fetch as any)(endpoint, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+      ...(dispatcher ? { dispatcher } : {}),
     });
 
     const rawText = await response.text();
