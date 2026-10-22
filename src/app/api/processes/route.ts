@@ -4,6 +4,7 @@ import { Permissions, hasPermission } from '@/lib/permissions';
 import { resolveApiUser } from '@/lib/api-auth';
 import { mapPrismaProcess, resolveDbUserId } from '@/lib/db-service';
 import { notifyGoogleIndexing } from '@/lib/google-indexing';
+import { cleanSlugForSubmit } from '@/lib/slug-utils';
 
 export async function GET(req: NextRequest) {
   try {
@@ -247,14 +248,37 @@ export async function POST(req: NextRequest) {
     }
 
     if (existingProcess) {
+      // Validate and handle slug update if requested
+      let finalSlug = existingProcess.slug;
+      if (slug && typeof slug === 'string') {
+        const sanitizedSlug = cleanSlugForSubmit(slug, 'proc');
+        if (sanitizedSlug && sanitizedSlug !== existingProcess.slug) {
+          // Check collision with another process
+          const collision = await prisma.process.findFirst({
+            where: {
+              slug: sanitizedSlug,
+              id: { not: existingProcess.id },
+            },
+          });
+          if (collision) {
+            return NextResponse.json(
+              { error: `شناسه لاتین (Slug) «${sanitizedSlug}» قبلاً برای فرایند دیگری («${collision.title}») ثبت شده است. لطفاً شناسه متفاوتی وارد کنید.` },
+              { status: 409 }
+            );
+          }
+          finalSlug = sanitizedSlug;
+        }
+      }
+
       // Execute update inside a transaction to replace steps cleanly
       const updated = await prisma.$transaction(async (tx) => {
         await tx.step.deleteMany({ where: { processId: existingProcess.id } });
 
-        return tx.process.update({
+        const proc = await tx.process.update({
           where: { id: existingProcess.id },
           data: {
             title: title.trim(),
+            slug: finalSlug,
             description: description?.trim() || '',
             scope: scope || existingProcess.scope,
             category: category || existingProcess.category,
@@ -304,6 +328,16 @@ export async function POST(req: NextRequest) {
             },
           },
         });
+
+        // If the slug changed, update child steps referencing this process as a subprocess
+        if (finalSlug !== existingProcess.slug) {
+          await tx.step.updateMany({
+            where: { subProcessId: existingProcess.id },
+            data: { subProcessSlug: finalSlug },
+          });
+        }
+
+        return proc;
       });
 
       // Automated Google Indexing API notification
@@ -312,11 +346,26 @@ export async function POST(req: NextRequest) {
           url: `/process/${encodeURIComponent(updated.slug)}`,
           type: 'URL_UPDATED',
         }).catch((err) => console.warn('[Google Indexing] Update notification error:', err));
+
+        // If slug changed, notify Google to delete the old URL
+        if (existingProcess.slug !== updated.slug) {
+          notifyGoogleIndexing({
+            url: `/process/${encodeURIComponent(existingProcess.slug)}`,
+            type: 'URL_DELETED',
+          }).catch((err) => console.warn('[Google Indexing] Delete old slug notification error:', err));
+        }
       } else {
         notifyGoogleIndexing({
           url: `/process/${encodeURIComponent(updated.slug)}`,
           type: 'URL_DELETED',
         }).catch((err) => console.warn('[Google Indexing] Unpublish/delete notification error:', err));
+
+        if (existingProcess.slug !== updated.slug) {
+          notifyGoogleIndexing({
+            url: `/process/${encodeURIComponent(existingProcess.slug)}`,
+            type: 'URL_DELETED',
+          }).catch((err) => console.warn('[Google Indexing] Delete old slug notification error:', err));
+        }
       }
 
       return NextResponse.json(mapPrismaProcess(updated, { redactGrants: !isSuperAdmin }), { status: 200 });

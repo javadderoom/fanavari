@@ -405,13 +405,13 @@
     "semantic_hash": ""
   },
   "src/app/api/processes/[id]/route.ts": {
-    "mtime": 1792517605.9618816,
-    "ast_hash": "ef480b75903a6581ea48a45c5fc3e703",
+    "mtime": 1792677451.989081,
+    "ast_hash": "0afe1008de2946b357b67690b5662327",
     "semantic_hash": ""
   },
   "src/app/api/processes/route.ts": {
-    "mtime": 1792517581.2832959,
-    "ast_hash": "ef780beb4fe849a52ce398ab965869bc",
+    "mtime": 1792677429.5718014,
+    "ast_hash": "4124a843a6c0f5255818490b9a2a36fb",
     "semantic_hash": ""
   },
   "src/app/api/systems/route.ts": {
@@ -540,8 +540,8 @@
     "semantic_hash": ""
   },
   "src/components/process-editor-modal.tsx": {
-    "mtime": 1792514304.2659657,
-    "ast_hash": "7b02f2e5d9a5c41ad273aea8a6433f88",
+    "mtime": 1792677488.2647343,
+    "ast_hash": "f87b4b4691e78c017731d53e6faa42a5",
     "semantic_hash": ""
   },
   "src/components/rich-text-editor.tsx": {
@@ -1837,6 +1837,11 @@
   "tests/process-view-bot.test.ts": {
     "mtime": 1792593857.0005348,
     "ast_hash": "4c0b5c63285c6a207b72434caaeb6889",
+    "semantic_hash": ""
+  },
+  "tests/process-slug-update.test.ts": {
+    "mtime": 1792677544.0147426,
+    "ast_hash": "cb9744afed3e5676906f15dc46c7b9fd",
     "semantic_hash": ""
   }
 }

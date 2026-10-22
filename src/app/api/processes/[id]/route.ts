@@ -4,6 +4,7 @@ import { Permissions, hasPermission } from '@/lib/permissions';
 import { resolveApiUser } from '@/lib/api-auth';
 import { mapPrismaProcess } from '@/lib/db-service';
 import { notifyGoogleIndexing } from '@/lib/google-indexing';
+import { cleanSlugForSubmit } from '@/lib/slug-utils';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -112,52 +113,89 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const { title, description, scope, category, visibility, targetSystem, targetUrl, estimatedMinutes, schedule, isPublished, isPopular, nextProcessId, nextProcessNote } = body;
+    const { title, slug, description, scope, category, visibility, targetSystem, targetUrl, estimatedMinutes, schedule, isPublished, isPopular, nextProcessId, nextProcessNote } = body;
 
-    const updated = await prisma.process.update({
-      where: { id },
-      data: {
-        title,
-        description,
-        scope,
-        category,
-        ...(visibility ? { visibility } : {}),
-        ...(isPublished !== undefined ? { isPublished: Boolean(isPublished) } : {}),
-        ...(isPopular !== undefined ? { isPopular: Boolean(isPopular) } : {}),
-        ...(nextProcessId !== undefined ? { nextProcessId: nextProcessId || null } : {}),
-        ...(nextProcessNote !== undefined ? { nextProcessNote: nextProcessNote || null } : {}),
-        targetSystem,
-        targetUrl,
-        estimatedMinutes: Number(estimatedMinutes) || 10,
-        ...(schedule !== undefined ? { schedule } : {}),
-      },
-      include: {
-        steps: {
-          orderBy: { orderIndex: 'asc' },
-          include: {
-            errorGuides: true,
-            subProcess: {
-              select: { id: true, slug: true, title: true, isPublished: true },
+    const existing = await prisma.process.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: 'فرایند یافت نشد' }, { status: 404 });
+    }
+
+    let finalSlug: string | undefined = undefined;
+    if (slug && typeof slug === 'string') {
+      const sanitizedSlug = cleanSlugForSubmit(slug, 'proc');
+      if (sanitizedSlug && sanitizedSlug !== existing.slug) {
+        const collision = await prisma.process.findFirst({
+          where: {
+            slug: sanitizedSlug,
+            id: { not: existing.id },
+          },
+        });
+        if (collision) {
+          return NextResponse.json(
+            { error: `شناسه لاتین (Slug) «${sanitizedSlug}» قبلاً برای فرایند دیگری («${collision.title}») ثبت شده است.` },
+            { status: 409 }
+          );
+        }
+        finalSlug = sanitizedSlug;
+      }
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const proc = await tx.process.update({
+        where: { id },
+        data: {
+          title,
+          ...(finalSlug ? { slug: finalSlug } : {}),
+          description,
+          scope,
+          category,
+          ...(visibility ? { visibility } : {}),
+          ...(isPublished !== undefined ? { isPublished: Boolean(isPublished) } : {}),
+          ...(isPopular !== undefined ? { isPopular: Boolean(isPopular) } : {}),
+          ...(nextProcessId !== undefined ? { nextProcessId: nextProcessId || null } : {}),
+          ...(nextProcessNote !== undefined ? { nextProcessNote: nextProcessNote || null } : {}),
+          targetSystem,
+          targetUrl,
+          estimatedMinutes: Number(estimatedMinutes) || 10,
+          ...(schedule !== undefined ? { schedule } : {}),
+        },
+        include: {
+          steps: {
+            orderBy: { orderIndex: 'asc' },
+            include: {
+              errorGuides: true,
+              subProcess: {
+                select: { id: true, slug: true, title: true, isPublished: true },
+              },
             },
           },
-        },
-        department: true,
-        systemTool: true,
-        nextProcess: {
-          select: {
-            id: true,
-            slug: true,
-            title: true,
-            targetSystem: true,
-            department: { select: { name: true } },
-            systemTool: { select: { name: true } },
-            steps: { select: { id: true } },
+          department: true,
+          systemTool: true,
+          nextProcess: {
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              targetSystem: true,
+              department: { select: { name: true } },
+              systemTool: { select: { name: true } },
+              steps: { select: { id: true } },
+            },
+          },
+          accessGrants: {
+            include: { user: true, department: true },
           },
         },
-        accessGrants: {
-          include: { user: true, department: true },
-        },
-      },
+      });
+
+      if (finalSlug && finalSlug !== existing.slug) {
+        await tx.step.updateMany({
+          where: { subProcessId: existing.id },
+          data: { subProcessSlug: finalSlug },
+        });
+      }
+
+      return proc;
     });
 
     // Automated Google Indexing API notification
@@ -166,11 +204,25 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
         url: `/process/${encodeURIComponent(updated.slug)}`,
         type: 'URL_UPDATED',
       }).catch((err) => console.warn('[Google Indexing] Update notification error:', err));
+
+      if (existing.slug !== updated.slug) {
+        notifyGoogleIndexing({
+          url: `/process/${encodeURIComponent(existing.slug)}`,
+          type: 'URL_DELETED',
+        }).catch((err) => console.warn('[Google Indexing] Delete old slug notification error:', err));
+      }
     } else {
       notifyGoogleIndexing({
         url: `/process/${encodeURIComponent(updated.slug)}`,
         type: 'URL_DELETED',
       }).catch((err) => console.warn('[Google Indexing] Unpublish/delete notification error:', err));
+
+      if (existing.slug !== updated.slug) {
+        notifyGoogleIndexing({
+          url: `/process/${encodeURIComponent(existing.slug)}`,
+          type: 'URL_DELETED',
+        }).catch((err) => console.warn('[Google Indexing] Delete old slug notification error:', err));
+      }
     }
 
     return NextResponse.json(

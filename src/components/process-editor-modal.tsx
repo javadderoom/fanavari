@@ -20,7 +20,8 @@ import {
   Layers, 
   Sparkles, 
   Edit3,
-  RotateCcw
+  RotateCcw,
+  Link as LinkIcon
 } from 'lucide-react';
 import { notify } from '@/lib/notify';
 import { formatToSlug, cleanSlugForSubmit } from '@/lib/slug-utils';
@@ -473,7 +474,7 @@ export function ProcessEditorModal({
                   className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <Edit3 className="w-3 h-3" />
-                  <span>{isEditingSlug ? 'پنهان کردن ویرایش شناسه' : 'ویرایش شناسه لاتین (Slug)'}</span>
+                  <span>{isEditingSlug ? 'بستن ویرایش شناسه' : 'ویرایش شناسه لاتین (Slug)'}</span>
                 </button>
               </div>
 
@@ -487,15 +488,23 @@ export function ProcessEditorModal({
                 style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-glass)', color: 'var(--text-primary)' }}
               />
 
-              <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1 px-1">
-                <span className="font-mono text-[11px]" dir="ltr">
-                  /process/<span className="text-blue-600 dark:text-blue-400 font-bold">{slug || '...'}</span>
-                </span>
+              <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1.5 px-1">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingSlug((prev) => !prev)}
+                  className="inline-flex items-center gap-1.5 font-mono text-[11px] cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 dark:hover:text-blue-400 transition-colors bg-slate-100/80 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-slate-700/60"
+                  dir="ltr"
+                  title="کلیک برای ویرایش شناسه و آدرس صفحه"
+                >
+                  <span className="text-slate-400">/process/</span>
+                  <span className="text-blue-600 dark:text-blue-400 font-bold">{slug || '...'}</span>
+                  <Edit3 className="w-3 h-3 text-blue-500 opacity-70 ml-1" />
+                </button>
                 {isEditingSlug && (
                   <button
                     type="button"
                     onClick={handleAutoGenerateSlug}
-                    className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1 hover:underline cursor-pointer"
+                    className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1 hover:underline cursor-pointer"
                   >
                     <Sparkles className="w-3 h-3" />
                     <span>تولید مجدد خودکار از عنوان</span>
@@ -504,16 +513,32 @@ export function ProcessEditorModal({
               </div>
 
               {isEditingSlug && (
-                <div className="mt-2 animate-in fade-in">
-                  <input
-                    type="text"
-                    value={slug}
-                    onChange={(e) => handleSlugChange(e.target.value)}
-                    placeholder="شناسه یکتای لاتین یا فارسی URL..."
-                    dir="auto"
-                    className="w-full p-2.5 rounded-xl border text-xs font-mono outline-none"
-                    style={{ background: 'var(--bg-input)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
-                  />
+                <div className="mt-2.5 p-3 rounded-2xl border bg-blue-50/30 dark:bg-blue-950/20 border-blue-200/50 dark:border-blue-900/40 space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <LinkIcon className="w-3.5 h-3.5 text-blue-500" />
+                      <span>شناسه یکتای آدرس اینترنتی (URL Slug)</span>
+                    </label>
+                    <span className="text-[10px] text-slate-400" dir="rtl">
+                      فقط حروف لاتین، فارسی، ارقام و خط تیره (-)
+                    </span>
+                  </div>
+                  <div className="relative flex items-center" dir="ltr">
+                    <span className="absolute left-3 text-xs font-mono text-slate-400 select-none">
+                      /process/
+                    </span>
+                    <input
+                      type="text"
+                      value={slug}
+                      onChange={(e) => handleSlugChange(e.target.value)}
+                      placeholder="e.g. employee-registration"
+                      className="w-full pl-20 pr-3 py-2 rounded-xl border text-xs font-mono font-medium outline-none transition-all focus:ring-2 focus:ring-blue-500"
+                      style={{ background: 'var(--bg-input)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                    این شناسه آدرس مستقیم فرایند در نوار آدرس مرورگر است (<span dir="ltr" className="font-mono text-blue-600 dark:text-blue-400">/process/{slug || '...'}</span>). تغییر آن آدرس صفحه فرایند را تغییر می‌دهد.
+                  </p>
                 </div>
               )}
             </div>
