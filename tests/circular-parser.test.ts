@@ -205,5 +205,57 @@ describe('Circular Announcement Parser Engine', () => {
       assert.equal(proc.steps[1].title, 'گام ۲: صدور مجوز');
       assert.equal(proc.steps[1].targetMenuPath, 'عملیات پیش ثبت‌نام > مجوزهای ثبت‌نام > + جدید');
     });
+
+    it('should correctly parse circulars without hashtag prefixes and prevent footer link leakage', () => {
+      const plainText = `سامانه: یکپارچهیِ دانشآموزی (سیدا)
+
+مخاطب: مدیرانِ محترم مدارس بزرگسال
+
+موضوع: امکان ثبتنام دانشآموزان فاقد سابقه سیدا پس از دریافت مجوز در دوره نیم سال اول بزرگسال فراهم گردید.
+
+📌 مراحل جهت مشاهده و اقدام (ثبتنام)؛
+⬅️ ورود به پنجره واحد خدمات الکترونیک وزارت آموزش و پرورش به آدرس my.medu.ir
+⬅️ ورود به سُها (سکوی هوشمند سازمانی)
+⬅️ ورود به سامانه سیدا
+◀️ عملیات اولیه 
+◀️ عملیات پیش ثبتنام
+◀️ ثبتنام میانپایه
+◀️ اضافه نمودن دانشآموز خارج از مدرسه
+
+
+https://farayandnama.ir/process/امکان-ثبتنام-دانشآموزان-فاقد-سابقه-سیدا-پس-از-دریافت-مجوز-در-دوره-نیم-سال-اول-بزرگسال-فراهم-گردید
+🗓 تاریخ: ۱۴۰۵/۰۷/۲۹`;
+
+      const result = parseCircularToProcesses(plainText);
+      assert.equal(result.isMultiStage, false);
+      assert.equal(result.metadata.targetSystem, 'سیدا');
+      assert.equal(result.metadata.audience, 'مدیرانِ محترم مدارس بزرگسال');
+      assert.equal(
+        result.metadata.subject,
+        'امکان ثبتنام دانشآموزان فاقد سابقه سیدا پس از دریافت مجوز در دوره نیم سال اول بزرگسال فراهم گردید.'
+      );
+      assert.equal(result.metadata.circularDate, '۱۴۰۵/۰۷/۲۹');
+      assert.equal(result.metadata.targetUrl, 'https://my.medu.ir');
+
+      assert.equal(result.processes.length, 1);
+      const proc = result.processes[0];
+      assert.equal(
+        proc.title,
+        'امکان ثبتنام دانشآموزان فاقد سابقه سیدا پس از دریافت مجوز در دوره نیم سال اول بزرگسال فراهم گردید.'
+      );
+      assert.equal(proc.targetSystem, 'سیدا');
+      assert.equal(proc.audience, 'مدیرانِ محترم مدارس بزرگسال');
+      assert.equal(proc.steps.length, 1);
+
+      const step = proc.steps[0];
+      const clicks = step.targetMenuPath.split(' > ');
+      assert.equal(clicks.length, 7);
+      assert.equal(clicks[6], 'اضافه نمودن دانشآموز خارج از مدرسه');
+
+      // Verify no footer URLs or "(ثبتنام)؛" leaked into step instructions
+      assert.ok(!step.contentMarkdown.includes('https://farayandnama.ir'));
+      assert.ok(!step.contentMarkdown.includes('تاریخ:'));
+      assert.ok(!step.contentMarkdown.includes('(ثبتنام)؛'));
+    });
   });
 });

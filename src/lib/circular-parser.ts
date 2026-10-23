@@ -110,8 +110,8 @@ export function cleanStepLine(line: string): string {
 export function parseCircularToProcesses(rawText: string): ParsedCircularResult {
   const normalized = normalizeText(rawText);
 
-  // 1. Extract Target System
-  const systemMatch = normalized.match(/#\s*سامانه\s*:\s*([^\n\*]+)/i);
+  // 1. Extract Target System (flexible leading decoration, optional #, colon or hyphen)
+  const systemMatch = normalized.match(/(?:^|\n)[^\n]*?سامانه\s*[:؛-]\s*([^\n\*]+)/i);
   let rawSystem = systemMatch ? systemMatch[1].trim().replace(/^[*#\s]+|[*#\s]+$/g, '') : 'سامانه سازمانی';
   let targetSystemClean = rawSystem;
   if (/سیدا/i.test(rawSystem)) {
@@ -120,12 +120,12 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
     targetSystemClean = 'پنجره واحد (my.medu.ir)';
   }
 
-  // 2. Extract Audience
-  const audienceMatch = normalized.match(/#\s*مخاطب\s*:\s*([^\n\*]+)/i);
+  // 2. Extract Audience (flexible leading decoration, optional #, colon or hyphen)
+  const audienceMatch = normalized.match(/(?:^|\n)[^\n]*?مخاطب(?:ین|ان)?\s*[:؛-]\s*([^\n\*]+)/i);
   const rawAudience = audienceMatch ? audienceMatch[1].trim().replace(/^[*#\s]+|[*#\s]+$/g, '') : '';
 
-  // 3. Extract Subject / Topic
-  const subjectMatch = normalized.match(/#\s*موضوع\s*:\s*([\s\S]*?)(?=(?:📌|⭕️|⬅️|◀️|مرکز توسعه|درگاه|$))/i);
+  // 3. Extract Subject / Topic (flexible leading decoration, optional #, colon or hyphen)
+  const subjectMatch = normalized.match(/(?:^|\n)[^\n]*?(?:موضوع|عنوان)\s*[:؛-]\s*([\s\S]*?)(?=(?:📌|⭕️|⬅️|◀️|مرکز توسعه|درگاه|https?:\/\/|🗓|تاریخ|\n\s*(?:📌|⭕️|⬅️|◀️)|$))/i);
   let rawSubject = '';
   if (subjectMatch) {
     rawSubject = subjectMatch[1]
@@ -146,13 +146,16 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
   const channelMatch = normalized.match(/@([a-zA-Z0-9_]+)/i);
   const sourceChannel = channelMatch ? `@${channelMatch[1]}` : '';
 
-  // 6. Extract Target URL
+  // 6. Extract Target URL (filters out self farayandnama links)
   let targetUrl: string | undefined = undefined;
   const urlMatch = normalized.match(/(?:🌐|https?:\/\/|آدرس\s*:?\s*)([a-zA-Z0-9.\-_]+\.[a-zA-Z]{2,})/i);
   if (urlMatch) {
     const domain = urlMatch[1].toLowerCase();
-    targetUrl = domain.startsWith('http') ? domain : `https://${domain}`;
-  } else if (/my\.medu\.ir/i.test(normalized)) {
+    if (!domain.includes('farayandnama.ir')) {
+      targetUrl = domain.startsWith('http') ? domain : `https://${domain}`;
+    }
+  }
+  if (!targetUrl && /my\.medu\.ir/i.test(normalized)) {
     targetUrl = 'https://my.medu.ir';
   }
 
@@ -195,9 +198,9 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
         continue;
       }
 
-      // Check for footer bounds
+      // Check for footer bounds or tracking/channel links
       if (
-        /^(?:مرکز توسعه|آدرس کانال|درگاه خدمات|🗓|تاریخ:|🌐|🆔)/.test(line) ||
+        /^(?:مرکز توسعه|آدرس کانال|درگاه خدمات|🗓|تاریخ:|🌐|🆔|https?:\/\/)/i.test(line) ||
         line.startsWith('🖥️')
       ) {
         break;
@@ -237,7 +240,11 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
           !cleanNote.startsWith('موضوع:') &&
           !cleanNote.startsWith('مخاطب:') &&
           !cleanNote.startsWith('مراحل جهت') &&
-          !cleanNote.startsWith('مرکز توسعه')
+          !cleanNote.startsWith('مرکز توسعه') &&
+          !cleanNote.startsWith('http://') &&
+          !cleanNote.startsWith('https://') &&
+          !cleanNote.startsWith('🗓') &&
+          !cleanNote.startsWith('تاریخ:')
         ) {
           currentGroup.notes.push(cleanNote);
         }
@@ -273,7 +280,8 @@ export function parseCircularToProcesses(rawText: string): ParsedCircularResult 
   // "⭕️مراحل جهت مشاهده و اقدام در مدرسه مبدأ؛"
   // "⭕️مراحل جهت مشاهده و اقدام در مدرسه مقصد؛"
   // "مراحل جهت اقدام در مبدأ"
-  const sectionRegex = /(?:[⭕️📌*]*\s*مراحل جهت مشاهده و اقدام(?: در\s*([^؛\n\*]+))?[؛\n\*]*)/gi;
+  // "📌 مراحل جهت مشاهده و اقدام (ثبتنام)؛"
+  const sectionRegex = /(?:[⭕️📌*]*\s*مراحل جهت مشاهده و اقدام(?: در\s*([^؛\n\*\(]+))?[^\n]*)/gi;
 
   interface SectionInfo {
     label: string;
